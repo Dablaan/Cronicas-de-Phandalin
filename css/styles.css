@@ -486,3 +486,85 @@ textarea {
         grid-template-columns: 1fr 1fr 1fr;
     }
 }
+
+/* Landing Screen Specific Styles */
+.landing-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 80vh;
+    text-align: center;
+    transition: opacity 0.8s ease-in-out;
+}
+
+.landing-image-wrapper {
+    width: 100%;
+    max-width: 800px;
+    padding: 10px;
+    position: relative;
+}
+
+.landing-image {
+    width: 100%;
+    height: auto;
+    border-radius: var(--border-radius-md);
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.5);
+    border: 3px solid var(--leather-dark);
+    /* Try to simulate a vignette/fade specifically on the image if possible without extra wrapper */
+    display: block;
+}
+
+/* Additional vignette overlay for the image */
+.landing-image-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border-radius: var(--border-radius-md);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+}
+
+.btn-adentrarse {
+    font-size: 2rem;
+    padding: 1rem 3rem;
+    margin-top: 2rem;
+    border: 3px solid var(--gold-dim);
+    color: var(--gold);
+    background: linear-gradient(to bottom, var(--leather-dark), #1a110a);
+    text-shadow: 2px 2px 4px #000;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.8);
+    animation: pulse 2s infinite;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.btn-adentrarse:hover {
+    background: linear-gradient(to bottom, var(--leather-light), var(--leather-dark));
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.6), inset 0 0 20px rgba(0, 0, 0, 0.8);
+    color: #fff;
+    transform: scale(1.05);
+    animation: none;
+    /* Stop pulsing on hover so the scale holds */
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+
+    50% {
+        transform: scale(1.03);
+        box-shadow: 0 0 25px rgba(212, 175, 55, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.8);
+    }
+}

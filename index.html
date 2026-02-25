@@ -27,33 +27,52 @@
             </div>
         </div>
 
-        <!-- Auth Screen -->
+        <!-- Auth Screen (Landing & Selection) -->
         <div id="auth-screen" class="screen">
-            <div class="header">
-                <h1>Crónicas de Phandalin</h1>
-                <p>Elige tu destino...</p>
-            </div>
-            <div class="grid-2">
-                <!-- DM Panel -->
-                <div class="card text-center">
-                    <h2>Dungeon Master</h2>
-                    <i class="fa-solid fa-dragon fa-3x mb-1" style="color: var(--leather-dark)"></i>
-                    <p class="mb-1">Accede al panel de control de la campaña.</p>
-                    <input type="password" id="dm-password" placeholder="Contraseña secreta">
-                    <button class="btn" id="btn-login-dm"><i class="fa-solid fa-key"></i> Entrar como DM</button>
-                    <p id="dm-error"
-                        style="color: var(--red-ink); display: none; margin-top: 0.5rem; font-weight: bold;">Contraseña
-                        incorrecta</p>
+
+            <!-- Landing View -->
+            <div id="landing-screen" class="landing-container">
+                <div class="header" style="border-bottom: none; padding-bottom: 0;">
+                    <h1 style="font-size: 4rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">CRÓNICAS DE PHANDALIN</h1>
+                    <p style="font-size: 1.5rem; margin-bottom: 1rem;">Elige tu destino...</p>
                 </div>
-                <!-- Player Panel -->
-                <div class="card text-center">
-                    <h2>Jugador</h2>
-                    <i class="fa-solid fa-helmet-battle fa-3x mb-1" style="color: var(--leather-dark)"></i>
-                    <p class="mb-1">Selecciona tu personaje o crea uno nuevo.</p>
-                    <div id="player-list-container" class="mb-1">
-                        <!-- List of existing players injected here -->
+                <div class="landing-image-wrapper mb-1">
+                    <img src="./img/party.png" alt="Grupo de Aventureros" class="landing-image"
+                        onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'800\\\' height=\\\'400\\\'><rect width=\\\'800\\\' height=\\\'400\\\' fill=\\\'%234a3424\\\'/><text x=\\\'50%\\\' y=\\\'50%\\\' fill=\\\'%23d4af37\\\' font-size=\\\'24\\\' text-anchor=\\\'middle\\\'>[img/party.png Missing]</text></svg>'">
+                </div>
+                <button class="btn btn-adentrarse" id="btn-enter-landing">ADENTRARSE</button>
+            </div>
+
+            <!-- Selection View (Hidden initially via CSS or JS later) -->
+            <div id="selection-screen" style="display: none; opacity: 0; width: 100%;">
+                <div class="header">
+                    <h1>Crónicas de Phandalin</h1>
+                    <p>Selecciona tu rol en la campaña...</p>
+                </div>
+                <div class="grid-2">
+                    <!-- DM Panel -->
+                    <div class="card text-center">
+                        <h2>Dungeon Master</h2>
+                        <i class="fa-solid fa-dragon fa-3x mb-1" style="color: var(--leather-dark)"></i>
+                        <p class="mb-1">Accede al panel de control de la campaña.</p>
+                        <input type="password" id="dm-password" placeholder="Contraseña secreta">
+                        <button class="btn" id="btn-login-dm"><i class="fa-solid fa-key"></i> Entrar como DM</button>
+                        <p id="dm-error"
+                            style="color: var(--red-ink); display: none; margin-top: 0.5rem; font-weight: bold;">
+                            Contraseña
+                            incorrecta</p>
                     </div>
-                    <button class="btn" id="btn-create-player"><i class="fa-solid fa-plus"></i> Crear Personaje</button>
+                    <!-- Player Panel -->
+                    <div class="card text-center">
+                        <h2>Jugador</h2>
+                        <i class="fa-solid fa-helmet-battle fa-3x mb-1" style="color: var(--leather-dark)"></i>
+                        <p class="mb-1">Selecciona tu personaje o crea uno nuevo.</p>
+                        <div id="player-list-container" class="mb-1">
+                            <!-- List of existing players injected here -->
+                        </div>
+                        <button class="btn" id="btn-create-player"><i class="fa-solid fa-plus"></i> Crear
+                            Personaje</button>
+                    </div>
                 </div>
             </div>
         </div>

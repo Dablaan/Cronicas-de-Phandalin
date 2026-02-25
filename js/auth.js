@@ -7,6 +7,25 @@ export function initAuth() {
     const dmPasswordInput = document.getElementById('dm-password');
     const btnLogout = document.getElementById('btn-logout');
 
+    const btnEnterLanding = document.getElementById('btn-enter-landing');
+    const landingScreen = document.getElementById('landing-screen');
+    const selectionScreen = document.getElementById('selection-screen');
+
+    // Landing to Selection Transition
+    if (btnEnterLanding) {
+        btnEnterLanding.addEventListener('click', () => {
+            landingScreen.style.opacity = '0';
+            setTimeout(() => {
+                landingScreen.style.display = 'none';
+                selectionScreen.style.display = 'block';
+                // Trigger reflow to apply opacity transition smoothly
+                void selectionScreen.offsetWidth;
+                selectionScreen.style.transition = 'opacity 0.8s ease-in-out';
+                selectionScreen.style.opacity = '1';
+            }, 800);
+        });
+    }
+
     // DM Login
     btnLoginDM.addEventListener('click', () => {
         const password = dmPasswordInput.value;
