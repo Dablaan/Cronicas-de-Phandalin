@@ -31,6 +31,10 @@ export function initUI() {
             hpMax: 10,
             ac: 10,
             stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+            saves: { str: false, dex: false, con: false, int: false, wis: false, cha: false },
+            deathSaves: { successes: 0, failures: 0 },
+            attacks: [],
+            equipment: { equipped: '', backpack: '' },
             spells: [],
             spellSlots: {
                 1: { max: 0, used: 0 }, 2: { max: 0, used: 0 }, 3: { max: 0, used: 0 },
@@ -179,19 +183,61 @@ function renderPlayerSheet(playerId, players) {
                       <label>Clase de Armadura (CA):</label>
                       <input type="number" value="${player.ac}" onchange="window.updateSheet('${playerId}', 'ac', Number(this.value))" style="width: 100px;">
                  </div>
+                 <div style="grid-column: span 2; margin-top: 1rem; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                     <label><i class="fa-solid fa-skull"></i> Salvaciones de Muerte (Death Saves):</label>
+                     <div class="flex-between mt-1">
+                         <div>
+                             <span style="font-size: 0.8rem; color: var(--leather-light); margin-right: 0.5rem;">Éxitos</span>
+                             ${[1, 2, 3].map(i => `<input type="checkbox" ${player.deathSaves && player.deathSaves.successes >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'successes', this.checked ? ${i} : ${i - 1})" style="width: 20px; height: 20px; accent-color: var(--leather-dark); margin-right: 5px; cursor: pointer;">`).join('')}
+                         </div>
+                         <div>
+                             <span style="font-size: 0.8rem; color: var(--red-ink); margin-right: 0.5rem;">Fallos</span>
+                             ${[1, 2, 3].map(i => `<input type="checkbox" ${player.deathSaves && player.deathSaves.failures >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'failures', this.checked ? ${i} : ${i - 1})" style="width: 20px; height: 20px; accent-color: var(--red-ink); margin-right: 5px; cursor: pointer;">`).join('')}
+                         </div>
+                     </div>
+                 </div>
              </div>
         </div>
 
         <div class="card">
-             <h3><i class="fa-solid fa-dumbbell"></i> Atributos</h3>
+             <h3><i class="fa-solid fa-dumbbell"></i> Atributos y Salvaciones</h3>
              <div class="grid-2 mt-1">
                  ${['str', 'dex', 'con', 'int', 'wis', 'cha'].map(stat => `
                      <div class="flex-between">
-                         <label style="text-transform: uppercase; font-weight: bold;">${stat}</label>
+                         <div class="flex-row">
+                             <input type="checkbox" ${player.saves && player.saves[stat] ? 'checked' : ''} onchange="window.updateSave('${playerId}', '${stat}', this.checked)" title="Competencia en Salvación" style="width: 15px; height: 15px; margin-right: 5px; cursor: pointer; accent-color: var(--leather-dark);">
+                             <label style="text-transform: uppercase; font-weight: bold;">${stat}</label>
+                         </div>
                          <input type="number" value="${player.stats[stat]}" onchange="window.updateSheetStat('${playerId}', '${stat}', Number(this.value))" style="width: 80px; margin-bottom: 0;">
                      </div>
                  `).join('')}
              </div>
+        </div>
+
+        <div class="card">
+            <div class="flex-between mb-1" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+                <h3><i class="fa-solid fa-khanda"></i> Ataques y Trucos</h3>
+                <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.addAttack('${playerId}')">
+                    <i class="fa-solid fa-plus"></i> Añadir Ataque
+                </button>
+            </div>
+            <div id="attacks-container">
+                ${renderAttacksList(playerId, player.attacks || [])}
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</h3>
+            <div class="grid-2 mt-1">
+                <div>
+                    <h4 style="font-size: 0.9em; color: var(--leather-light);"><i class="fa-solid fa-shield-halved"></i> Equipado</h4>
+                    <textarea placeholder="Armadura puesta, armas en mano, anillos..." onchange="window.updateEquipment('${playerId}', 'equipped', this.value)" style="min-height: 100px; font-size: 0.85em;">${player.equipment ? player.equipment.equipped : ''}</textarea>
+                </div>
+                <div>
+                    <h4 style="font-size: 0.9em; color: var(--leather-light);"><i class="fa-solid fa-backpack"></i> Mochila</h4>
+                    <textarea placeholder="Oro, raciones, antorchas, pociones..." onchange="window.updateEquipment('${playerId}', 'backpack', this.value)" style="min-height: 100px; font-size: 0.85em;">${player.equipment ? player.equipment.backpack : ''}</textarea>
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -224,6 +270,96 @@ function renderPlayerSheet(playerId, players) {
     `;
     container.innerHTML = html;
 }
+
+window.renderAttacksList = function (playerId, attacks) {
+    if (!attacks || attacks.length === 0) return '<p class="text-muted text-center" style="font-size: 0.9em; margin-top: 0.5rem;">Ves desarmado por la vida.</p>';
+
+    let html = '<div class="grid-2 mt-1">';
+    attacks.forEach(atk => {
+        html += `
+            <div class="card" style="padding: 0.5rem; background: rgba(255,255,255,0.4);">
+                <div class="flex-between mb-1">
+                    <input type="text" value="${atk.name || ''}" placeholder="Arma o Truco" onchange="window.updateAttack('${playerId}', '${atk.id}', 'name', this.value)" style="font-weight: bold; padding: 0.2rem; margin-bottom: 0; width: 80%;">
+                    <button class="btn btn-danger" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteAttack('${playerId}', '${atk.id}')"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                <div class="flex-row">
+                    <input type="text" value="${atk.bonus || ''}" placeholder="Bono (ej. +5)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'bonus', this.value)" style="width: 40%; font-size: 0.85em; margin-bottom: 0; margin-right: 5px;">
+                    <input type="text" value="${atk.damage || ''}" placeholder="Daño (ej. 1d8+3 Cortante)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'damage', this.value)" style="width: 58%; font-size: 0.85em; margin-bottom: 0;">
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    return html;
+};
+
+window.addAttack = function (playerId) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const attacks = p.attacks || [];
+            const newAttack = { id: 'atk_' + Date.now(), name: '', bonus: '', damage: '' };
+            return { ...p, attacks: [...attacks, newAttack] };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.updateAttack = function (playerId, atkId, field, value) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const attacks = p.attacks.map(a => a.id === atkId ? { ...a, [field]: value } : a);
+            return { ...p, attacks };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.deleteAttack = function (playerId, atkId) {
+    if (!confirm('¿Eliminar este ataque?')) return;
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const attacks = p.attacks.filter(a => a.id !== atkId);
+            return { ...p, attacks };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.updateSave = function (playerId, stat, isChecked) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const saves = p.saves || { str: false, dex: false, con: false, int: false, wis: false, cha: false };
+            return { ...p, saves: { ...saves, [stat]: isChecked } };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.updateDeathSave = function (playerId, type, value) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const deathSaves = p.deathSaves || { successes: 0, failures: 0 };
+            return { ...p, deathSaves: { ...deathSaves, [type]: value } };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.updateEquipment = function (playerId, field, value) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const equipment = p.equipment || { equipped: '', backpack: '' };
+            return { ...p, equipment: { ...equipment, [field]: value } };
+        }
+        return p;
+    });
+    state.update({ players });
+};
 
 window.renderSpellsList = function (playerId, spells) {
     if (!spells || spells.length === 0) return '<p class="text-muted mt-1 text-center">No has aprendido ningún conjuro aún.</p>';
