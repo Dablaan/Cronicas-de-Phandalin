@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crónicas de Phandalin</title>
+    <!-- Fonts: Cinzel for headers, Lora for body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body>
+    <div id="app" class="app-container">
+        <!-- Screens will be injected here by ui.js -->
+        <div id="loading-screen" class="screen active">
+            <div class="loader-content">
+                <i class="fa-solid fa-dice-d20 fa-spin fa-3x"></i>
+                <h2>Cargando Crónicas...</h2>
+            </div>
+        </div>
+
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="screen">
+            <div class="header">
+                <h1>Crónicas de Phandalin</h1>
+                <p>Elige tu destino...</p>
+            </div>
+            <div class="grid-2">
+                <!-- DM Panel -->
+                <div class="card text-center">
+                    <h2>Dungeon Master</h2>
+                    <i class="fa-solid fa-dragon fa-3x mb-1" style="color: var(--leather-dark)"></i>
+                    <p class="mb-1">Accede al panel de control de la campaña.</p>
+                    <input type="password" id="dm-password" placeholder="Contraseña secreta">
+                    <button class="btn" id="btn-login-dm"><i class="fa-solid fa-key"></i> Entrar como DM</button>
+                    <p id="dm-error"
+                        style="color: var(--red-ink); display: none; margin-top: 0.5rem; font-weight: bold;">Contraseña
+                        incorrecta</p>
+                </div>
+                <!-- Player Panel -->
+                <div class="card text-center">
+                    <h2>Jugador</h2>
+                    <i class="fa-solid fa-helmet-battle fa-3x mb-1" style="color: var(--leather-dark)"></i>
+                    <p class="mb-1">Selecciona tu personaje o crea uno nuevo.</p>
+                    <div id="player-list-container" class="mb-1">
+                        <!-- List of existing players injected here -->
+                    </div>
+                    <button class="btn" id="btn-create-player"><i class="fa-solid fa-plus"></i> Crear Personaje</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Screen -->
+        <div id="main-screen" class="screen">
+            <div class="flex-between mb-1"
+                style="border-bottom: 2px solid var(--leather-dark); padding-bottom: 0.5rem;">
+                <h2 id="main-header-title">Crónicas de Phandalin</h2>
+                <button class="btn btn-danger" id="btn-logout"><i class="fa-solid fa-door-open"></i> Salir</button>
+            </div>
+
+            <div class="tabs" id="app-tabs">
+                <button class="tab-btn active" data-target="tab-sheet" id="tab-btn-sheet"><i
+                        class="fa-solid fa-scroll"></i> Ficha</button>
+                <button class="tab-btn" data-target="tab-party" id="tab-btn-party"><i class="fa-solid fa-users"></i>
+                    Grupo</button>
+                <button class="tab-btn" data-target="tab-world" id="tab-btn-world"><i
+                        class="fa-solid fa-map-location-dot"></i> NPCs y Mapas</button>
+                <button class="tab-btn" data-target="tab-notes" id="tab-btn-notes"><i
+                        class="fa-solid fa-book-journal-whills"></i> Notas</button>
+            </div>
+
+            <!-- Tab Content Containers -->
+            <div class="tab-content active" id="tab-sheet"></div>
+            <div class="tab-content" id="tab-party"></div>
+            <div class="tab-content" id="tab-world"></div>
+            <div class="tab-content" id="tab-notes"></div>
+        </div>
+    </div>
+
+    <!-- Main Module Script -->
+    <script type="module" src="./js/main.js"></script>
+</body>
+
+</html>

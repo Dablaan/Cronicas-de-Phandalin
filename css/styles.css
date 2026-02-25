@@ -1,0 +1,263 @@
+/* CSS Variables for Theme */
+:root {
+    /* Color Palette */
+    --parchment-bg: #e2d1b3;
+    --parchment-dark: #ccb997;
+    --leather-dark: #2a1b12;
+    --leather-light: #4a3424;
+    --gold: #d4af37;
+    --gold-dim: #a68b2a;
+    --red-ink: #8b0000;
+    --text-main: #302013;
+    --text-muted: #5c4e40;
+    
+    /* Typography */
+    --font-heading: 'Cinzel', serif;
+    --font-body: 'Lora', serif;
+
+    /* Styling */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --box-shadow-main: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --box-shadow-glow: 0 0 8px rgba(212, 175, 55, 0.4);
+    
+    /* Layout */
+    --max-width: 1200px;
+}
+
+/* Reset and Base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: #1a1511; /* Dark behind parchment */
+    color: var(--text-main);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--leather-dark);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+/* Base App Container - Parchment effect */
+.app-container {
+    width: 100%;
+    max-width: var(--max-width);
+    min-height: 100vh;
+    background-color: var(--parchment-bg);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" opacity="0.05"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)"/></svg>');
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0,0,0,0.8);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Emulate vignette */
+.app-container::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    box-shadow: inset 0 0 150px rgba(0,0,0,0.4);
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Screens */
+.screen {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* Loader */
+.loader-content {
+    margin: auto;
+    text-align: center;
+    color: var(--leather-dark);
+}
+.loader-content i {
+    color: var(--gold-dim);
+    margin-bottom: 1rem;
+}
+
+/* Components */
+.card {
+    background: var(--parchment-bg);
+    border: 2px solid var(--parchment-dark);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+    position: relative;
+    /* Ragged look approximation via borders */
+    border-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="none" stroke="%23ccb997" stroke-width="2" stroke-dasharray="2 1"/></svg>') 2 stretch;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: var(--leather-dark);
+    color: var(--gold);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    border: 1px solid #111;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), var(--box-shadow-main);
+    text-shadow: 1px 1px 2px #000;
+}
+
+.btn:hover {
+    background: var(--leather-light);
+    color: #fff;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3), var(--box-shadow-glow);
+}
+
+.btn-danger {
+    color: #ffbaba;
+}
+.btn-danger:hover {
+    color: #fff;
+    background: var(--red-ink);
+}
+
+/* Forms and Inputs */
+input, textarea, select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--parchment-dark);
+    border-bottom: 2px solid var(--leather-dark);
+    padding: 0.5rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius-sm);
+}
+
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+    background: rgba(255, 255, 255, 0.6);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* View Sections */
+.header {
+    text-align: center;
+    padding: 1rem 0 2rem 0;
+    border-bottom: 2px solid var(--parchment-dark);
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    color: var(--leather-dark);
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+    margin-bottom: 0;
+}
+
+.header p {
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 2px solid var(--leather-dark);
+    margin-bottom: 1.5rem;
+    scrollbar-width: none; /* Firefox */
+}
+.tabs::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    color: var(--leather-dark);
+}
+
+.tab-btn.active {
+    color: var(--leather-dark);
+    border-bottom-color: var(--red-ink);
+    font-weight: 700;
+}
+
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+
+/* Utility layout */
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.flex-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.mb-1 { margin-bottom: 1rem; }
+.mt-1 { margin-top: 1rem; }
+.text-center { text-align: center; }
+
+@media (min-width: 768px) {
+    .grid-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+    .screen {
+        padding: 2rem;
+    }
+    .header h1 {
+        font-size: 3.5rem;
+    }
+}
