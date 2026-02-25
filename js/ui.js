@@ -25,16 +25,38 @@ export function initUI() {
         const newPlayer = {
             id: newPlayerId,
             name: 'Nuevo Personaje',
+            playerName: '',
             class: '',
+            background: '',
+            race: '',
+            alignment: '',
             level: 1,
+            xp: 0,
             hpCurrent: 10,
             hpMax: 10,
+            hitDice: { total: '1d10', current: '1' },
             ac: 10,
+            speed: 30,
+            initiative: 0,
+            passivePerception: 10,
+            inspiration: false,
             stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
             saves: { str: false, dex: false, con: false, int: false, wis: false, cha: false },
+            skills: {
+                acrobatics: { prof: false, exp: false, bonus: 0 }, animalHandling: { prof: false, exp: false, bonus: 0 },
+                arcana: { prof: false, exp: false, bonus: 0 }, athletics: { prof: false, exp: false, bonus: 0 },
+                deception: { prof: false, exp: false, bonus: 0 }, history: { prof: false, exp: false, bonus: 0 },
+                insight: { prof: false, exp: false, bonus: 0 }, intimidation: { prof: false, exp: false, bonus: 0 },
+                investigation: { prof: false, exp: false, bonus: 0 }, medicine: { prof: false, exp: false, bonus: 0 },
+                nature: { prof: false, exp: false, bonus: 0 }, perception: { prof: false, exp: false, bonus: 0 },
+                performance: { prof: false, exp: false, bonus: 0 }, persuasion: { prof: false, exp: false, bonus: 0 },
+                religion: { prof: false, exp: false, bonus: 0 }, sleightOfHand: { prof: false, exp: false, bonus: 0 },
+                stealth: { prof: false, exp: false, bonus: 0 }, survival: { prof: false, exp: false, bonus: 0 }
+            },
             deathSaves: { successes: 0, failures: 0 },
             attacks: [],
             equipment: { equipped: '', backpack: '' },
+            traits: '',
             spells: [],
             spellSlots: {
                 1: { max: 0, used: 0 }, 2: { max: 0, used: 0 }, 3: { max: 0, used: 0 },
@@ -148,128 +170,302 @@ function renderPlayerSheet(playerId, players) {
         return;
     }
 
-    // Attach listeners dynamically via event delegation later or directly here
-    let html = `
-        <div class="card">
-            <h3><i class="fa-solid fa-user"></i> Datos Básicos</h3>
-            <div class="grid-2 mt-1">
-                <div>
-                    <label>Nombre:</label>
-                    <input type="text" id="sheet-name" value="${player.name || ''}" onchange="window.updateSheet('${playerId}', 'name', this.value)">
-                </div>
-                <div>
-                     <label>Clase:</label>
-                     <input type="text" id="sheet-class" value="${player.class || ''}" onchange="window.updateSheet('${playerId}', 'class', this.value)">
-                </div>
-                <div>
-                    <label>Nivel:</label>
-                    <input type="number" id="sheet-level" value="${player.level || 1}" onchange="window.updateSheet('${playerId}', 'level', Number(this.value))">
-                </div>
-            </div>
-        </div>
+    let html = '';
+    html += renderSheetHeader(playerId, player);
+    html += '<div class="grid-3 mt-1">';
+    html += renderSheetLeftColumn(playerId, player);
+    html += renderSheetCenterColumn(playerId, player);
+    html += renderSheetRightColumn(playerId, player);
+    html += '</div>';
+    html += renderSheetFooter(playerId, player);
 
-        <div class="card">
-             <h3><i class="fa-solid fa-heart"></i> Combate</h3>
-             <div class="grid-2 mt-1">
-                 <div>
-                      <label>Puntos de Golpe (HP):</label>
-                      <div class="flex-row">
-                          <input type="number" value="${player.hpCurrent}" onchange="window.updateSheet('${playerId}', 'hpCurrent', Number(this.value))" style="width: 80px; text-align: center;"> 
-                          <span> / </span>
-                          <input type="number" value="${player.hpMax}" onchange="window.updateSheet('${playerId}', 'hpMax', Number(this.value))" style="width: 80px; text-align: center;">
-                      </div>
-                 </div>
-                 <div>
-                      <label>Clase de Armadura (CA):</label>
-                      <input type="number" value="${player.ac}" onchange="window.updateSheet('${playerId}', 'ac', Number(this.value))" style="width: 100px;">
-                 </div>
-                 <div style="grid-column: span 2; margin-top: 1rem; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
-                     <label><i class="fa-solid fa-skull"></i> Salvaciones de Muerte (Death Saves):</label>
-                     <div class="flex-between mt-1">
-                         <div>
-                             <span style="font-size: 0.8rem; color: var(--leather-light); margin-right: 0.5rem;">Éxitos</span>
-                             ${[1, 2, 3].map(i => `<input type="checkbox" ${player.deathSaves && player.deathSaves.successes >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'successes', this.checked ? ${i} : ${i - 1})" style="width: 20px; height: 20px; accent-color: var(--leather-dark); margin-right: 5px; cursor: pointer;">`).join('')}
-                         </div>
-                         <div>
-                             <span style="font-size: 0.8rem; color: var(--red-ink); margin-right: 0.5rem;">Fallos</span>
-                             ${[1, 2, 3].map(i => `<input type="checkbox" ${player.deathSaves && player.deathSaves.failures >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'failures', this.checked ? ${i} : ${i - 1})" style="width: 20px; height: 20px; accent-color: var(--red-ink); margin-right: 5px; cursor: pointer;">`).join('')}
-                         </div>
-                     </div>
-                 </div>
-             </div>
-        </div>
-
-        <div class="card">
-             <h3><i class="fa-solid fa-dumbbell"></i> Atributos y Salvaciones</h3>
-             <div class="grid-2 mt-1">
-                 ${['str', 'dex', 'con', 'int', 'wis', 'cha'].map(stat => `
-                     <div class="flex-between">
-                         <div class="flex-row">
-                             <input type="checkbox" ${player.saves && player.saves[stat] ? 'checked' : ''} onchange="window.updateSave('${playerId}', '${stat}', this.checked)" title="Competencia en Salvación" style="width: 15px; height: 15px; margin-right: 5px; cursor: pointer; accent-color: var(--leather-dark);">
-                             <label style="text-transform: uppercase; font-weight: bold;">${stat}</label>
-                         </div>
-                         <input type="number" value="${player.stats[stat]}" onchange="window.updateSheetStat('${playerId}', '${stat}', Number(this.value))" style="width: 80px; margin-bottom: 0;">
-                     </div>
-                 `).join('')}
-             </div>
-        </div>
-
-        <div class="card">
-            <div class="flex-between mb-1" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
-                <h3><i class="fa-solid fa-khanda"></i> Ataques y Trucos</h3>
-                <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.addAttack('${playerId}')">
-                    <i class="fa-solid fa-plus"></i> Añadir Ataque
-                </button>
-            </div>
-            <div id="attacks-container">
-                ${renderAttacksList(playerId, player.attacks || [])}
-            </div>
-        </div>
-
-        <div class="card">
-            <h3><i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</h3>
-            <div class="grid-2 mt-1">
-                <div>
-                    <h4 style="font-size: 0.9em; color: var(--leather-light);"><i class="fa-solid fa-shield-halved"></i> Equipado</h4>
-                    <textarea placeholder="Armadura puesta, armas en mano, anillos..." onchange="window.updateEquipment('${playerId}', 'equipped', this.value)" style="min-height: 100px; font-size: 0.85em;">${player.equipment ? player.equipment.equipped : ''}</textarea>
-                </div>
-                <div>
-                    <h4 style="font-size: 0.9em; color: var(--leather-light);"><i class="fa-solid fa-backpack"></i> Mochila</h4>
-                    <textarea placeholder="Oro, raciones, antorchas, pociones..." onchange="window.updateEquipment('${playerId}', 'backpack', this.value)" style="min-height: 100px; font-size: 0.85em;">${player.equipment ? player.equipment.backpack : ''}</textarea>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="flex-between mb-1" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
-                <h3><i class="fa-solid fa-wand-sparkles"></i> Libro de Hechizos</h3>
-                <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.addSpell('${playerId}')">
-                    <i class="fa-solid fa-plus"></i> Añadir Conjuro
-                </button>
-            </div>
-            
-            <!-- Spell Slots -->
-            <div class="mb-1">
-                <h4 style="font-size: 0.9em; color: var(--leather-light);">Espacios de Conjuro (Slots)</h4>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: space-between;" class="mt-1">
-                    ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(lvl => `
-                        <div style="background: rgba(255,255,255,0.3); padding: 0.2rem; border-radius: 4px; border: 1px solid var(--parchment-dark); text-align: center; font-size: 0.8em; min-width: 45px;">
-                            <strong>Nvl ${lvl}</strong><br>
-                            <input type="number" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].used : 0}" onchange="window.updateSpellSlot('${playerId}', ${lvl}, 'used', Number(this.value))" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark);"> / 
-                            <input type="number" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].max : 0}" onchange="window.updateSpellSlot('${playerId}', ${lvl}, 'max', Number(this.value))" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark);">
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-
-            <!-- Spell List sorted by level -->
-            <div id="spells-container">
-                ${renderSpellsList(playerId, player.spells || [])}
-            </div>
-        </div>
-    `;
     container.innerHTML = html;
 }
+
+function renderSheetHeader(playerId, player) {
+    return `
+    <div class="sheet-header-box">
+        <div style="flex: 0 0 auto; text-align: center; color: var(--gold-dim);">
+            <i class="fa-solid fa-dragon" style="font-size: 3rem;"></i>
+        </div>
+        <div class="sheet-header-name">
+            <input type="text" value="${player.playerName || ''}" placeholder="Nombre del Jugador" onchange="window.updateSheet('${playerId}', 'playerName', this.value)" style="font-size: 0.8rem; border-bottom: none; color: var(--text-muted); margin-bottom: 0;">
+            <input type="text" value="${player.name || ''}" placeholder="Nombre del Personaje" onchange="window.updateSheet('${playerId}', 'name', this.value)">
+        </div>
+        <div class="sheet-header-details">
+            <div>
+                <label>Clase y Nivel</label>
+                <div class="flex-row">
+                    <input type="text" value="${player.class || ''}" placeholder="Clase" onchange="window.updateSheet('${playerId}', 'class', this.value)" style="width: 70%;">
+                    <input type="number" value="${player.level || 1}" title="Nivel" onchange="window.updateSheet('${playerId}', 'level', Number(this.value))" style="width: 30%;">
+                </div>
+            </div>
+            <div>
+                <label>Trasfondo</label>
+                <input type="text" value="${player.background || ''}" placeholder="Trasfondo" onchange="window.updateSheet('${playerId}', 'background', this.value)">
+            </div>
+            <div>
+                <label>Raza</label>
+                <input type="text" value="${player.race || ''}" placeholder="Raza" onchange="window.updateSheet('${playerId}', 'race', this.value)">
+            </div>
+            <div>
+                <label>Alineamiento</label>
+                <input type="text" value="${player.alignment || ''}" placeholder="Alineamiento" onchange="window.updateSheet('${playerId}', 'alignment', this.value)">
+            </div>
+            <div>
+                <label>Puntos de Exp.</label>
+                <input type="number" value="${player.xp || 0}" placeholder="XP" onchange="window.updateSheet('${playerId}', 'xp', Number(this.value))">
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+function renderSheetLeftColumn(playerId, player) {
+    const statsList = [
+        { key: 'str', label: 'Fuerza' }, { key: 'dex', label: 'Destreza' },
+        { key: 'con', label: 'Constitución' }, { key: 'int', label: 'Inteligencia' },
+        { key: 'wis', label: 'Sabiduría' }, { key: 'cha', label: 'Carisma' }
+    ];
+
+    // Calculates D&D modifier based on stat (stat - 10) / 2 rounded down
+    const getMod = (val) => {
+        const m = Math.floor((val - 10) / 2);
+        return m >= 0 ? '+' + m : m;
+    };
+
+    let statsHtml = '<div class="card" style="padding: 0.5rem;"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">';
+    statsList.forEach(s => {
+        const val = player.stats[s.key];
+        const mod = getMod(val);
+        const saved = player.saves && player.saves[s.key];
+        statsHtml += `
+            <div class="stat-box">
+                <label>${s.label}</label>
+                <input class="stat-val" type="number" value="${val}" onchange="window.updateSheetStat('${playerId}', '${s.key}', Number(this.value))">
+                <div class="stat-mod">${mod}</div>
+                <div style="position: absolute; top: 5px; right: 5px;" title="Competencia Salvación">
+                    <input type="checkbox" ${saved ? 'checked' : ''} onchange="window.updateSave('${playerId}', '${s.key}', this.checked)" style="width: 12px; height: 12px; accent-color: var(--leather-dark); margin:0; cursor:pointer;">
+                </div>
+            </div>
+        `;
+    });
+    statsHtml += '</div></div>';
+
+    const skillsMap = [
+        { id: 'acrobatics', name: 'Acrobacias', stat: 'dex' }, { id: 'animalHandling', name: 'Manejo de Animales', stat: 'wis' },
+        { id: 'arcana', name: 'Arcano', stat: 'int' }, { id: 'athletics', name: 'Atletismo', stat: 'str' },
+        { id: 'deception', name: 'Engaño', stat: 'cha' }, { id: 'history', name: 'Historia', stat: 'int' },
+        { id: 'insight', name: 'Perspicacia', stat: 'wis' }, { id: 'intimidation', name: 'Intimidación', stat: 'cha' },
+        { id: 'investigation', name: 'Investigación', stat: 'int' }, { id: 'medicine', name: 'Medicina', stat: 'wis' },
+        { id: 'nature', name: 'Naturaleza', stat: 'int' }, { id: 'perception', name: 'Percepción', stat: 'wis' },
+        { id: 'performance', name: 'Interpretación', stat: 'cha' }, { id: 'persuasion', name: 'Persuasión', stat: 'cha' },
+        { id: 'religion', name: 'Religión', stat: 'int' }, { id: 'sleightOfHand', name: 'Juego de Manos', stat: 'dex' },
+        { id: 'stealth', name: 'Sigilo', stat: 'dex' }, { id: 'survival', name: 'Supervivencia', stat: 'wis' }
+    ];
+
+    let skillsHtml = '<div class="card" style="padding: 0.5rem 1rem;">';
+    skillsHtml += '<h4 style="font-size:0.8rem; text-transform:uppercase; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem;">Habilidades</h4>';
+    skillsMap.forEach(sk => {
+        const skillData = (player.skills && player.skills[sk.id]) || { prof: false, bonus: 0 };
+        skillsHtml += `
+            <div class="skill-row">
+                <input type="checkbox" ${skillData.prof ? 'checked' : ''} onchange="window.updateSkill('${playerId}', '${sk.id}', 'prof', this.checked)">
+                <input class="skill-val" type="text" value="${skillData.bonus ? '+' + skillData.bonus : '0'}" onchange="window.updateSkill('${playerId}', '${sk.id}', 'bonus', Number(this.value.replace('+','')))" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
+                <label>${sk.name} <span style="font-size:0.6rem; color:#aaa;">(${sk.stat})</span></label>
+            </div>
+        `;
+    });
+    skillsHtml += '</div>';
+
+    let perceptionHtml = `
+    <div class="card" style="padding: 0.5rem 1rem; text-align: center;">
+        <label style="font-size: 0.7rem; text-transform:uppercase; font-weight:bold; color: var(--leather-light);">Percepción Pasiva</label>
+        <div style="font-size: 2rem; font-family: var(--font-heading); color: var(--leather-dark); font-weight: bold;">
+            <input type="number" value="${player.passivePerception || 10}" onchange="window.updateSheet('${playerId}', 'passivePerception', Number(this.value))" style="width: 60px; text-align:center; font-size: 2rem; border:none; background:transparent; padding:0; margin:0;">
+        </div>
+    </div>
+    `;
+
+    return `<div class="column-left">${statsHtml}${skillsHtml}${perceptionHtml}</div>`;
+}
+
+function renderSheetCenterColumn(playerId, player) {
+    let defenseHtml = `
+    <div class="card" style="padding: 0.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+            <div class="defense-box">
+                <label>CA</label>
+                <input type="number" value="${player.ac}" onchange="window.updateSheet('${playerId}', 'ac', Number(this.value))" style="width: 100%;">
+            </div>
+            <div class="defense-box">
+                <label>Iniciativa</label>
+                <input type="number" value="${player.initiative || 0}" onchange="window.updateSheet('${playerId}', 'initiative', Number(this.value))" style="width: 100%;">
+            </div>
+            <div class="defense-box">
+                <label>Velocidad</label>
+                <input type="number" value="${player.speed || 30}" onchange="window.updateSheet('${playerId}', 'speed', Number(this.value))" style="width: 100%;">
+            </div>
+             <div class="defense-box">
+                <label>Insp.</label>
+                <div style="display:flex; justify-content:center; align-items:center; height: 100%;">
+                    <input type="checkbox" ${player.inspiration ? 'checked' : ''} onchange="window.updateSheet('${playerId}', 'inspiration', this.checked)" style="width:20px; height:20px; accent-color: var(--gold-dim); cursor:pointer;">
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+    let hpBarPercent = Math.max(0, Math.min(100, (player.hpCurrent / player.hpMax) * 100));
+    let hpColor = hpBarPercent > 50 ? 'var(--leather-light)' : (hpBarPercent > 20 ? 'var(--gold-dim)' : 'var(--red-ink)');
+
+    let hpHtml = `
+    <div class="card" style="padding: 1rem; text-align: center;">
+        <label style="font-size: 0.8rem; text-transform:uppercase; font-weight:bold; color: var(--text-muted);"><i class="fa-solid fa-heart" style="color:var(--red-ink)"></i> Puntos de Golpe</label>
+        
+        <div style="display:flex; justify-content:center; align-items:center; gap: 1rem; margin: 1rem 0;">
+            <button class="btn" style="padding: 0.2rem 0.8rem; font-size: 1.5rem;" onclick="window.modifyHP('${playerId}', -1)">-</button>
+            <div style="font-size: 2.5rem; font-family: var(--font-heading); font-weight:bold; color: var(--leather-dark);">
+                <input type="number" value="${player.hpCurrent}" onchange="window.updateSheet('${playerId}', 'hpCurrent', Number(this.value))" style="width:70px; text-align:center; font-size:2.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0; display:inline-block;">
+                <span style="font-size:1.2rem; color:var(--text-muted);">/ <input type="number" value="${player.hpMax}" onchange="window.updateSheet('${playerId}', 'hpMax', Number(this.value))" style="width:50px; text-align:center; font-size:1.2rem; border:none; background:transparent; padding:0; margin:0; display:inline-block;"></span>
+            </div>
+            <button class="btn" style="padding: 0.2rem 0.8rem; font-size: 1.5rem;" onclick="window.modifyHP('${playerId}', 1)">+</button>
+        </div>
+        
+        <div style="width:100%; height:8px; background:var(--parchment-dark); border-radius:4px; overflow:hidden; margin-bottom: 1rem;">
+            <div style="width:${hpBarPercent}%; height:100%; background:${hpColor}; transition: width 0.3s ease;"></div>
+        </div>
+
+        <div class="grid-2">
+            <div style="border-right: 1px solid var(--parchment-dark); padding-right: 0.5rem; text-align:left;">
+                <label style="font-size: 0.7rem; font-weight:bold; color:var(--text-muted);">Dados de Golpe</label>
+                <div class="flex-row">
+                    <input type="text" value="${player.hitDice ? player.hitDice.current : '1'}" onchange="window.updateHitDice('${playerId}', 'current', this.value)" style="width: 45%; margin:0; text-align:center;">
+                    <span style="color: var(--text-muted); font-size:0.8rem;">de</span>
+                    <input type="text" value="${player.hitDice ? player.hitDice.total : '1d10'}" onchange="window.updateHitDice('${playerId}', 'total', this.value)" style="width: 45%; margin:0; text-align:center;">
+                </div>
+            </div>
+            <div style="text-align:left; padding-left: 0.5rem;">
+                <label style="font-size: 0.7rem; font-weight:bold; color:var(--text-muted);">Salvaciones de Muerte</label>
+                <div class="flex-between mt-1">
+                     <div>
+                         <span style="font-size: 0.6rem; color: var(--leather-light); display:block; margin-bottom:-2px;">Éxitos</span>
+                         ${[1, 2, 3].map(i => `<input type="checkbox" ${player.deathSaves && player.deathSaves.successes >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'successes', this.checked ? ${i} : ${i - 1})" style="width: 15px; height: 15px; accent-color: var(--leather-dark); margin-right: 2px; cursor: pointer;">`).join('')}
+                     </div>
+                     <div>
+                         <span style="font-size: 0.6rem; color: var(--red-ink); display:block; margin-bottom:-2px;">Fallos</span>
+                         ${[1, 2, 3].map(i => `<input type="checkbox" ${player.deathSaves && player.deathSaves.failures >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'failures', this.checked ? ${i} : ${i - 1})" style="width: 15px; height: 15px; accent-color: var(--red-ink); margin-right: 2px; cursor: pointer;">`).join('')}
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+    `;
+
+    let attacksHtml = `
+    <div class="card">
+        <div class="flex-between mb-1" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            <h3 style="margin:0;"><i class="fa-solid fa-khanda"></i> Ataques y Conjuros</h3>
+            <button class="btn" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;" onclick="window.addAttack('${playerId}')">
+                <i class="fa-solid fa-plus"></i> Añadir
+            </button>
+        </div>
+        <div id="attacks-container">
+            ${renderAttacksList(playerId, player.attacks || [])}
+        </div>
+    </div>
+    `;
+
+    return `<div class="column-center">${defenseHtml}${hpHtml}${attacksHtml}</div>`;
+}
+
+function renderSheetRightColumn(playerId, player) {
+    return `
+    <div class="column-right">
+        <div class="card">
+            <h3><i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</h3>
+            <div class="mt-1">
+                <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light);"><i class="fa-solid fa-shield-halved"></i> Equipado</h4>
+                <textarea placeholder="Armadura puesta, armas en mano, anillos..." onchange="window.updateEquipment('${playerId}', 'equipped', this.value)" style="min-height: 80px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm); margin-bottom:0.5rem;">${player.equipment ? player.equipment.equipped : ''}</textarea>
+            </div>
+            <div class="mt-1">
+                <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light);"><i class="fa-solid fa-backpack"></i> Mochila y Riquezas</h4>
+                <textarea placeholder="Oro, raciones, antorchas..." onchange="window.updateEquipment('${playerId}', 'backpack', this.value)" style="min-height: 120px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.equipment ? player.equipment.backpack : ''}</textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="fa-solid fa-scroll"></i> Dotes y Rasgos</h3>
+            <textarea placeholder="Anota tus rasgos raciales, dotes, origen de clase, etc." onchange="window.updateSheet('${playerId}', 'traits', this.value)" style="min-height: 250px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.traits || ''}</textarea>
+        </div>
+    </div>
+    `;
+}
+
+function renderSheetFooter(playerId, player) {
+    return `
+    <div class="card mt-1" style="grid-column: 1 / -1;">
+        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            <h3 style="margin:0;"><i class="fa-solid fa-wand-sparkles"></i> Grimorio: Libro de Hechizos</h3>
+            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.addSpell('${playerId}')">
+                <i class="fa-solid fa-plus"></i> Añadir Conjuro
+            </button>
+        </div>
+        
+        <!-- Spell Slots -->
+        <div class="mb-1" style="background: rgba(255,255,255,0.3); padding: 0.5rem; border-radius: var(--border-radius-sm); border: 1px solid var(--parchment-dark);">
+            <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light); margin-bottom: 0.5rem;">Espacios de Conjuro (Slots)</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-start;">
+                ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(lvl => `
+                    <div style="background: var(--parchment-bg); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark); text-align: center; font-size: 0.8em; min-width: 50px;">
+                        <strong>Nvl ${lvl}</strong><br>
+                        <input type="number" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].used : 0}" onchange="window.updateSpellSlot('${playerId}', ${lvl}, 'used', Number(this.value))" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark); color: var(--red-ink); font-weight:bold;"> / 
+                        <input type="number" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].max : 0}" onchange="window.updateSpellSlot('${playerId}', ${lvl}, 'max', Number(this.value))" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark); color: var(--leather-dark);">
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+
+        <!-- Spell List sorted by level -->
+        <div id="spells-container">
+            ${renderSpellsList(playerId, player.spells || [])}
+        </div>
+    </div>
+    `;
+}
+
+window.modifyHP = function (playerId, amount) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            return { ...p, hpCurrent: Math.max(0, Math.min(p.hpMax, p.hpCurrent + amount)) };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.updateSkill = function (playerId, skillId, field, value) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const skills = p.skills || {};
+            const skill = skills[skillId] || { prof: false, bonus: 0 };
+            return { ...p, skills: { ...skills, [skillId]: { ...skill, [field]: value } } };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.updateHitDice = function (playerId, field, value) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const hitDice = p.hitDice || { total: '1d10', current: '1' };
+            return { ...p, hitDice: { ...hitDice, [field]: value } };
+        }
+        return p;
+    });
+    state.update({ players });
+};
 
 window.renderAttacksList = function (playerId, attacks) {
     if (!attacks || attacks.length === 0) return '<p class="text-muted text-center" style="font-size: 0.9em; margin-top: 0.5rem;">Ves desarmado por la vida.</p>';

@@ -2,7 +2,7 @@ import { storageAdapter } from './storageAdapter.js';
 
 const defaultState = {
     session: { role: null, playerId: null }, // role: 'DM' | 'Player'
-    // Player Array: { id, name, class, level, hpCurrent, hpMax, ac, stats, saves, deathSaves, attacks: [], spells: [], spellSlots, equipment: { equipped: "", backpack: "" } }
+    // Player Array: { id, name, playerName, race, class, background, alignment, level, xp, hpCurrent, hpMax, hitDice, ac, speed, initiative, passivePerception, inspiration, stats, saves, skills, deathSaves, traits, attacks: [], spells: [], spellSlots, equipment: { equipped: "", backpack: "" } }
     players: [],
     notes: {},   // Object: { [playerId]: "personal notes text" }
     npcs: [],    // Array of: { id, name, description, isVisible, secrets: [{ id, text, isVisible }] }
