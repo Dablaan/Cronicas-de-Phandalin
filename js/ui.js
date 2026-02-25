@@ -30,7 +30,13 @@ export function initUI() {
             hpCurrent: 10,
             hpMax: 10,
             ac: 10,
-            stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }
+            stats: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+            spells: [],
+            spellSlots: {
+                1: { max: 0, used: 0 }, 2: { max: 0, used: 0 }, 3: { max: 0, used: 0 },
+                4: { max: 0, used: 0 }, 5: { max: 0, used: 0 }, 6: { max: 0, used: 0 },
+                7: { max: 0, used: 0 }, 8: { max: 0, used: 0 }, 9: { max: 0, used: 0 }
+            }
         };
 
         const currentPlayers = state.get().players;
@@ -187,9 +193,159 @@ function renderPlayerSheet(playerId, players) {
                  `).join('')}
              </div>
         </div>
+
+        <div class="card">
+            <div class="flex-between mb-1" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+                <h3><i class="fa-solid fa-wand-sparkles"></i> Libro de Hechizos</h3>
+                <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.addSpell('${playerId}')">
+                    <i class="fa-solid fa-plus"></i> Añadir Conjuro
+                </button>
+            </div>
+            
+            <!-- Spell Slots -->
+            <div class="mb-1">
+                <h4 style="font-size: 0.9em; color: var(--leather-light);">Espacios de Conjuro (Slots)</h4>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: space-between;" class="mt-1">
+                    ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(lvl => `
+                        <div style="background: rgba(255,255,255,0.3); padding: 0.2rem; border-radius: 4px; border: 1px solid var(--parchment-dark); text-align: center; font-size: 0.8em; min-width: 45px;">
+                            <strong>Nvl ${lvl}</strong><br>
+                            <input type="number" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].used : 0}" onchange="window.updateSpellSlot('${playerId}', ${lvl}, 'used', Number(this.value))" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark);"> / 
+                            <input type="number" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].max : 0}" onchange="window.updateSpellSlot('${playerId}', ${lvl}, 'max', Number(this.value))" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark);">
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Spell List sorted by level -->
+            <div id="spells-container">
+                ${renderSpellsList(playerId, player.spells || [])}
+            </div>
+        </div>
     `;
     container.innerHTML = html;
 }
+
+window.renderSpellsList = function (playerId, spells) {
+    if (!spells || spells.length === 0) return '<p class="text-muted mt-1 text-center">No has aprendido ningún conjuro aún.</p>';
+
+    // Group by level
+    const grouped = spells.reduce((acc, spell) => {
+        const lvl = spell.level || 0;
+        if (!acc[lvl]) acc[lvl] = [];
+        acc[lvl].push(spell);
+        return acc;
+    }, {});
+
+    let html = '';
+    // Sort levels 0 to 9
+    Object.keys(grouped).sort().forEach(level => {
+        const lvlName = level == 0 ? 'Trucos (Cantrips)' : `Nivel ${level}`;
+        html += `<h5 class="mt-1" style="border-bottom: 1px solid var(--parchment-dark); color: var(--leather-dark);">${lvlName}</h5>`;
+        html += `<div class="grid-2">`;
+
+        grouped[level].forEach(spell => {
+            html += `
+                <div class="card" style="padding: 0.5rem; ${spell.prepared ? 'border-color: var(--gold-dim); box-shadow: 0 0 5px rgba(212,175,55,0.3); background: rgba(255,255,255,0.4);' : ''}">
+                    <div class="flex-between mb-1">
+                        <div class="flex-row" style="width: 70%;">
+                            <button class="btn" style="padding: 0.1rem 0.3rem; font-size: 0.8em; background: ${spell.prepared ? 'var(--gold-dim)' : 'transparent'}; color: ${spell.prepared ? '#fff' : 'var(--text-muted)'}; border: 1px solid var(--parchment-dark); box-shadow: none;" onclick="window.toggleSpellPrepared('${playerId}', '${spell.id}')" title="Preparar hechizo">
+                                <i class="fa-solid fa-sun"></i>
+                            </button>
+                            <input type="text" value="${spell.name}" placeholder="Nombre del conjuro" onchange="window.updateSpell('${playerId}', '${spell.id}', 'name', this.value)" style="margin-bottom: 0; font-weight: bold; padding: 0.2rem;">
+                        </div>
+                        <button class="btn btn-danger" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteSpell('${playerId}', '${spell.id}')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="flex-row mb-1" style="gap: 0.2rem;">
+                        <select onchange="window.updateSpell('${playerId}', '${spell.id}', 'level', Number(this.value))" style="margin-bottom: 0; padding: 0.1rem; font-size: 0.8em; width: 60px;">
+                            ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(l => `<option value="${l}" ${l == spell.level ? 'selected' : ''}>Nv ${l}</option>`).join('')}
+                        </select>
+                        <input type="text" value="${spell.castingTime || ''}" placeholder="Tiempo (ej. 1 Acción)" onchange="window.updateSpell('${playerId}', '${spell.id}', 'castingTime', this.value)" style="margin-bottom: 0; padding: 0.1rem; font-size: 0.8em;">
+                    </div>
+                    
+                    <textarea placeholder="Descripción y efectos..." onchange="window.updateSpell('${playerId}', '${spell.id}', 'description', this.value)" style="min-height: 50px; margin-bottom: 0; font-size: 0.85em; padding: 0.3rem;">${spell.description || ''}</textarea>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+    });
+
+    return html;
+};
+
+window.addSpell = function (playerId) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const spells = p.spells || [];
+            const newSpell = {
+                id: 'spell_' + Date.now(),
+                name: 'Nuevo Conjuro',
+                level: 0,
+                castingTime: '',
+                description: '',
+                prepared: false
+            };
+            return { ...p, spells: [...spells, newSpell] };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.updateSpell = function (playerId, spellId, field, value) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const spells = p.spells.map(s => s.id === spellId ? { ...s, [field]: value } : s);
+            return { ...p, spells };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.toggleSpellPrepared = function (playerId, spellId) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const spells = p.spells.map(s => s.id === spellId ? { ...s, prepared: !s.prepared } : s);
+            return { ...p, spells };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.deleteSpell = function (playerId, spellId) {
+    if (!confirm('¿Eliminar este conjuro del grimorio?')) return;
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const spells = p.spells.filter(s => s.id !== spellId);
+            return { ...p, spells };
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.updateSpellSlot = function (playerId, level, field, value) {
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            const spellSlots = p.spellSlots || {};
+            const slotLvl = spellSlots[level] || { max: 0, used: 0 };
+            return {
+                ...p,
+                spellSlots: {
+                    ...spellSlots,
+                    [level]: { ...slotLvl, [field]: value }
+                }
+            };
+        }
+        return p;
+    });
+    state.update({ players });
+};
 
 window.updateSheet = function (playerId, field, value) {
     const players = state.get().players.map(p => {
@@ -323,11 +479,11 @@ function renderNpcs(currentState) {
         html += `
              <div class="card">
                  <h4>${n.name}</h4>
-                 <p>${n.description}</p>
-                 ${n.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
+                 <p style="white-space: pre-wrap;">${n.description}</p>
+                 ${n.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
                  <div class="mt-1">
                      <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes sobre ${n.name}:</label>
-                     <textarea id="chronicle-npc-${n.id}" style="min-height: 60px; margin-bottom: 0.5rem;">${playerNotesOnNpc}</textarea>
+                     <textarea id="chronicle-npc-${n.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
                      <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'npc_${n.id}')">Guardar</button>
                  </div>
              </div>
@@ -364,10 +520,10 @@ function renderMaps(currentState) {
              <div class="card">
                  <h4>${m.name}</h4>
                  ${m.url ? `<p><a href="${m.url}" target="_blank" style="color: var(--leather-dark); font-weight: bold;">[Ver Mapa Original]</a></p>` : ''}
-                 ${m.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
+                 ${m.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
                  <div class="mt-1">
                      <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes:</label>
-                     <textarea id="chronicle-map-${m.id}" style="min-height: 60px; margin-bottom: 0.5rem;">${playerNotesOnMap}</textarea>
+                     <textarea id="chronicle-map-${m.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
                      <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'map_${m.id}')">Guardar</button>
                  </div>
              </div>
