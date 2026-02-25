@@ -470,17 +470,17 @@ window.updateHitDice = function (playerId, field, value) {
 window.renderAttacksList = function (playerId, attacks) {
     if (!attacks || attacks.length === 0) return '<p class="text-muted text-center" style="font-size: 0.9em; margin-top: 0.5rem;">Ves desarmado por la vida.</p>';
 
-    let html = '<div class="grid-2 mt-1">';
+    let html = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
     attacks.forEach(atk => {
         html += `
-            <div class="card" style="padding: 0.5rem; background: rgba(255,255,255,0.4);">
+            <div class="card" style="padding: 0.5rem; background: rgba(255,255,255,0.4); margin-bottom: 0;">
                 <div class="flex-between mb-1">
-                    <input type="text" value="${atk.name || ''}" placeholder="Arma o Truco" onchange="window.updateAttack('${playerId}', '${atk.id}', 'name', this.value)" style="font-weight: bold; padding: 0.2rem; margin-bottom: 0; width: 80%;">
+                    <input type="text" value="${atk.name || ''}" placeholder="Arma o Truco" onchange="window.updateAttack('${playerId}', '${atk.id}', 'name', this.value)" style="font-weight: bold; padding: 0.2rem; margin-bottom: 0; width: 100%; margin-right: 0.5rem;">
                     <button class="btn btn-danger" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteAttack('${playerId}', '${atk.id}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
-                <div class="flex-row">
-                    <input type="text" value="${atk.bonus || ''}" placeholder="Bono (ej. +5)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'bonus', this.value)" style="width: 40%; font-size: 0.85em; margin-bottom: 0; margin-right: 5px;">
-                    <input type="text" value="${atk.damage || ''}" placeholder="Daño (ej. 1d8+3 Cortante)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'damage', this.value)" style="width: 58%; font-size: 0.85em; margin-bottom: 0;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <input type="text" value="${atk.bonus || ''}" placeholder="Bono (ej. +5)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'bonus', this.value)" style="flex: 1; font-size: 0.85em; margin-bottom: 0;">
+                    <input type="text" value="${atk.damage || ''}" placeholder="Daño (ej. 1d8+3 Cort.)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'damage', this.value)" style="flex: 2; font-size: 0.85em; margin-bottom: 0;">
                 </div>
             </div>
         `;

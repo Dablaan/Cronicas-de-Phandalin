@@ -341,8 +341,8 @@ textarea {
 .skill-row {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.15rem 0;
+    gap: 0.8rem;
+    padding: 0.25rem 0;
     border-bottom: 1px dotted var(--parchment-dark);
 }
 
@@ -351,22 +351,22 @@ textarea {
 }
 
 .skill-row input[type="checkbox"] {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     margin: 0;
     accent-color: var(--leather-dark);
 }
 
 .skill-row .skill-val {
-    min-width: 20px;
+    min-width: 25px;
     text-align: center;
     border-bottom: 1px solid var(--leather-dark);
     font-weight: bold;
-    font-size: 0.85rem;
+    font-size: 1rem;
 }
 
 .skill-row label {
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
 }
 
