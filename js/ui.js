@@ -116,8 +116,10 @@ function renderTabContent(tabId, currentState) {
         }
     } else if (tabId === 'tab-party') {
         renderPartyInfo(players, isDM);
-    } else if (tabId === 'tab-world') {
-        renderWorld(currentState);
+    } else if (tabId === 'tab-npcs') {
+        renderNpcs(currentState);
+    } else if (tabId === 'tab-maps') {
+        renderMaps(currentState);
     } else if (tabId === 'tab-notes') {
         renderNotes(currentState);
     }
@@ -296,20 +298,22 @@ window.savePersonalNotes = function (playerId) {
     setTimeout(() => msg.style.display = 'none', 2000);
 };
 
-function renderWorld(currentState) {
-    const { session, npcs, maps, chronicles } = currentState;
-    const container = document.getElementById('tab-world');
+// ----------------------------------------------------
+// Player Features: NPCs
+// ----------------------------------------------------
+function renderNpcs(currentState) {
+    const { session, npcs, chronicles } = currentState;
+    const container = document.getElementById('tab-npcs');
 
     if (session.role === 'DM') {
-        renderDMWorld(currentState);
+        renderDMNpcs(currentState);
         return;
     }
 
     const visibleNpcs = npcs.filter(n => n.isVisible);
-    const visibleMaps = maps.filter(m => m.isVisible);
 
-    if (visibleNpcs.length === 0 && visibleMaps.length === 0) {
-        container.innerHTML = '<div class="card text-center"><p class="text-muted">Aún no has descubierto localizaciones ni personajes importantes.</p></div>';
+    if (visibleNpcs.length === 0) {
+        container.innerHTML = '<div class="card text-center"><p class="text-muted">Aún no has descubierto personajes importantes.</p></div>';
         return;
     }
 
@@ -331,7 +335,29 @@ function renderWorld(currentState) {
     });
     html += '</div>';
 
-    html += '<h3 class="mt-1"><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div class="grid-2">';
+    container.innerHTML = html;
+}
+
+// ----------------------------------------------------
+// Player Features: Maps
+// ----------------------------------------------------
+function renderMaps(currentState) {
+    const { session, maps, chronicles } = currentState;
+    const container = document.getElementById('tab-maps');
+
+    if (session.role === 'DM') {
+        renderDMMaps(currentState);
+        return;
+    }
+
+    const visibleMaps = maps.filter(m => m.isVisible);
+
+    if (visibleMaps.length === 0) {
+        container.innerHTML = '<div class="card text-center"><p class="text-muted">Aún no has descubierto localizaciones.</p></div>';
+        return;
+    }
+
+    let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div class="grid-2">';
     visibleMaps.forEach(m => {
         const playerNotesOnMap = chronicles[`${session.playerId}_map_${m.id}`] || '';
         html += `
@@ -453,22 +479,18 @@ window.renderDMMirrorNotes = function (currentState) {
 
 // Ensure state is globally accessible for the inline onchange handler
 window.state = state;
-window.renderDMWorld = function (currentState) {
-    const { npcs, maps } = currentState;
-    const container = document.getElementById('tab-world');
+window.renderDMNpcs = function (currentState) {
+    const { npcs } = currentState;
+    const container = document.getElementById('tab-npcs');
 
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
-            <h3>Gestión del Mundo</h3>
-            <div>
-                <button class="btn" onclick="window.createEntity('npc')"><i class="fa-solid fa-plus"></i> Nuevo NPC</button>
-                <button class="btn" onclick="window.createEntity('map')"><i class="fa-solid fa-plus"></i> Nuevo Mapa</button>
-            </div>
+            <h3>Gestión de NPCs</h3>
+            <button class="btn" onclick="window.createEntity('npc')"><i class="fa-solid fa-plus"></i> Nuevo NPC</button>
         </div>
     `;
 
-    // Render NPCs
-    html += '<h4 class="mt-1"><i class="fa-solid fa-users"></i> NPCs</h4><div class="grid-2">';
+    html += '<div class="grid-2">';
     if (npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';
     npcs.forEach(n => {
         html += `
@@ -500,8 +522,21 @@ window.renderDMWorld = function (currentState) {
     });
     html += '</div>';
 
-    // Render Maps
-    html += '<h4 class="mt-1"><i class="fa-solid fa-map"></i> Mapas</h4><div class="grid-2">';
+    container.innerHTML = html;
+}
+
+window.renderDMMaps = function (currentState) {
+    const { maps } = currentState;
+    const container = document.getElementById('tab-maps');
+
+    let html = `
+        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            <h3>Gestión de Mapas</h3>
+            <button class="btn" onclick="window.createEntity('map')"><i class="fa-solid fa-plus"></i> Nuevo Mapa</button>
+        </div>
+    `;
+
+    html += '<div class="grid-2">';
     if (maps.length === 0) html += '<p class="text-muted">No hay Mapas.</p>';
     maps.forEach(m => {
         html += `
