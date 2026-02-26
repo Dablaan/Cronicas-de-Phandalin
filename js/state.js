@@ -23,21 +23,26 @@ export const state = {
     },
 
     /**
-     * Initializes the state from localStorage if available,
-     * and sets up the cross-tab sync listener.
+     * Initializes the state from Supabase if available,
+     * and sets up the cross-tab/realtime sync listener.
      */
-    init() {
-        const saved = storageAdapter.load();
+    async init() {
+        const saved = await storageAdapter.load();
         if (saved) {
             // Merge in case we added new default keys later
             currentState = { ...defaultState, ...saved };
         } else {
-            storageAdapter.save(currentState);
+            await storageAdapter.save(currentState);
         }
 
-        // Listen to cross-tab changes and update local state
+        // Listen to remote changes and update local state
         storageAdapter.subscribe((newData) => {
             if (newData) {
+                // PROTECTION: Ignore remote updates if user is actively editing their sheet
+                if (window.isSheetEditMode) {
+                    console.log("Remote update ignored: User is currently in Edit Mode.");
+                    return;
+                }
                 currentState = newData;
                 this.notify();
             }
@@ -48,9 +53,9 @@ export const state = {
      * Updates the state with a partial object, saves it, and notifies listeners.
      * @param {Object} partial - Object containing keys to update in state
      */
-    update(partial) {
+    async update(partial) {
         currentState = { ...currentState, ...partial };
-        storageAdapter.save(currentState);
+        await storageAdapter.save(currentState);
         this.notify();
     },
 
