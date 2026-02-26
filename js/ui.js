@@ -287,7 +287,7 @@ function renderSheetLeftColumn(playerId, player) {
     </div>
     `;
 
-    return `<div class="column-left">${statsHtml}${skillsHtml}${perceptionHtml}</div>`;
+    return `<div class="column-left">${statsHtml}${skillsHtml}</div>`;
 }
 
 function renderSheetCenterColumn(playerId, player) {
@@ -312,6 +312,15 @@ function renderSheetCenterColumn(playerId, player) {
                     <input type="checkbox" ${player.inspiration ? 'checked' : ''} onchange="window.updateSheet('${playerId}', 'inspiration', this.checked)" style="width:20px; height:20px; accent-color: var(--gold-dim); cursor:pointer;">
                 </div>
             </div>
+        </div>
+    </div>
+    `;
+
+    let perceptionHtml = `
+    <div class="card" style="padding: 0.5rem; text-align: center; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 1rem; background: rgba(255, 255, 255, 0.4);">
+        <label style="font-size: 0.8rem; text-transform:uppercase; font-weight:bold; color: var(--leather-light); margin: 0;">Percepción Pasiva</label>
+        <div style="font-size: 1.5rem; font-family: var(--font-heading); color: var(--leather-dark); font-weight: bold;">
+            <input type="number" value="${player.passivePerception || 10}" onchange="window.updateSheet('${playerId}', 'passivePerception', Number(this.value))" style="width: 50px; text-align:center; font-size: 1.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0;">
         </div>
     </div>
     `;
@@ -376,7 +385,7 @@ function renderSheetCenterColumn(playerId, player) {
     </div>
     `;
 
-    return `<div class="column-center">${defenseHtml}${hpHtml}${attacksHtml}</div>`;
+    return `<div class="column-center">${defenseHtml}${perceptionHtml}${hpHtml}${attacksHtml}</div>`;
 }
 
 function renderSheetRightColumn(playerId, player) {
