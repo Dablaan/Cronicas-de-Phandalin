@@ -7,7 +7,8 @@ const defaultState = {
     notes: {},   // Object: { [playerId]: "personal notes text" }
     npcs: [],    // Array of: { id, name, description, isVisible, secrets: [{ id, text, isVisible }] }
     maps: [],    // Array of: { id, name, url, isVisible, secrets: [{ id, text, isVisible }] }
-    chronicles: {} // Object: { "playerId_entityId": "player's shared notes about an npc/map" }
+    chronicles: {}, // Object: { "playerId_entityId": "player's shared notes about an npc/map" }
+    recursos: [] // Array of { id, nombre, portadaUrl, enlaceUrl }
 };
 
 let currentState = { ...defaultState };

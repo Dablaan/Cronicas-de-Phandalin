@@ -166,6 +166,8 @@ function renderTabContent(tabId, currentState) {
         renderNpcs(currentState);
     } else if (tabId === 'tab-maps') {
         renderMaps(currentState);
+    } else if (tabId === 'tab-library') {
+        renderLibrary(currentState);
     } else if (tabId === 'tab-notes') {
         renderNotes(currentState);
     }
@@ -1336,4 +1338,69 @@ window.updateSecretText = function (type, id, secretId, text) {
         return e;
     });
     state.update({ [listKey]: list });
+};
+
+// ----------------------------------------------------
+// Library Features
+// ----------------------------------------------------
+
+window.renderLibrary = function (currentState) {
+    const { recursos, session } = currentState;
+    const isDM = session.role === 'DM';
+    const container = document.getElementById('tab-library');
+
+    let html = `
+        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            <h3>Biblioteca de Neverwinter</h3>
+            ${isDM ? `<button class="btn" onclick="window.addRecurso()"><i class="fa-solid fa-plus"></i> Añadir Tomo/Recurso</button>` : ''}
+        </div>
+    `;
+
+    if (!recursos || recursos.length === 0) {
+        html += '<p class="text-muted">La estantería está vacía en este momento.</p>';
+        container.innerHTML = html;
+        return;
+    }
+
+    html += '<div class="biblioteca-grid">';
+    recursos.forEach(r => {
+        html += `
+            <div style="position: relative; display: flex; flex-direction: column; align-items: center; width: 100%;">
+                ${isDM ? `<button onclick="window.deleteRecurso('${r.id}')" style="position: absolute; top: -10px; right: -10px; background: var(--red-ink); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; z-index: 10;" title="Borrar Recurso"><i class="fa-solid fa-times"></i></button>` : ''}
+                <a href="${r.enlaceUrl}" target="_blank" class="biblioteca-item">
+                    <img src="${r.portadaUrl}" alt="${r.nombre}" onerror="this.src='https://via.placeholder.com/150x200?text=Manual'">
+                    <span>${r.nombre}</span>
+                </a>
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    container.innerHTML = html;
+};
+
+window.addRecurso = function () {
+    const nombre = prompt("Introduce el nombre del libro o mapa:");
+    if (!nombre) return;
+    const portadaUrl = prompt("Introduce la URL de la imagen de portada:");
+    if (!portadaUrl) return;
+    const enlaceUrl = prompt("Introduce la URL de descarga (Dropbox, Mega, Drive...):");
+    if (!enlaceUrl) return;
+
+    const newRecurso = {
+        id: 'rec_' + Date.now(),
+        nombre,
+        portadaUrl,
+        enlaceUrl
+    };
+
+    const currentRecursos = state.get().recursos || [];
+    state.update({ recursos: [...currentRecursos, newRecurso] });
+};
+
+window.deleteRecurso = function (id) {
+    if (confirm("¿Seguro que deseas borrar este tomo de la biblioteca?")) {
+        const currentRecursos = state.get().recursos || [];
+        state.update({ recursos: currentRecursos.filter(r => r.id !== id) });
+    }
 };
