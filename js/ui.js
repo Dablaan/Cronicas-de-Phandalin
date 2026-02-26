@@ -1352,8 +1352,23 @@ window.renderLibrary = function (currentState) {
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3>Biblioteca de Neverwinter</h3>
-            ${isDM ? `<button class="btn" onclick="window.addRecurso()"><i class="fa-solid fa-plus"></i> Añadir Tomo/Recurso</button>` : ''}
+            ${isDM ? `<button class="btn" onclick="window.showAddRecursoForm()"><i class="fa-solid fa-plus"></i> Añadir Tomo/Recurso</button>` : ''}
         </div>
+        
+        ${isDM ? `
+        <div id="formulario-recurso" class="card" style="display: none; margin-bottom: 1.5rem; background: rgba(255,255,255,0.4); border: 2px dashed var(--leather-light);">
+            <h4 style="margin-top:0; color:var(--dark-crimson);">Nuevo Recurso Visual</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <input type="text" id="nuevo-recurso-nombre" placeholder="Nombre del Tomo (Ej: Manual del Jugador)" style="padding: 0.5rem;">
+                <input type="url" id="nuevo-recurso-portada" placeholder="URL de la Imagen de Portada" style="padding: 0.5rem;">
+                <input type="url" id="nuevo-recurso-enlace" placeholder="URL del Enlace de Descarga" style="padding: 0.5rem;">
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button class="btn btn-primary" onclick="window.submitRecurso()">Guardar Tomo</button>
+                    <button class="btn" onclick="window.hideAddRecursoForm()">Cancelar</button>
+                </div>
+            </div>
+        </div>
+        ` : ''}
     `;
 
     if (!recursos || recursos.length === 0) {
@@ -1379,13 +1394,30 @@ window.renderLibrary = function (currentState) {
     container.innerHTML = html;
 };
 
-window.addRecurso = function () {
-    const nombre = prompt("Introduce el nombre del libro o mapa:");
-    if (!nombre) return;
-    const portadaUrl = prompt("Introduce la URL de la imagen de portada:");
-    if (!portadaUrl) return;
-    const enlaceUrl = prompt("Introduce la URL de descarga (Dropbox, Mega, Drive...):");
-    if (!enlaceUrl) return;
+window.showAddRecursoForm = function () {
+    const form = document.getElementById('formulario-recurso');
+    if (form) form.style.display = 'block';
+};
+
+window.hideAddRecursoForm = function () {
+    const form = document.getElementById('formulario-recurso');
+    if (form) {
+        form.style.display = 'none';
+        document.getElementById('nuevo-recurso-nombre').value = '';
+        document.getElementById('nuevo-recurso-portada').value = '';
+        document.getElementById('nuevo-recurso-enlace').value = '';
+    }
+};
+
+window.submitRecurso = function () {
+    const nombre = document.getElementById('nuevo-recurso-nombre').value.trim();
+    const portadaUrl = document.getElementById('nuevo-recurso-portada').value.trim();
+    const enlaceUrl = document.getElementById('nuevo-recurso-enlace').value.trim();
+
+    if (!nombre || !portadaUrl || !enlaceUrl) {
+        alert("Por favor, rellena todos los campos.");
+        return;
+    }
 
     const newRecurso = {
         id: 'rec_' + Date.now(),
@@ -1396,6 +1428,9 @@ window.addRecurso = function () {
 
     const currentRecursos = state.get().recursos || [];
     state.update({ recursos: [...currentRecursos, newRecurso] });
+
+    // El state.update disparará un re-render de la UI de todos modos
+    // pero si hace falta podríamos llamar a hideAddRecursoForm()
 };
 
 window.deleteRecurso = function (id) {
