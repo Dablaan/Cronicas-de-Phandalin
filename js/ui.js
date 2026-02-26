@@ -129,18 +129,6 @@ window.deletePlayer = function (playerId, playerName) {
 
 window.isSheetEditMode = false;
 
-window.toggleSheetEditMode = function () {
-    window.isSheetEditMode = !window.isSheetEditMode;
-    const sheetContainer = document.querySelector('.sheet-container');
-    if (sheetContainer) {
-        if (window.isSheetEditMode) {
-            sheetContainer.classList.remove('view-mode');
-        } else {
-            sheetContainer.classList.add('view-mode');
-        }
-    }
-};
-
 function setupMainScreenForRole(session) {
     const isDM = session.role === 'DM';
     const headerTitle = document.getElementById('main-header-title');
@@ -879,7 +867,7 @@ window.toggleSheetEditMode = function () {
     window.isSheetEditMode = !window.isSheetEditMode;
     const p = state.get().players.find(p => p.id === window.currentSheetPlayerId);
     if (p) {
-        window.renderPlayerSheet(p.id, state.get().players);
+        renderPlayerSheet(p.id, state.get().players);
     }
 };
 
@@ -997,7 +985,7 @@ function renderNotes(currentState) {
     const playerNotes = notes[playerId] || '';
 
     container.innerHTML = `
-            < div class="card" >
+        <div class="card">
             <h3><i class="fa-solid fa-book-journal-whills"></i> Diario Personal</h3>
             <p class="text-muted mb-1">Estas notas son privadas (solo tú y el DM pueden verlas).</p>
             <textarea id="personal-notes" placeholder="Escribe aquí tus aventuras...">${playerNotes}</textarea>
@@ -1005,8 +993,8 @@ function renderNotes(currentState) {
                 <i class="fa-solid fa-floppy-disk"></i> Guardar Notas
             </button>
             <span id="notes-saved-msg" style="color: var(--leather-light); display: none; margin-left: 1rem;"><i class="fa-solid fa-check"></i> Guardado</span>
-        </div >
-            `;
+        </div>
+    `;
 }
 
 window.savePersonalNotes = function (playerId) {
@@ -1042,7 +1030,7 @@ function renderNpcs(currentState) {
     visibleNpcs.forEach(n => {
         const playerNotesOnNpc = chronicles[`${session.playerId}_npc_${n.id} `] || '';
         html += `
-            < div class="card" >
+            <div class="card">
                  <h4>${n.name}</h4>
                  <p style="white-space: pre-wrap;">${n.description}</p>
                  ${n.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
@@ -1051,8 +1039,8 @@ function renderNpcs(currentState) {
             <textarea id="chronicle-npc-${n.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
             <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'npc_${n.id}')">Guardar</button>
         </div>
-             </div >
-            `;
+             </div>
+        `;
     });
     html += '</div>';
 
@@ -1082,7 +1070,7 @@ function renderMaps(currentState) {
     visibleMaps.forEach(m => {
         const playerNotesOnMap = chronicles[`${session.playerId}_map_${m.id} `] || '';
         html += `
-            < div class="card" >
+            <div class="card">
                 <h4>${m.name}</h4>
                  ${m.url ? `<p><a href="${m.url}" target="_blank" style="color: var(--leather-dark); font-weight: bold;">[Ver Mapa Original]</a></p>` : ''}
                  ${m.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
@@ -1091,8 +1079,8 @@ function renderMaps(currentState) {
             <textarea id="chronicle-map-${m.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
             <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'map_${m.id}')">Guardar</button>
         </div>
-             </div >
-            `;
+             </div>
+        `;
     });
     html += '</div>';
 
