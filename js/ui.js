@@ -1111,11 +1111,11 @@ window.renderDMMirrorNotes = function (currentState) {
     const currentlySelected = container.getAttribute('data-mirror-player') || (players.length > 0 ? players[0].id : null);
 
     let html = `
-            < div class="flex-between mb-1" style = "border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;" >
+        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3>El Espejo del Master</h3>
             <p class="text-muted" style="font-size: 0.9em;">Observa las crónicas de tus jugadores</p>
-        </div >
-            `;
+        </div>
+    `;
 
     if (players.length === 0) {
         html += '<p class="text-muted">Aún no hay jugadores en la mesa.</p>';
@@ -1125,13 +1125,13 @@ window.renderDMMirrorNotes = function (currentState) {
 
     // Selector
     html += `
-            < div class="mb-1" >
+        <div class="mb-1">
             <label>Selecciona un jugador:</label>
             <select onchange="document.getElementById('tab-notes').setAttribute('data-mirror-player', this.value); window.renderDMMirrorNotes(window.state.get())">
                 ${players.map(p => `<option value="${p.id}" ${p.id === currentlySelected ? 'selected' : ''}>${p.name} (Lvl ${p.level})</option>`).join('')}
             </select>
-        </div >
-            `;
+        </div>
+    `;
 
     if (!currentlySelected) {
         container.innerHTML = html;
@@ -1143,16 +1143,16 @@ window.renderDMMirrorNotes = function (currentState) {
 
     // Personal notes
     html += `
-            < div class="card mb-1" style = "background: rgba(255,255,255,0.3);" >
+        <div class="card mb-1" style="background: rgba(255,255,255,0.3);">
             <h4><i class="fa-solid fa-book-journal-whills"></i> Diario Privado de ${selectedPlayer.name}</h4>
             <div style="white-space: pre-wrap; margin-top: 1rem; padding: 1rem; border-left: 3px solid var(--leather-dark);">${personalNotes}</div>
-        </div >
-            `;
+        </div>
+    `;
 
     // Filter chronicles belonging to this player
     const playerChroniclesKeys = Object.keys(chronicles).filter(k => k.startsWith(currentlySelected + '_') && chronicles[k].trim() !== '');
 
-    html += `< h4 > <i class="fa-solid fa-feather"></i> Crónicas Guardadas(NPCs y Mapas)</h4 > `;
+    html += `<h4><i class="fa-solid fa-feather"></i> Crónicas Guardadas(NPCs y Mapas)</h4>`;
 
     if (playerChroniclesKeys.length === 0) {
         html += '<p class="text-muted">No ha escrito apuntes sobre ningún NPC o Mapa aún.</p>';
@@ -1174,10 +1174,10 @@ window.renderDMMirrorNotes = function (currentState) {
             }
 
             html += `
-            < div class="card" style = "background: rgba(255,255,255,0.3);" >
+                <div class="card" style="background: rgba(255,255,255,0.3);">
                     <h5 style="color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.2rem;"><i class="fa-solid ${isMap ? 'fa-map' : 'fa-user'}"></i> ${entityName}</h5>
                     <div style="white-space: pre-wrap; font-size: 0.9em; margin-top: 0.5rem;">${chronicles[k]}</div>
-                </div >
+                </div>
             `;
         });
         html += '</div>';
@@ -1193,17 +1193,17 @@ window.renderDMNpcs = function (currentState) {
     const container = document.getElementById('tab-npcs');
 
     let html = `
-            < div class="flex-between mb-1" style = "border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;" >
+        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3>Gestión de NPCs</h3>
             <button class="btn" onclick="window.createEntity('npc')"><i class="fa-solid fa-plus"></i> Nuevo NPC</button>
-        </div >
-            `;
+        </div>
+    `;
 
     html += '<div class="grid-2">';
     if (npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';
     npcs.forEach(n => {
         html += `
-            < div class="card" style = "${n.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}" >
+            <div class="card" style="${n.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}">
                 <div class="flex-between mb-1">
                     <input type="text" value="${n.name}" style="font-weight: bold; width: 60%; margin-bottom: 0;" onchange="window.updateEntity('npc', '${n.id}', 'name', this.value)">
                     <button class="btn ${n.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.updateEntity('npc', '${n.id}', 'isVisible', ${!n.isVisible})">
@@ -1226,8 +1226,8 @@ window.renderDMNpcs = function (currentState) {
                         </div>
                     `).join('')}
                 </div>
-            </div >
-            `;
+            </div>
+        `;
     });
     html += '</div>';
 
@@ -1239,17 +1239,17 @@ window.renderDMMaps = function (currentState) {
     const container = document.getElementById('tab-maps');
 
     let html = `
-            < div class="flex-between mb-1" style = "border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;" >
+        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3>Gestión de Mapas</h3>
             <button class="btn" onclick="window.createEntity('map')"><i class="fa-solid fa-plus"></i> Nuevo Mapa</button>
-        </div >
-            `;
+        </div>
+    `;
 
     html += '<div class="grid-2">';
     if (maps.length === 0) html += '<p class="text-muted">No hay Mapas.</p>';
     maps.forEach(m => {
         html += `
-            < div class="card" style = "${m.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}" >
+            <div class="card" style="${m.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}">
                 <div class="flex-between mb-1">
                     <input type="text" value="${m.name}" style="font-weight: bold; width: 60%; margin-bottom: 0;" onchange="window.updateEntity('map', '${m.id}', 'name', this.value)">
                     <button class="btn ${m.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.updateEntity('map', '${m.id}', 'isVisible', ${!m.isVisible})">
