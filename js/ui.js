@@ -101,19 +101,45 @@ function renderAuthPlayerList(players) {
     let html = '<div class="grid-2">';
     players.forEach(p => {
         html += `
-            <button class="btn" onclick="window.loginAsPlayer('${p.id}')">
-                ${p.name || 'Sin nombre'} (Lvl ${p.level})
-            </button>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <button class="btn" onclick="window.loginAsPlayer('${p.id}')" style="flex: 1;">
+                    ${p.name || 'Sin nombre'} (Lvl ${p.level})
+                </button>
+                <button class="btn btn-danger" onclick="window.deletePlayer('${p.id}', '${(p.name || 'Sin nombre').replace(/'/g, "\\'")}')" title="Borrar Personaje para siempre" style="padding: 0.2rem 0.6rem;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
         `;
     });
     html += '</div>';
     container.innerHTML = html;
 }
 
-// Attach a global function for the inline onclick
+// Attach global functions
 window.loginAsPlayer = function (playerId) {
     state.update({ session: { role: 'Player', playerId } });
-}
+};
+
+window.deletePlayer = function (playerId, playerName) {
+    if (confirm(`¿Estás seguro de que deseas borrar a ${playerName} para siempre?\n\nEsta acción no se puede deshacer.`)) {
+        const currentPlayers = state.get().players.filter(p => p.id !== playerId);
+        state.update({ players: currentPlayers });
+    }
+};
+
+window.isSheetEditMode = false;
+
+window.toggleSheetEditMode = function () {
+    window.isSheetEditMode = !window.isSheetEditMode;
+    const sheetContainer = document.querySelector('.sheet-container');
+    if (sheetContainer) {
+        if (window.isSheetEditMode) {
+            sheetContainer.classList.remove('view-mode');
+        } else {
+            sheetContainer.classList.add('view-mode');
+        }
+    }
+};
 
 function setupMainScreenForRole(session) {
     const isDM = session.role === 'DM';
@@ -170,7 +196,10 @@ function renderPlayerSheet(playerId, players) {
         return;
     }
 
-    let html = '';
+    // Default to view mode on fresh render
+    window.isSheetEditMode = false;
+
+    let html = '<div class="sheet-container view-mode" style="position: relative; padding-bottom: 4rem;">';
     html += renderSheetHeader(playerId, player);
     html += '<div class="grid-3 mt-1">';
     html += renderSheetLeftColumn(playerId, player);
@@ -178,6 +207,13 @@ function renderPlayerSheet(playerId, players) {
     html += renderSheetRightColumn(playerId, player);
     html += '</div>';
     html += renderSheetFooter(playerId, player);
+
+    html += `
+        <div class="sheet-mode-controls" style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+            <button class="btn btn-edit-sheet view-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--leather-dark); color: var(--gold); box-shadow: 0 4px 8px rgba(0,0,0,0.5); font-size: 1.1rem; padding: 0.6rem 1.2rem;"><i class="fa-solid fa-pencil"></i> Editar Ficha</button>
+            <button class="btn btn-save-sheet edit-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--gold-dim); color: var(--leather-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.5); font-weight: bold; font-size: 1.1rem; padding: 0.6rem 1.2rem;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
+        </div>
+    </div>`;
 
     container.innerHTML = html;
 }
@@ -359,11 +395,11 @@ function renderSheetCenterColumn(playerId, player) {
                 <div class="flex-between mt-1">
                      <div>
                          <span style="font-size: 0.6rem; color: var(--leather-light); display:block; margin-bottom:-2px;">Éxitos</span>
-                         ${[1, 2, 3].map(i => `<input type="checkbox" ${player.deathSaves && player.deathSaves.successes >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'successes', this.checked ? ${i} : ${i - 1})" style="width: 15px; height: 15px; accent-color: var(--leather-dark); margin-right: 2px; cursor: pointer;">`).join('')}
+                         ${[1, 2, 3].map(i => `<input type="checkbox" class="death-save-control" ${player.deathSaves && player.deathSaves.successes >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'successes', this.checked ? ${i} : ${i - 1})" style="width: 15px; height: 15px; accent-color: var(--leather-dark); margin-right: 2px; cursor: pointer;">`).join('')}
                      </div>
                      <div>
                          <span style="font-size: 0.6rem; color: var(--red-ink); display:block; margin-bottom:-2px;">Fallos</span>
-                         ${[1, 2, 3].map(i => `<input type="checkbox" ${player.deathSaves && player.deathSaves.failures >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'failures', this.checked ? ${i} : ${i - 1})" style="width: 15px; height: 15px; accent-color: var(--red-ink); margin-right: 2px; cursor: pointer;">`).join('')}
+                         ${[1, 2, 3].map(i => `<input type="checkbox" class="death-save-control" ${player.deathSaves && player.deathSaves.failures >= i ? 'checked' : ''} onchange="window.updateDeathSave('${playerId}', 'failures', this.checked ? ${i} : ${i - 1})" style="width: 15px; height: 15px; accent-color: var(--red-ink); margin-right: 2px; cursor: pointer;">`).join('')}
                      </div>
                  </div>
             </div>
@@ -375,7 +411,7 @@ function renderSheetCenterColumn(playerId, player) {
     <div class="card">
         <div class="flex-between mb-1" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3 style="margin:0;"><i class="fa-solid fa-khanda"></i> Ataques y Conjuros</h3>
-            <button class="btn" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;" onclick="window.addAttack('${playerId}')">
+            <button class="btn edit-only-btn" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;" onclick="window.addAttack('${playerId}')">
                 <i class="fa-solid fa-plus"></i> Añadir
             </button>
         </div>
@@ -416,7 +452,7 @@ function renderSheetFooter(playerId, player) {
     <div class="card mt-1" style="grid-column: 1 / -1;">
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3 style="margin:0;"><i class="fa-solid fa-wand-sparkles"></i> Grimorio: Libro de Hechizos</h3>
-            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.addSpell('${playerId}')">
+            <button class="btn edit-only-btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.addSpell('${playerId}')">
                 <i class="fa-solid fa-plus"></i> Añadir Conjuro
             </button>
         </div>
@@ -485,7 +521,7 @@ window.renderAttacksList = function (playerId, attacks) {
             <div class="card" style="padding: 0.5rem; background: rgba(255,255,255,0.4); margin-bottom: 0;">
                 <div class="flex-between mb-1">
                     <input type="text" value="${atk.name || ''}" placeholder="Arma o Truco" onchange="window.updateAttack('${playerId}', '${atk.id}', 'name', this.value)" style="font-weight: bold; padding: 0.2rem; margin-bottom: 0; width: 100%; margin-right: 0.5rem;">
-                    <button class="btn btn-danger" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteAttack('${playerId}', '${atk.id}')"><i class="fa-solid fa-trash"></i></button>
+                    <button class="btn btn-danger edit-only-btn" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteAttack('${playerId}', '${atk.id}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
                     <input type="text" value="${atk.bonus || ''}" placeholder="Bono (ej. +5)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'bonus', this.value)" style="flex: 1; font-size: 0.85em; margin-bottom: 0;">
@@ -594,7 +630,7 @@ window.renderSpellsList = function (playerId, spells) {
                             </button>
                             <input type="text" value="${spell.name}" placeholder="Nombre del conjuro" onchange="window.updateSpell('${playerId}', '${spell.id}', 'name', this.value)" style="margin-bottom: 0; font-weight: bold; padding: 0.2rem;">
                         </div>
-                        <button class="btn btn-danger" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteSpell('${playerId}', '${spell.id}')">
+                        <button class="btn btn-danger edit-only-btn" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteSpell('${playerId}', '${spell.id}')">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>

@@ -568,3 +568,45 @@ textarea {
         box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.8);
     }
 }
+
+/* ------------------------------------- */
+/* PLAYER SHEET: EDIT / VIEW MODE LOGIC  */
+/* ------------------------------------- */
+
+.view-mode .edit-only-btn {
+    display: none !important;
+}
+
+.sheet-container:not(.view-mode) .view-only-btn {
+    display: none !important;
+}
+
+.view-mode input:not(.hp-input),
+.view-mode textarea,
+.view-mode select {
+    pointer-events: none;
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.view-mode input[type="checkbox"]:not(.death-save-control) {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.sheet-container:not(.view-mode) input:not([type="checkbox"]),
+.sheet-container:not(.view-mode) textarea,
+.sheet-container:not(.view-mode) select {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-bottom: 2px dotted var(--leather-light) !important;
+    border-radius: 4px;
+    padding: 0.1rem;
+    transition: background 0.3s ease;
+}
+
+.sheet-container:not(.view-mode) input:focus,
+.sheet-container:not(.view-mode) textarea:focus {
+    background: rgba(255, 255, 255, 0.6) !important;
+    outline: none;
+}
