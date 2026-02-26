@@ -196,10 +196,13 @@ function renderPlayerSheet(playerId, players) {
         return;
     }
 
-    // Default to view mode on fresh render
-    window.isSheetEditMode = false;
+    // Default to view mode if viewing a different player
+    if (window.currentSheetPlayerId !== playerId) {
+        window.isSheetEditMode = false;
+        window.currentSheetPlayerId = playerId;
+    }
 
-    let html = '<div class="sheet-container view-mode" style="position: relative; padding-bottom: 4rem;">';
+    let html = `<div class="sheet-container ${window.isSheetEditMode ? 'edit-mode' : 'view-mode'}" style="position: relative; padding-bottom: 4rem;">`;
     html += renderSheetHeader(playerId, player);
     html += '<div class="grid-3 mt-1">';
     html += renderSheetLeftColumn(playerId, player);
@@ -298,7 +301,7 @@ function renderSheetLeftColumn(playerId, player) {
         skillsHtml += `
             <div class="skill-row">
                 <input type="checkbox" name="skills.${sk.id}.prof" ${skillData.prof ? 'checked' : ''}>
-                <input class="skill-val" type="text" name="skills.${sk.id}.bonus" value="${skillData.bonus ? '+' + skillData.bonus : '0'}" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
+                <input class="skill-val" type="text" name="skills.${sk.id}.bonus" value="${skillData.bonus !== undefined ? skillData.bonus : '0'}" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
                 <label>${sk.name} <span style="font-size:0.6rem; color:#aaa;">(${sk.stat})</span></label>
             </div>
         `;
@@ -358,7 +361,7 @@ function renderSheetCenterColumn(playerId, player) {
         savesHtml += `
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.3); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 0.2rem;">
                 <input type="checkbox" name="saves.${s.key}.prof" ${saveData.prof ? 'checked' : ''} style="margin-bottom: 0.1rem; accent-color: var(--leather-dark);">
-                <input type="text" name="saves.${s.key}.bonus" value="${saveData.bonus ? '+' + saveData.bonus : '0'}" style="text-align:center; font-size:1rem; font-weight:bold; color:var(--leather-dark); border:none; background:transparent; width:100%; padding:0; margin:0; line-height: 1;" title="Bono Total">
+                <input type="text" name="saves.${s.key}.bonus" value="${saveData.bonus !== undefined ? saveData.bonus : '0'}" style="text-align:center; font-size:1rem; font-weight:bold; color:var(--leather-dark); border:none; background:transparent; width:100%; padding:0; margin:0; line-height: 1;" title="Bono Total">
                 <label style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.1rem; text-transform:uppercase;">${s.label}</label>
             </div>
         `;
@@ -391,7 +394,7 @@ function renderSheetCenterColumn(playerId, player) {
         </div>
         
         <div style="width:100%; height:6px; background:var(--parchment-dark); border-radius:3px; overflow:hidden; margin-bottom: 0.5rem;">
-            <div style="width:${hpBarPercent}%; height:100%; background:${hpColor}; transition: width 0.3s ease;"></div>
+            <div id="hp-bar-fill-sheet" style="width:${hpBarPercent}%; height:100%; background:${hpColor}; transition: width 0.3s ease;"></div>
         </div>
 
         <div class="grid-2">
@@ -498,9 +501,35 @@ function renderSheetFooter(playerId, player) {
 }
 
 window.modifyHP = function (playerId, amount) {
-    window.syncAndModifySheet(playerId, (p) => {
-        return { ...p, hpCurrent: Math.max(0, Math.min(p.hpMax, p.hpCurrent + amount)) };
-    });
+    const currentState = state.get();
+    const p = currentState.players.find(p => p.id === playerId);
+    if (!p) return;
+
+    const max = p.hpMax || 0;
+    let current = p.hpCurrent || 0;
+    current += amount;
+    if (current > max) current = max;
+    if (current < 0) current = 0;
+
+    p.hpCurrent = current;
+
+    // Save explicitly without invoking state.update to prevent full re-render
+    if (window.storageAdapter) {
+        window.storageAdapter.save(currentState);
+    }
+
+    // Manually update the DOM for the HP input and bar in the individual sheet
+    const hpInput = document.querySelector('input[name="hpCurrent"]');
+    if (hpInput) hpInput.value = current;
+
+    const hpBarPercent = Math.max(0, Math.min(100, (current / max) * 100));
+    let hpColor = hpBarPercent > 50 ? 'var(--leather-light)' : (hpBarPercent > 20 ? 'var(--gold-dim)' : 'var(--red-ink)');
+
+    const hpBarFill = document.getElementById('hp-bar-fill-sheet');
+    if (hpBarFill) {
+        hpBarFill.style.width = hpBarPercent + '%';
+        hpBarFill.style.backgroundColor = hpColor;
+    }
 };
 
 window.updateSkill = function (playerId, skillId, field, value) {
@@ -823,8 +852,35 @@ window.syncAndModifySheet = function (playerId, modifierFn) {
 };
 
 window.saveSheetChanges = function (playerId) {
-    window.syncAndModifySheet(playerId);
-    window.toggleSheetEditMode();
+    const newData = window.gatherSheetData(playerId);
+
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            return {
+                ...p,
+                ...newData,
+                stats: { ...p.stats, ...newData.stats },
+                skills: { ...p.skills, ...newData.skills },
+                saves: { ...p.saves, ...newData.saves },
+                equipment: { ...p.equipment, ...newData.equipment },
+                spellSlots: { ...p.spellSlots, ...newData.spellSlots },
+                attacks: newData.attacks,
+                spells: newData.spells
+            };
+        }
+        return p;
+    });
+
+    window.isSheetEditMode = false;
+    state.update({ players });
+};
+
+window.toggleSheetEditMode = function () {
+    window.isSheetEditMode = !window.isSheetEditMode;
+    const p = state.get().players.find(p => p.id === window.currentSheetPlayerId);
+    if (p) {
+        window.renderPlayerSheet(p.id, state.get().players);
+    }
 };
 
 window.updateSheet = function (playerId, field, value) {
