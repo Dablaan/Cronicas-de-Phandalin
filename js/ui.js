@@ -207,13 +207,7 @@ function renderPlayerSheet(playerId, players) {
     html += renderSheetRightColumn(playerId, player);
     html += '</div>';
     html += renderSheetFooter(playerId, player);
-
-    html += `
-        <div class="sheet-mode-controls" style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
-            <button class="btn btn-edit-sheet view-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--leather-dark); color: var(--gold); box-shadow: 0 4px 8px rgba(0,0,0,0.5); font-size: 1.1rem; padding: 0.6rem 1.2rem;"><i class="fa-solid fa-pencil"></i> Editar Ficha</button>
-            <button class="btn btn-save-sheet edit-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--gold-dim); color: var(--leather-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.5); font-weight: bold; font-size: 1.1rem; padding: 0.6rem 1.2rem;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
-        </div>
-    </div>`;
+    html += '</div>';
 
     container.innerHTML = html;
 }
@@ -225,32 +219,32 @@ function renderSheetHeader(playerId, player) {
             <i class="fa-solid fa-dragon" style="font-size: 3rem;"></i>
         </div>
         <div class="sheet-header-name">
-            <input type="text" value="${player.playerName || ''}" placeholder="Nombre del Jugador" onchange="window.updateSheet('${playerId}', 'playerName', this.value)" style="font-size: 0.8rem; border-bottom: none; color: var(--text-muted); margin-bottom: 0;">
-            <input type="text" value="${player.name || ''}" placeholder="Nombre del Personaje" onchange="window.updateSheet('${playerId}', 'name', this.value)">
+            <input type="text" name="playerName" value="${player.playerName || ''}" placeholder="Nombre del Jugador" style="font-size: 0.8rem; border-bottom: none; color: var(--text-muted); margin-bottom: 0;">
+            <input type="text" name="name" value="${player.name || ''}" placeholder="Nombre del Personaje">
         </div>
         <div class="sheet-header-details">
             <div>
                 <label>Clase y Nivel</label>
                 <div class="flex-row">
-                    <input type="text" value="${player.class || ''}" placeholder="Clase" onchange="window.updateSheet('${playerId}', 'class', this.value)" style="width: 70%;">
-                    <input type="number" value="${player.level || 1}" title="Nivel" onchange="window.updateSheet('${playerId}', 'level', Number(this.value))" style="width: 30%;">
+                    <input type="text" name="class" value="${player.class || ''}" placeholder="Clase" style="width: 70%;">
+                    <input type="number" name="level" value="${player.level || 1}" title="Nivel" style="width: 30%;">
                 </div>
             </div>
             <div>
                 <label>Trasfondo</label>
-                <input type="text" value="${player.background || ''}" placeholder="Trasfondo" onchange="window.updateSheet('${playerId}', 'background', this.value)">
+                <input type="text" name="background" value="${player.background || ''}" placeholder="Trasfondo">
             </div>
             <div>
                 <label>Raza</label>
-                <input type="text" value="${player.race || ''}" placeholder="Raza" onchange="window.updateSheet('${playerId}', 'race', this.value)">
+                <input type="text" name="race" value="${player.race || ''}" placeholder="Raza">
             </div>
             <div>
                 <label>Alineamiento</label>
-                <input type="text" value="${player.alignment || ''}" placeholder="Alineamiento" onchange="window.updateSheet('${playerId}', 'alignment', this.value)">
+                <input type="text" name="alignment" value="${player.alignment || ''}" placeholder="Alineamiento">
             </div>
             <div>
                 <label>Puntos de Exp.</label>
-                <input type="number" value="${player.xp || 0}" placeholder="XP" onchange="window.updateSheet('${playerId}', 'xp', Number(this.value))">
+                <input type="number" name="xp" value="${player.xp || 0}" placeholder="XP">
             </div>
         </div>
     </div>
@@ -278,7 +272,7 @@ function renderSheetLeftColumn(playerId, player) {
         statsHtml += `
             <div class="stat-box">
                 <label>${s.label}</label>
-                <input class="stat-val" type="number" value="${val}" onchange="window.updateSheetStat('${playerId}', '${s.key}', Number(this.value))">
+                <input class="stat-val" type="number" name="stats.${s.key}" value="${val}">
                 <div class="stat-mod">${mod}</div>
             </div>
         `;
@@ -303,8 +297,8 @@ function renderSheetLeftColumn(playerId, player) {
         const skillData = (player.skills && player.skills[sk.id]) || { prof: false, bonus: 0 };
         skillsHtml += `
             <div class="skill-row">
-                <input type="checkbox" ${skillData.prof ? 'checked' : ''} onchange="window.updateSkill('${playerId}', '${sk.id}', 'prof', this.checked)">
-                <input class="skill-val" type="text" value="${skillData.bonus ? '+' + skillData.bonus : '0'}" onchange="window.updateSkill('${playerId}', '${sk.id}', 'bonus', Number(this.value.replace('+','')))" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
+                <input type="checkbox" name="skills.${sk.id}.prof" ${skillData.prof ? 'checked' : ''}>
+                <input class="skill-val" type="text" name="skills.${sk.id}.bonus" value="${skillData.bonus ? '+' + skillData.bonus : '0'}" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
                 <label>${sk.name} <span style="font-size:0.6rem; color:#aaa;">(${sk.stat})</span></label>
             </div>
         `;
@@ -315,7 +309,7 @@ function renderSheetLeftColumn(playerId, player) {
     <div class="card" style="padding: 0.5rem 1rem; text-align: center;">
         <label style="font-size: 0.7rem; text-transform:uppercase; font-weight:bold; color: var(--leather-light);">Percepción Pasiva</label>
         <div style="font-size: 2rem; font-family: var(--font-heading); color: var(--leather-dark); font-weight: bold;">
-            <input type="number" value="${player.passivePerception || 10}" onchange="window.updateSheet('${playerId}', 'passivePerception', Number(this.value))" style="width: 60px; text-align:center; font-size: 2rem; border:none; background:transparent; padding:0; margin:0;">
+            <input type="number" name="passivePerception" value="${player.passivePerception || 10}" style="width: 60px; text-align:center; font-size: 2rem; border:none; background:transparent; padding:0; margin:0;">
         </div>
     </div>
     `;
@@ -329,20 +323,20 @@ function renderSheetCenterColumn(playerId, player) {
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
             <div class="defense-box">
                 <label>CA</label>
-                <input type="number" value="${player.ac}" onchange="window.updateSheet('${playerId}', 'ac', Number(this.value))" style="width: 100%;">
+                <input type="number" name="ac" value="${player.ac}" style="width: 100%;">
             </div>
             <div class="defense-box">
                 <label>Iniciativa</label>
-                <input type="number" value="${player.initiative || 0}" onchange="window.updateSheet('${playerId}', 'initiative', Number(this.value))" style="width: 100%;">
+                <input type="number" name="initiative" value="${player.initiative || 0}" style="width: 100%;">
             </div>
             <div class="defense-box">
                 <label>Velocidad</label>
-                <input type="number" value="${player.speed || 30}" onchange="window.updateSheet('${playerId}', 'speed', Number(this.value))" style="width: 100%;">
+                <input type="number" name="speed" value="${player.speed || 30}" style="width: 100%;">
             </div>
              <div class="defense-box">
                 <label>Insp.</label>
                 <div style="display:flex; justify-content:center; align-items:center; height: 100%;">
-                    <input type="checkbox" ${player.inspiration ? 'checked' : ''} onchange="window.updateSheet('${playerId}', 'inspiration', this.checked)" style="width:20px; height:20px; accent-color: var(--gold-dim); cursor:pointer;">
+                    <input type="checkbox" name="inspiration" ${player.inspiration ? 'checked' : ''} style="width:20px; height:20px; accent-color: var(--gold-dim); cursor:pointer;">
                 </div>
             </div>
         </div>
@@ -366,8 +360,8 @@ function renderSheetCenterColumn(playerId, player) {
 
         savesHtml += `
             <div class="skill-row" style="margin-bottom: 0.2rem;">
-                <input type="checkbox" ${saveData.prof ? 'checked' : ''} onchange="window.updateSave('${playerId}', '${s.key}', 'prof', this.checked)">
-                <input class="skill-val" type="text" value="${saveData.bonus ? '+' + saveData.bonus : '0'}" onchange="window.updateSave('${playerId}', '${s.key}', 'bonus', Number(this.value.replace('+','')))" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
+                <input type="checkbox" name="saves.${s.key}.prof" ${saveData.prof ? 'checked' : ''}>
+                <input class="skill-val" type="text" name="saves.${s.key}.bonus" value="${saveData.bonus ? '+' + saveData.bonus : '0'}" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
                 <label>${s.label}</label>
             </div>
         `;
@@ -393,8 +387,8 @@ function renderSheetCenterColumn(playerId, player) {
         <div style="display:flex; justify-content:center; align-items:center; gap: 1rem; margin: 1rem 0;">
             <button class="btn" style="padding: 0.2rem 0.8rem; font-size: 1.5rem;" onclick="window.modifyHP('${playerId}', -1)">-</button>
             <div style="font-size: 2.5rem; font-family: var(--font-heading); font-weight:bold; color: var(--leather-dark);">
-                <input type="number" value="${player.hpCurrent}" onchange="window.updateSheet('${playerId}', 'hpCurrent', Number(this.value))" style="width:70px; text-align:center; font-size:2.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0; display:inline-block;">
-                <span style="font-size:1.2rem; color:var(--text-muted);">/ <input type="number" value="${player.hpMax}" onchange="window.updateSheet('${playerId}', 'hpMax', Number(this.value))" style="width:50px; text-align:center; font-size:1.2rem; border:none; background:transparent; padding:0; margin:0; display:inline-block;"></span>
+                <input type="number" name="hpCurrent" value="${player.hpCurrent}" style="width:70px; text-align:center; font-size:2.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0; display:inline-block;">
+                <span style="font-size:1.2rem; color:var(--text-muted);">/ <input type="number" name="hpMax" value="${player.hpMax}" style="width:50px; text-align:center; font-size:1.2rem; border:none; background:transparent; padding:0; margin:0; display:inline-block;"></span>
             </div>
             <button class="btn" style="padding: 0.2rem 0.8rem; font-size: 1.5rem;" onclick="window.modifyHP('${playerId}', 1)">+</button>
         </div>
@@ -407,9 +401,9 @@ function renderSheetCenterColumn(playerId, player) {
             <div style="border-right: 1px solid var(--parchment-dark); padding-right: 0.5rem; text-align:left;">
                 <label style="font-size: 0.7rem; font-weight:bold; color:var(--text-muted);">Dados de Golpe</label>
                 <div class="flex-row">
-                    <input type="text" value="${player.hitDice ? player.hitDice.current : '1'}" onchange="window.updateHitDice('${playerId}', 'current', this.value)" style="width: 45%; margin:0; text-align:center;">
+                    <input type="text" name="hitDice.current" value="${player.hitDice ? player.hitDice.current : '1'}" style="width: 45%; margin:0; text-align:center;">
                     <span style="color: var(--text-muted); font-size:0.8rem;">de</span>
-                    <input type="text" value="${player.hitDice ? player.hitDice.total : '1d10'}" onchange="window.updateHitDice('${playerId}', 'total', this.value)" style="width: 45%; margin:0; text-align:center;">
+                    <input type="text" name="hitDice.total" value="${player.hitDice ? player.hitDice.total : '1d10'}" style="width: 45%; margin:0; text-align:center;">
                 </div>
             </div>
             <div style="text-align:left; padding-left: 0.5rem;">
@@ -453,17 +447,22 @@ function renderSheetRightColumn(playerId, player) {
             <h3><i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</h3>
             <div class="mt-1">
                 <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light);"><i class="fa-solid fa-shield-halved"></i> Equipado</h4>
-                <textarea placeholder="Armadura puesta, armas en mano, anillos..." onchange="window.updateEquipment('${playerId}', 'equipped', this.value)" style="min-height: 80px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm); margin-bottom:0.5rem;">${player.equipment ? player.equipment.equipped : ''}</textarea>
+                <textarea name="equipment.equipped" placeholder="Armadura puesta, armas en mano, anillos..." style="min-height: 80px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm); margin-bottom:0.5rem;">${player.equipment ? player.equipment.equipped : ''}</textarea>
             </div>
             <div class="mt-1">
                 <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light);"><i class="fa-solid fa-backpack"></i> Mochila y Riquezas</h4>
-                <textarea placeholder="Oro, raciones, antorchas..." onchange="window.updateEquipment('${playerId}', 'backpack', this.value)" style="min-height: 120px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.equipment ? player.equipment.backpack : ''}</textarea>
+                <textarea name="equipment.backpack" placeholder="Oro, raciones, antorchas..." style="min-height: 120px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.equipment ? player.equipment.backpack : ''}</textarea>
             </div>
         </div>
 
         <div class="card">
             <h3><i class="fa-solid fa-scroll"></i> Dotes y Rasgos</h3>
-            <textarea placeholder="Anota tus rasgos raciales, dotes, origen de clase, etc." onchange="window.updateSheet('${playerId}', 'traits', this.value)" style="min-height: 250px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.traits || ''}</textarea>
+            <textarea name="traits" placeholder="Anota tus rasgos raciales, dotes, origen de clase, etc." style="min-height: 250px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.traits || ''}</textarea>
+        </div>
+        
+        <div class="sheet-mode-controls view-only-hide" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+            <button class="btn btn-edit-sheet view-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--leather-dark); color: var(--gold); box-shadow: 0 4px 8px rgba(0,0,0,0.5); font-size: 1.1rem; padding: 0.6rem 1.2rem;"><i class="fa-solid fa-pencil"></i> Editar Ficha</button>
+            <button class="btn btn-save-sheet edit-only-btn" onclick="window.saveSheetChanges('${playerId}')" style="background: var(--gold-dim); color: var(--leather-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.5); font-weight: bold; font-size: 1.1rem; padding: 0.6rem 1.2rem;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
         </div>
     </div>
     `;
@@ -486,8 +485,8 @@ function renderSheetFooter(playerId, player) {
                 ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(lvl => `
                     <div style="background: var(--parchment-bg); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark); text-align: center; font-size: 0.8em; min-width: 50px;">
                         <strong>Nvl ${lvl}</strong><br>
-                        <input type="number" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].used : 0}" onchange="window.updateSpellSlot('${playerId}', ${lvl}, 'used', Number(this.value))" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark); color: var(--red-ink); font-weight:bold;"> / 
-                        <input type="number" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].max : 0}" onchange="window.updateSpellSlot('${playerId}', ${lvl}, 'max', Number(this.value))" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark); color: var(--leather-dark);">
+                        <input type="number" name="spellSlots.${lvl}.used" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].used : 0}" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark); color: var(--red-ink); font-weight:bold;"> / 
+                        <input type="number" name="spellSlots.${lvl}.max" value="${(player.spellSlots && player.spellSlots[lvl]) ? player.spellSlots[lvl].max : 0}" style="width: 30px; padding: 2px; margin: 0; text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--leather-dark); color: var(--leather-dark);">
                     </div>
                 `).join('')}
             </div>
@@ -502,13 +501,9 @@ function renderSheetFooter(playerId, player) {
 }
 
 window.modifyHP = function (playerId, amount) {
-    const players = state.get().players.map(p => {
-        if (p.id === playerId) {
-            return { ...p, hpCurrent: Math.max(0, Math.min(p.hpMax, p.hpCurrent + amount)) };
-        }
-        return p;
+    window.syncAndModifySheet(playerId, (p) => {
+        return { ...p, hpCurrent: Math.max(0, Math.min(p.hpMax, p.hpCurrent + amount)) };
     });
-    state.update({ players });
 };
 
 window.updateSkill = function (playerId, skillId, field, value) {
@@ -540,14 +535,14 @@ window.renderAttacksList = function (playerId, attacks) {
     let html = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
     attacks.forEach(atk => {
         html += `
-            <div class="card" style="padding: 0.5rem; background: rgba(255,255,255,0.4); margin-bottom: 0;">
+            <div class="card attack-item" data-item-id="${atk.id}" style="padding: 0.5rem; background: rgba(255,255,255,0.4); margin-bottom: 0;">
                 <div class="flex-between mb-1">
-                    <input type="text" value="${atk.name || ''}" placeholder="Arma o Truco" onchange="window.updateAttack('${playerId}', '${atk.id}', 'name', this.value)" style="font-weight: bold; padding: 0.2rem; margin-bottom: 0; width: 100%; margin-right: 0.5rem;">
+                    <input type="text" name="name" value="${atk.name || ''}" placeholder="Arma o Truco" style="font-weight: bold; padding: 0.2rem; margin-bottom: 0; width: 100%; margin-right: 0.5rem;">
                     <button class="btn btn-danger edit-only-btn" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteAttack('${playerId}', '${atk.id}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
                 <div style="display: flex; gap: 0.5rem;">
-                    <input type="text" value="${atk.bonus || ''}" placeholder="Bono (ej. +5)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'bonus', this.value)" style="flex: 1; font-size: 0.85em; margin-bottom: 0;">
-                    <input type="text" value="${atk.damage || ''}" placeholder="Daño (ej. 1d8+3 Cort.)" onchange="window.updateAttack('${playerId}', '${atk.id}', 'damage', this.value)" style="flex: 2; font-size: 0.85em; margin-bottom: 0;">
+                    <input type="text" name="bonus" value="${atk.bonus || ''}" placeholder="Bono (ej. +5)" style="flex: 1; font-size: 0.85em; margin-bottom: 0;">
+                    <input type="text" name="damage" value="${atk.damage || ''}" placeholder="Daño (ej. 1d8+3 Cort.)" style="flex: 2; font-size: 0.85em; margin-bottom: 0;">
                 </div>
             </div>
         `;
@@ -557,15 +552,11 @@ window.renderAttacksList = function (playerId, attacks) {
 };
 
 window.addAttack = function (playerId) {
-    const players = state.get().players.map(p => {
-        if (p.id === playerId) {
-            const attacks = p.attacks || [];
-            const newAttack = { id: 'atk_' + Date.now(), name: '', bonus: '', damage: '' };
-            return { ...p, attacks: [...attacks, newAttack] };
-        }
-        return p;
+    window.syncAndModifySheet(playerId, (p) => {
+        const attacks = p.attacks || [];
+        const newAttack = { id: 'atk_' + Date.now(), name: '', bonus: '', damage: '' };
+        return { ...p, attacks: [...attacks, newAttack] };
     });
-    state.update({ players });
 };
 
 window.updateAttack = function (playerId, atkId, field, value) {
@@ -581,14 +572,10 @@ window.updateAttack = function (playerId, atkId, field, value) {
 
 window.deleteAttack = function (playerId, atkId) {
     if (!confirm('¿Eliminar este ataque?')) return;
-    const players = state.get().players.map(p => {
-        if (p.id === playerId) {
-            const attacks = p.attacks.filter(a => a.id !== atkId);
-            return { ...p, attacks };
-        }
-        return p;
+    window.syncAndModifySheet(playerId, (p) => {
+        const attacks = p.attacks.filter(a => a.id !== atkId);
+        return { ...p, attacks };
     });
-    state.update({ players });
 };
 
 window.updateSave = function (playerId, stat, field, value) {
@@ -610,14 +597,10 @@ window.updateSave = function (playerId, stat, field, value) {
 };
 
 window.updateDeathSave = function (playerId, type, value) {
-    const players = state.get().players.map(p => {
-        if (p.id === playerId) {
-            const deathSaves = p.deathSaves || { successes: 0, failures: 0 };
-            return { ...p, deathSaves: { ...deathSaves, [type]: value } };
-        }
-        return p;
+    window.syncAndModifySheet(playerId, (p) => {
+        const deathSaves = p.deathSaves || { successes: 0, failures: 0 };
+        return { ...p, deathSaves: { ...deathSaves, [type]: value } };
     });
-    state.update({ players });
 };
 
 window.updateEquipment = function (playerId, field, value) {
@@ -651,13 +634,13 @@ window.renderSpellsList = function (playerId, spells) {
 
         grouped[level].forEach(spell => {
             html += `
-                <div class="card" style="padding: 0.5rem; ${spell.prepared ? 'border-color: var(--gold-dim); box-shadow: 0 0 5px rgba(212,175,55,0.3); background: rgba(255,255,255,0.4);' : ''}">
+                <div class="card spell-item" data-item-id="${spell.id}" style="padding: 0.5rem; ${spell.prepared ? 'border-color: var(--gold-dim); box-shadow: 0 0 5px rgba(212,175,55,0.3); background: rgba(255,255,255,0.4);' : ''}">
                     <div class="flex-between mb-1">
                         <div class="flex-row" style="width: 70%;">
                             <button class="btn" style="padding: 0.1rem 0.3rem; font-size: 0.8em; background: ${spell.prepared ? 'var(--gold-dim)' : 'transparent'}; color: ${spell.prepared ? '#fff' : 'var(--text-muted)'}; border: 1px solid var(--parchment-dark); box-shadow: none;" onclick="window.toggleSpellPrepared('${playerId}', '${spell.id}')" title="Preparar hechizo">
                                 <i class="fa-solid fa-sun"></i>
                             </button>
-                            <input type="text" value="${spell.name}" placeholder="Nombre del conjuro" onchange="window.updateSpell('${playerId}', '${spell.id}', 'name', this.value)" style="margin-bottom: 0; font-weight: bold; padding: 0.2rem;">
+                            <input type="text" name="name" value="${spell.name}" placeholder="Nombre del conjuro" style="margin-bottom: 0; font-weight: bold; padding: 0.2rem;">
                         </div>
                         <button class="btn btn-danger edit-only-btn" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.deleteSpell('${playerId}', '${spell.id}')">
                             <i class="fa-solid fa-trash"></i>
@@ -665,13 +648,14 @@ window.renderSpellsList = function (playerId, spells) {
                     </div>
                     
                     <div class="flex-row mb-1" style="gap: 0.2rem;">
-                        <select onchange="window.updateSpell('${playerId}', '${spell.id}', 'level', Number(this.value))" style="margin-bottom: 0; padding: 0.1rem; font-size: 0.8em; width: 60px;">
+                        <input type="hidden" name="prepared" value="${spell.prepared}">
+                        <select name="level" style="margin-bottom: 0; padding: 0.1rem; font-size: 0.8em; width: 60px;">
                             ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(l => `<option value="${l}" ${l == spell.level ? 'selected' : ''}>Nv ${l}</option>`).join('')}
                         </select>
-                        <input type="text" value="${spell.castingTime || ''}" placeholder="Tiempo (ej. 1 Acción)" onchange="window.updateSpell('${playerId}', '${spell.id}', 'castingTime', this.value)" style="margin-bottom: 0; padding: 0.1rem; font-size: 0.8em;">
+                        <input type="text" name="castingTime" value="${spell.castingTime || ''}" placeholder="Tiempo (ej. 1 Acción)" style="margin-bottom: 0; padding: 0.1rem; font-size: 0.8em;">
                     </div>
                     
-                    <textarea placeholder="Descripción y efectos..." onchange="window.updateSpell('${playerId}', '${spell.id}', 'description', this.value)" style="min-height: 50px; margin-bottom: 0; font-size: 0.85em; padding: 0.3rem;">${spell.description || ''}</textarea>
+                    <textarea name="description" placeholder="Descripción y efectos..." style="min-height: 50px; margin-bottom: 0; font-size: 0.85em; padding: 0.3rem;">${spell.description || ''}</textarea>
                 </div>
             `;
         });
@@ -683,22 +667,18 @@ window.renderSpellsList = function (playerId, spells) {
 };
 
 window.addSpell = function (playerId) {
-    const players = state.get().players.map(p => {
-        if (p.id === playerId) {
-            const spells = p.spells || [];
-            const newSpell = {
-                id: 'spell_' + Date.now(),
-                name: 'Nuevo Conjuro',
-                level: 0,
-                castingTime: '',
-                description: '',
-                prepared: false
-            };
-            return { ...p, spells: [...spells, newSpell] };
-        }
-        return p;
+    window.syncAndModifySheet(playerId, (p) => {
+        const spells = p.spells || [];
+        const newSpell = {
+            id: 'spell_' + Date.now(),
+            name: 'Nuevo Conjuro',
+            level: 0,
+            castingTime: '',
+            description: '',
+            prepared: false
+        };
+        return { ...p, spells: [...spells, newSpell] };
     });
-    state.update({ players });
 };
 
 window.updateSpell = function (playerId, spellId, field, value) {
@@ -713,26 +693,18 @@ window.updateSpell = function (playerId, spellId, field, value) {
 };
 
 window.toggleSpellPrepared = function (playerId, spellId) {
-    const players = state.get().players.map(p => {
-        if (p.id === playerId) {
-            const spells = p.spells.map(s => s.id === spellId ? { ...s, prepared: !s.prepared } : s);
-            return { ...p, spells };
-        }
-        return p;
+    window.syncAndModifySheet(playerId, (p) => {
+        const spells = p.spells.map(s => s.id === spellId ? { ...s, prepared: !s.prepared } : s);
+        return { ...p, spells };
     });
-    state.update({ players });
 };
 
 window.deleteSpell = function (playerId, spellId) {
     if (!confirm('¿Eliminar este conjuro del grimorio?')) return;
-    const players = state.get().players.map(p => {
-        if (p.id === playerId) {
-            const spells = p.spells.filter(s => s.id !== spellId);
-            return { ...p, spells };
-        }
-        return p;
+    window.syncAndModifySheet(playerId, (p) => {
+        const spells = p.spells.filter(s => s.id !== spellId);
+        return { ...p, spells };
     });
-    state.update({ players });
 };
 
 window.updateSpellSlot = function (playerId, level, field, value) {
@@ -751,6 +723,111 @@ window.updateSpellSlot = function (playerId, level, field, value) {
         return p;
     });
     state.update({ players });
+};
+
+window.gatherSheetData = function (playerId) {
+    const container = document.querySelector('.sheet-container');
+    if (!container) return null;
+
+    const data = {
+        stats: {},
+        skills: {},
+        saves: {},
+        equipment: {},
+        spellSlots: {},
+        attacks: [],
+        spells: []
+    };
+
+    // Recolectar campos simples (inputs, textareas, selects)
+    const inputs = container.querySelectorAll('input[name], textarea[name], select[name]');
+    inputs.forEach(input => {
+        const name = input.getAttribute('name');
+        if (!name) return;
+
+        // Si es parte de un item de lista (ataque o hechizo), saltarlo aquí
+        if (input.closest('.attack-item') || input.closest('.spell-item')) return;
+
+        let value = input.type === 'checkbox' ? input.checked :
+            input.type === 'number' ? Number(input.value) : input.value;
+
+        // Manejar estructura anidada ej: stats.str
+        if (name.includes('.')) {
+            const parts = name.split('.');
+            let current = data;
+            for (let i = 0; i < parts.length - 1; i++) {
+                if (!current[parts[i]]) current[parts[i]] = {};
+                current = current[parts[i]];
+            }
+            current[parts[parts.length - 1]] = value;
+        } else {
+            data[name] = value;
+        }
+    });
+
+    // Recolectar ataques
+    const attackItems = container.querySelectorAll('.attack-item');
+    attackItems.forEach(item => {
+        const id = item.getAttribute('data-item-id');
+        const attack = { id };
+        item.querySelectorAll('input[name]').forEach(input => {
+            let val = input.value;
+            if (input.type === 'number') val = Number(val);
+            attack[input.getAttribute('name')] = val;
+        });
+        data.attacks.push(attack);
+    });
+
+    // Recolectar hechizos
+    const spellItems = container.querySelectorAll('.spell-item');
+    spellItems.forEach(item => {
+        const id = item.getAttribute('data-item-id');
+        const spell = { id };
+        item.querySelectorAll('input[name], select[name], textarea[name]').forEach(input => {
+            let val = input.value;
+            if (input.getAttribute('name') === 'level') val = Number(val);
+            if (input.getAttribute('name') === 'prepared') val = val === 'true';
+            spell[input.getAttribute('name')] = val;
+        });
+        data.spells.push(spell);
+    });
+
+    return data;
+};
+
+// Helper para sincronizar el estado visual del DOM antes de aplicar modificaciones (ej. añadir ataque)
+window.syncAndModifySheet = function (playerId, modifierFn) {
+    const newData = window.isSheetEditMode ? window.gatherSheetData(playerId) : null;
+
+    const players = state.get().players.map(p => {
+        if (p.id === playerId) {
+            let pMerged = { ...p };
+            if (newData) {
+                pMerged = {
+                    ...pMerged,
+                    ...newData,
+                    stats: { ...p.stats, ...newData.stats },
+                    skills: { ...p.skills, ...newData.skills },
+                    saves: { ...p.saves, ...newData.saves },
+                    equipment: { ...p.equipment, ...newData.equipment },
+                    spellSlots: { ...p.spellSlots, ...newData.spellSlots },
+                    attacks: newData.attacks,
+                    spells: newData.spells
+                };
+            }
+            if (modifierFn) {
+                pMerged = modifierFn(pMerged);
+            }
+            return pMerged;
+        }
+        return p;
+    });
+    state.update({ players });
+};
+
+window.saveSheetChanges = function (playerId) {
+    window.syncAndModifySheet(playerId);
+    window.toggleSheetEditMode();
 };
 
 window.updateSheet = function (playerId, field, value) {
