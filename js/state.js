@@ -29,10 +29,14 @@ export const state = {
     async init() {
         const saved = await storageAdapter.load();
         if (saved) {
-            // Merge in case we added new default keys later
-            currentState = { ...defaultState, ...saved };
+            // Merge remote state but preserve current UI session
+            const currentSession = currentState.session;
+            currentState = { ...defaultState, ...saved, session: currentSession };
         } else {
-            await storageAdapter.save(currentState);
+            // Initial save: Do not save session to cloud
+            const dataToSave = { ...currentState };
+            delete dataToSave.session;
+            await storageAdapter.save(dataToSave);
         }
 
         // Listen to remote changes and update local state
@@ -43,7 +47,11 @@ export const state = {
                     console.log("Remote update ignored: User is currently in Edit Mode.");
                     return;
                 }
-                currentState = newData;
+
+                // CRITICAL: Preserve local UI session state, do not overwrite with remote state
+                const currentSession = currentState.session;
+                currentState = { ...newData, session: currentSession };
+
                 this.notify();
             }
         });
@@ -55,7 +63,12 @@ export const state = {
      */
     async update(partial) {
         currentState = { ...currentState, ...partial };
-        await storageAdapter.save(currentState);
+
+        // CRITICAL DECOUPLING: Never save the UI session state to the cloud
+        const dataToSave = { ...currentState };
+        delete dataToSave.session;
+
+        await storageAdapter.save(dataToSave);
         this.notify();
     },
 
