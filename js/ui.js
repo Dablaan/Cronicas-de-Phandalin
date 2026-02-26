@@ -349,30 +349,27 @@ function renderSheetCenterColumn(playerId, player) {
         { key: 'wis', label: 'Sab' }, { key: 'cha', label: 'Car' }
     ];
 
-    let savesHtml = '<div class="card" style="padding: 0.5rem 1rem;">';
+    let savesHtml = '<div class="card" style="padding: 0.5rem; margin-bottom: 0.5rem;">';
     savesHtml += '<h4 style="font-size:0.8rem; text-transform:uppercase; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem;">Tiradas de Salvación</h4>';
+    savesHtml += '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.2rem;">';
     savesList.forEach(s => {
-        // Handle backwards compatibility where saves[key] could be a boolean
         let saveData = (player.saves && player.saves[s.key]) || { prof: false, bonus: 0 };
-        if (typeof saveData === 'boolean') {
-            saveData = { prof: saveData, bonus: 0 };
-        }
-
+        if (typeof saveData === 'boolean') { saveData = { prof: saveData, bonus: 0 }; }
         savesHtml += `
-            <div class="skill-row" style="margin-bottom: 0.2rem;">
-                <input type="checkbox" name="saves.${s.key}.prof" ${saveData.prof ? 'checked' : ''}>
-                <input class="skill-val" type="text" name="saves.${s.key}.bonus" value="${saveData.bonus ? '+' + saveData.bonus : '0'}" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
-                <label>${s.label}</label>
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255,255,255,0.3); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 0.2rem;">
+                <input type="checkbox" name="saves.${s.key}.prof" ${saveData.prof ? 'checked' : ''} style="margin-bottom: 0.1rem; accent-color: var(--leather-dark);">
+                <input type="text" name="saves.${s.key}.bonus" value="${saveData.bonus ? '+' + saveData.bonus : '0'}" style="text-align:center; font-size:1rem; font-weight:bold; color:var(--leather-dark); border:none; background:transparent; width:100%; padding:0; margin:0; line-height: 1;" title="Bono Total">
+                <label style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.1rem; text-transform:uppercase;">${s.label}</label>
             </div>
         `;
     });
-    savesHtml += '</div>';
+    savesHtml += '</div></div>';
 
     let perceptionHtml = `
-    <div class="card" style="padding: 0.5rem; text-align: center; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 1rem; background: rgba(255, 255, 255, 0.4);">
+    <div class="card" style="padding: 0.5rem; text-align: center; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 1rem; background: rgba(255, 255, 255, 0.4);">
         <label style="font-size: 0.8rem; text-transform:uppercase; font-weight:bold; color: var(--leather-light); margin: 0;">Percepción Pasiva</label>
         <div style="font-size: 1.5rem; font-family: var(--font-heading); color: var(--leather-dark); font-weight: bold;">
-            <input type="number" value="${player.passivePerception || 10}" onchange="window.updateSheet('${playerId}', 'passivePerception', Number(this.value))" style="width: 50px; text-align:center; font-size: 1.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0;">
+            <input type="number" name="passivePerception" value="${player.passivePerception || 10}" style="width: 50px; text-align:center; font-size: 1.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0;">
         </div>
     </div>
     `;
@@ -381,24 +378,24 @@ function renderSheetCenterColumn(playerId, player) {
     let hpColor = hpBarPercent > 50 ? 'var(--leather-light)' : (hpBarPercent > 20 ? 'var(--gold-dim)' : 'var(--red-ink)');
 
     let hpHtml = `
-    <div class="card" style="padding: 1rem; text-align: center;">
+    <div class="card" style="padding: 0.5rem; text-align: center; margin-bottom: 0.5rem;">
         <label style="font-size: 0.8rem; text-transform:uppercase; font-weight:bold; color: var(--text-muted);"><i class="fa-solid fa-heart" style="color:var(--red-ink)"></i> Puntos de Golpe</label>
         
-        <div style="display:flex; justify-content:center; align-items:center; gap: 1rem; margin: 1rem 0;">
-            <button class="btn" style="padding: 0.2rem 0.8rem; font-size: 1.5rem;" onclick="window.modifyHP('${playerId}', -1)">-</button>
-            <div style="font-size: 2.5rem; font-family: var(--font-heading); font-weight:bold; color: var(--leather-dark);">
-                <input type="number" name="hpCurrent" value="${player.hpCurrent}" style="width:70px; text-align:center; font-size:2.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0; display:inline-block;">
-                <span style="font-size:1.2rem; color:var(--text-muted);">/ <input type="number" name="hpMax" value="${player.hpMax}" style="width:50px; text-align:center; font-size:1.2rem; border:none; background:transparent; padding:0; margin:0; display:inline-block;"></span>
+        <div style="display:flex; justify-content:center; align-items:center; gap: 0.5rem; margin: 0.5rem 0;">
+            <button class="btn" style="padding: 0.1rem 0.6rem; font-size: 1.2rem;" onclick="window.modifyHP('${playerId}', -1)">-</button>
+            <div style="font-size: 2rem; font-family: var(--font-heading); font-weight:bold; color: var(--leather-dark);">
+                <input type="number" name="hpCurrent" value="${player.hpCurrent}" style="width:60px; text-align:center; font-size:2rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0; display:inline-block;">
+                <span style="font-size:1rem; color:var(--text-muted);">/ <input type="number" name="hpMax" value="${player.hpMax}" style="width:40px; text-align:center; font-size:1rem; border:none; background:transparent; padding:0; margin:0; display:inline-block;"></span>
             </div>
-            <button class="btn" style="padding: 0.2rem 0.8rem; font-size: 1.5rem;" onclick="window.modifyHP('${playerId}', 1)">+</button>
+            <button class="btn" style="padding: 0.1rem 0.6rem; font-size: 1.2rem;" onclick="window.modifyHP('${playerId}', 1)">+</button>
         </div>
         
-        <div style="width:100%; height:8px; background:var(--parchment-dark); border-radius:4px; overflow:hidden; margin-bottom: 1rem;">
+        <div style="width:100%; height:6px; background:var(--parchment-dark); border-radius:3px; overflow:hidden; margin-bottom: 0.5rem;">
             <div style="width:${hpBarPercent}%; height:100%; background:${hpColor}; transition: width 0.3s ease;"></div>
         </div>
 
         <div class="grid-2">
-            <div style="border-right: 1px solid var(--parchment-dark); padding-right: 0.5rem; text-align:left;">
+            <div style="border-right: 1px solid var(--parchment-dark); padding-right: 0.2rem; text-align:left;">
                 <label style="font-size: 0.7rem; font-weight:bold; color:var(--text-muted);">Dados de Golpe</label>
                 <div class="flex-row">
                     <input type="text" name="hitDice.current" value="${player.hitDice ? player.hitDice.current : '1'}" style="width: 45%; margin:0; text-align:center;">
@@ -437,7 +434,7 @@ function renderSheetCenterColumn(playerId, player) {
     </div>
     `;
 
-    return `<div class="column-center">${defenseHtml}${savesHtml}${perceptionHtml}${hpHtml}${attacksHtml}</div>`;
+    return `<div class="column-center">${hpHtml}${defenseHtml}${savesHtml}${perceptionHtml}${attacksHtml}</div>`;
 }
 
 function renderSheetRightColumn(playerId, player) {
@@ -899,26 +896,27 @@ function renderPartyInfo(players, isDM) {
                 
                 <div class="party-hp-bar-container">
                     <div class="party-hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor};"></div>
-                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: bold; text-shadow: 1px 1px 2px #000;">
+                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1rem; font-weight: 900; text-shadow: 1px 1px 3px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.5); letter-spacing: 1px;">
                         ${p.hpCurrent} / ${p.hpMax} HP
                     </div>
                 </div>
 
-                <div class="flex-between mb-1" style="font-size: 0.8rem; border-bottom: 1px dashed var(--parchment-dark); padding-bottom: 0.5rem;">
-                    <span><i class="fa-solid fa-shield"></i> CA: <strong>${p.ac || 10}</strong></span>
-                    <span><i class="fa-solid fa-bolt"></i> Inic: <strong>${p.initiative || 0}</strong></span>
-                    <span><i class="fa-solid fa-eye"></i> Perc: <strong>${p.passivePerception || 10}</strong></span>
+                <div class="flex-between mb-1" style="font-size: 0.95rem; border-bottom: 1px dashed var(--parchment-dark); padding-bottom: 0.5rem;">
+                    <span><i class="fa-solid fa-shield" style="color:var(--leather-light)"></i> CA: <strong style="font-size:1.1em; color:var(--leather-dark);">${p.ac || 10}</strong></span>
+                    <span><i class="fa-solid fa-bolt" style="color:var(--gold-dim)"></i> Inic: <strong style="font-size:1.1em; color:var(--leather-dark);">${p.initiative || 0}</strong></span>
+                    <span><i class="fa-solid fa-eye" style="color:var(--leather-light)"></i> Pasiva: <strong style="font-size:1.1em; color:var(--leather-dark);">${p.passivePerception || 10}</strong></span>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; text-align: center;">
-                    <div title="Fuerza"><strong>FUE</strong><br>${getSaveBonus('str')}</div>
-                    <div title="Destreza"><strong>DES</strong><br>${getSaveBonus('dex')}</div>
-                    <div title="Constitución"><strong>CON</strong><br>${getSaveBonus('con')}</div>
-                    <div title="Inteligencia"><strong>INT</strong><br>${getSaveBonus('int')}</div>
-                    <div title="Sabiduría"><strong>SAB</strong><br>${getSaveBonus('wis')}</div>
-                    <div title="Carisma"><strong>CAR</strong><br>${getSaveBonus('cha')}</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-bottom: 0.2rem;">Tiradas de Salvación:</div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; text-align: center; background: rgba(255,255,255,0.4); border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; padding: 0.2rem 0.4rem;">
+                    <div title="Fuerza"><strong style="font-size:0.6rem; color:var(--leather-light);">FUE</strong><br><span style="font-weight:bold">${getSaveBonus('str')}</span></div>
+                    <div title="Destreza"><strong style="font-size:0.6rem; color:var(--leather-light);">DES</strong><br><span style="font-weight:bold">${getSaveBonus('dex')}</span></div>
+                    <div title="Constitución"><strong style="font-size:0.6rem; color:var(--leather-light);">CON</strong><br><span style="font-weight:bold">${getSaveBonus('con')}</span></div>
+                    <div title="Inteligencia"><strong style="font-size:0.6rem; color:var(--leather-light);">INT</strong><br><span style="font-weight:bold">${getSaveBonus('int')}</span></div>
+                    <div title="Sabiduría"><strong style="font-size:0.6rem; color:var(--leather-light);">SAB</strong><br><span style="font-weight:bold">${getSaveBonus('wis')}</span></div>
+                    <div title="Carisma"><strong style="font-size:0.6rem; color:var(--leather-light);">CAR</strong><br><span style="font-weight:bold">${getSaveBonus('cha')}</span></div>
                 </div>
-            </div >
+            </div>
             `;
     });
 
