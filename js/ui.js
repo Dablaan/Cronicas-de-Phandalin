@@ -280,9 +280,6 @@ function renderSheetLeftColumn(playerId, player) {
                 <label>${s.label}</label>
                 <input class="stat-val" type="number" value="${val}" onchange="window.updateSheetStat('${playerId}', '${s.key}', Number(this.value))">
                 <div class="stat-mod">${mod}</div>
-                <div style="position: absolute; top: 5px; right: 5px;" title="Competencia Salvación">
-                    <input type="checkbox" ${saved ? 'checked' : ''} onchange="window.updateSave('${playerId}', '${s.key}', this.checked)" style="width: 12px; height: 12px; accent-color: var(--leather-dark); margin:0; cursor:pointer;">
-                </div>
             </div>
         `;
     });
@@ -351,6 +348,31 @@ function renderSheetCenterColumn(playerId, player) {
         </div>
     </div>
     `;
+
+    const savesList = [
+        { key: 'str', label: 'Fue' }, { key: 'dex', label: 'Des' },
+        { key: 'con', label: 'Con' }, { key: 'int', label: 'Int' },
+        { key: 'wis', label: 'Sab' }, { key: 'cha', label: 'Car' }
+    ];
+
+    let savesHtml = '<div class="card" style="padding: 0.5rem 1rem;">';
+    savesHtml += '<h4 style="font-size:0.8rem; text-transform:uppercase; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem;">Tiradas de Salvación</h4>';
+    savesList.forEach(s => {
+        // Handle backwards compatibility where saves[key] could be a boolean
+        let saveData = (player.saves && player.saves[s.key]) || { prof: false, bonus: 0 };
+        if (typeof saveData === 'boolean') {
+            saveData = { prof: saveData, bonus: 0 };
+        }
+
+        savesHtml += `
+            <div class="skill-row" style="margin-bottom: 0.2rem;">
+                <input type="checkbox" ${saveData.prof ? 'checked' : ''} onchange="window.updateSave('${playerId}', '${s.key}', 'prof', this.checked)">
+                <input class="skill-val" type="text" value="${saveData.bonus ? '+' + saveData.bonus : '0'}" onchange="window.updateSave('${playerId}', '${s.key}', 'bonus', Number(this.value.replace('+','')))" style="border:none; border-bottom: 1px solid var(--leather-dark); background:transparent; margin:0; padding:0; height:auto; width: 30px;" title="Bono Total">
+                <label>${s.label}</label>
+            </div>
+        `;
+    });
+    savesHtml += '</div>';
 
     let perceptionHtml = `
     <div class="card" style="padding: 0.5rem; text-align: center; margin-bottom: 1rem; display: flex; align-items: center; justify-content: center; gap: 1rem; background: rgba(255, 255, 255, 0.4);">
@@ -421,7 +443,7 @@ function renderSheetCenterColumn(playerId, player) {
     </div>
     `;
 
-    return `<div class="column-center">${defenseHtml}${perceptionHtml}${hpHtml}${attacksHtml}</div>`;
+    return `<div class="column-center">${defenseHtml}${savesHtml}${perceptionHtml}${hpHtml}${attacksHtml}</div>`;
 }
 
 function renderSheetRightColumn(playerId, player) {
@@ -569,11 +591,18 @@ window.deleteAttack = function (playerId, atkId) {
     state.update({ players });
 };
 
-window.updateSave = function (playerId, stat, isChecked) {
+window.updateSave = function (playerId, stat, field, value) {
     const players = state.get().players.map(p => {
         if (p.id === playerId) {
-            const saves = p.saves || { str: false, dex: false, con: false, int: false, wis: false, cha: false };
-            return { ...p, saves: { ...saves, [stat]: isChecked } };
+            const saves = p.saves || {};
+            // Backward comp
+            let statObj = saves[stat];
+            if (typeof statObj === 'boolean') {
+                statObj = { prof: statObj, bonus: 0 };
+            } else if (!statObj) {
+                statObj = { prof: false, bonus: 0 };
+            }
+            return { ...p, saves: { ...saves, [stat]: { ...statObj, [field]: value } } };
         }
         return p;
     });
@@ -769,23 +798,51 @@ function renderPartyInfo(players, isDM) {
     let html = '<div class="grid-2">';
 
     players.forEach(p => {
+        let hpPercent = Math.max(0, Math.min(100, (p.hpCurrent / p.hpMax) * 100));
+        let hpColor = hpPercent > 50 ? 'darkolivegreen' : (hpPercent > 20 ? 'darkgoldenrod' : 'darkred');
+
+        const getSaveBonus = (stat) => {
+            let s = p.saves && p.saves[stat];
+            if (typeof s === 'boolean') return s ? '+2' : '0';
+            if (s && s.bonus) return (s.bonus > 0 ? '+' : '') + s.bonus;
+            return '0';
+        };
+
         html += `
             <div class="card">
-                <h3 style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    ${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:var(--text-muted)">Lvl ${p.level} ${p.class}</span>
-                </h3>
-                <div class="flex-between mb-1">
-                    <span><strong>HP:</strong> ${p.hpCurrent} / ${p.hpMax}</span>
-                    <span><strong>CA:</strong> ${p.ac}</span>
+                <div class="flex-between" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <h3 style="margin:0;">${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:var(--text-muted)">Lvl ${p.level} ${p.class}</span></h3>
+                    ${isDM ? `
+                        <div>
+                            <button class="btn" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent - 1})">-</button>
+                            <button class="btn" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent + 1})">+</button>
+                        </div>
+                    ` : ''}
                 </div>
-                ${isDM ? `
-                    <div style="text-align: right;">
-                        <button class="btn" style="padding: 0.2rem 0.5rem;" onclick="window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent - 1})">-1 HP</button>
-                        <button class="btn" style="padding: 0.2rem 0.5rem;" onclick="window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent + 1})">+1 HP</button>
+                
+                <div class="party-hp-bar-container">
+                    <div class="party-hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor};"></div>
+                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: bold; text-shadow: 1px 1px 2px #000;">
+                        ${p.hpCurrent} / ${p.hpMax} HP
                     </div>
-                ` : ''}
-            </div>
-        `;
+                </div>
+
+                <div class="flex-between mb-1" style="font-size: 0.8rem; border-bottom: 1px dashed var(--parchment-dark); padding-bottom: 0.5rem;">
+                    <span><i class="fa-solid fa-shield"></i> CA: <strong>${p.ac || 10}</strong></span>
+                    <span><i class="fa-solid fa-bolt"></i> Inic: <strong>${p.initiative || 0}</strong></span>
+                    <span><i class="fa-solid fa-eye"></i> Perc: <strong>${p.passivePerception || 10}</strong></span>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; text-align: center;">
+                    <div title="Fuerza"><strong>FUE</strong><br>${getSaveBonus('str')}</div>
+                    <div title="Destreza"><strong>DES</strong><br>${getSaveBonus('dex')}</div>
+                    <div title="Constitución"><strong>CON</strong><br>${getSaveBonus('con')}</div>
+                    <div title="Inteligencia"><strong>INT</strong><br>${getSaveBonus('int')}</div>
+                    <div title="Sabiduría"><strong>SAB</strong><br>${getSaveBonus('wis')}</div>
+                    <div title="Carisma"><strong>CAR</strong><br>${getSaveBonus('cha')}</div>
+                </div>
+            </div >
+            `;
     });
 
     html += '</div>';
@@ -809,7 +866,7 @@ function renderNotes(currentState) {
     const playerNotes = notes[playerId] || '';
 
     container.innerHTML = `
-        <div class="card">
+            < div class="card" >
             <h3><i class="fa-solid fa-book-journal-whills"></i> Diario Personal</h3>
             <p class="text-muted mb-1">Estas notas son privadas (solo tú y el DM pueden verlas).</p>
             <textarea id="personal-notes" placeholder="Escribe aquí tus aventuras...">${playerNotes}</textarea>
@@ -817,8 +874,8 @@ function renderNotes(currentState) {
                 <i class="fa-solid fa-floppy-disk"></i> Guardar Notas
             </button>
             <span id="notes-saved-msg" style="color: var(--leather-light); display: none; margin-left: 1rem;"><i class="fa-solid fa-check"></i> Guardado</span>
-        </div>
-    `;
+        </div >
+            `;
 }
 
 window.savePersonalNotes = function (playerId) {
@@ -852,19 +909,19 @@ function renderNpcs(currentState) {
 
     let html = '<h3><i class="fa-solid fa-users"></i> Personajes Conocidos</h3><div class="grid-2">';
     visibleNpcs.forEach(n => {
-        const playerNotesOnNpc = chronicles[`${session.playerId}_npc_${n.id}`] || '';
+        const playerNotesOnNpc = chronicles[`${session.playerId}_npc_${n.id} `] || '';
         html += `
-             <div class="card">
+            < div class="card" >
                  <h4>${n.name}</h4>
                  <p style="white-space: pre-wrap;">${n.description}</p>
                  ${n.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
-                 <div class="mt-1">
-                     <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes sobre ${n.name}:</label>
-                     <textarea id="chronicle-npc-${n.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
-                     <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'npc_${n.id}')">Guardar</button>
-                 </div>
-             </div>
-         `;
+        <div class="mt-1">
+            <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes sobre ${n.name}:</label>
+            <textarea id="chronicle-npc-${n.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
+            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'npc_${n.id}')">Guardar</button>
+        </div>
+             </div >
+            `;
     });
     html += '</div>';
 
@@ -892,19 +949,19 @@ function renderMaps(currentState) {
 
     let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div class="grid-2">';
     visibleMaps.forEach(m => {
-        const playerNotesOnMap = chronicles[`${session.playerId}_map_${m.id}`] || '';
+        const playerNotesOnMap = chronicles[`${session.playerId}_map_${m.id} `] || '';
         html += `
-             <div class="card">
-                 <h4>${m.name}</h4>
+            < div class="card" >
+                <h4>${m.name}</h4>
                  ${m.url ? `<p><a href="${m.url}" target="_blank" style="color: var(--leather-dark); font-weight: bold;">[Ver Mapa Original]</a></p>` : ''}
                  ${m.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
-                 <div class="mt-1">
-                     <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes:</label>
-                     <textarea id="chronicle-map-${m.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
-                     <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'map_${m.id}')">Guardar</button>
-                 </div>
-             </div>
-          `;
+        <div class="mt-1">
+            <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes:</label>
+            <textarea id="chronicle-map-${m.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
+            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'map_${m.id}')">Guardar</button>
+        </div>
+             </div >
+            `;
     });
     html += '</div>';
 
@@ -912,8 +969,8 @@ function renderMaps(currentState) {
 }
 
 window.saveChronicle = function (event, playerId, entityId) {
-    const text = document.getElementById(`chronicle-${entityId.replace('_', '-')}`).value;
-    const key = `${playerId}_${entityId}`;
+    const text = document.getElementById(`chronicle - ${entityId.replace('_', '-')} `).value;
+    const key = `${playerId}_${entityId} `;
     const chronicles = { ...state.get().chronicles, [key]: text };
     state.update({ chronicles });
 
@@ -935,11 +992,11 @@ window.renderDMMirrorNotes = function (currentState) {
     const currentlySelected = container.getAttribute('data-mirror-player') || (players.length > 0 ? players[0].id : null);
 
     let html = `
-        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            < div class="flex-between mb-1" style = "border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;" >
             <h3>El Espejo del Master</h3>
             <p class="text-muted" style="font-size: 0.9em;">Observa las crónicas de tus jugadores</p>
-        </div>
-    `;
+        </div >
+            `;
 
     if (players.length === 0) {
         html += '<p class="text-muted">Aún no hay jugadores en la mesa.</p>';
@@ -949,13 +1006,13 @@ window.renderDMMirrorNotes = function (currentState) {
 
     // Selector
     html += `
-        <div class="mb-1">
+            < div class="mb-1" >
             <label>Selecciona un jugador:</label>
             <select onchange="document.getElementById('tab-notes').setAttribute('data-mirror-player', this.value); window.renderDMMirrorNotes(window.state.get())">
                 ${players.map(p => `<option value="${p.id}" ${p.id === currentlySelected ? 'selected' : ''}>${p.name} (Lvl ${p.level})</option>`).join('')}
             </select>
-        </div>
-    `;
+        </div >
+            `;
 
     if (!currentlySelected) {
         container.innerHTML = html;
@@ -967,16 +1024,16 @@ window.renderDMMirrorNotes = function (currentState) {
 
     // Personal notes
     html += `
-        <div class="card mb-1" style="background: rgba(255,255,255,0.3);">
+            < div class="card mb-1" style = "background: rgba(255,255,255,0.3);" >
             <h4><i class="fa-solid fa-book-journal-whills"></i> Diario Privado de ${selectedPlayer.name}</h4>
             <div style="white-space: pre-wrap; margin-top: 1rem; padding: 1rem; border-left: 3px solid var(--leather-dark);">${personalNotes}</div>
-        </div>
-    `;
+        </div >
+            `;
 
     // Filter chronicles belonging to this player
     const playerChroniclesKeys = Object.keys(chronicles).filter(k => k.startsWith(currentlySelected + '_') && chronicles[k].trim() !== '');
 
-    html += `<h4><i class="fa-solid fa-feather"></i> Crónicas Guardadas (NPCs y Mapas)</h4>`;
+    html += `< h4 > <i class="fa-solid fa-feather"></i> Crónicas Guardadas(NPCs y Mapas)</h4 > `;
 
     if (playerChroniclesKeys.length === 0) {
         html += '<p class="text-muted">No ha escrito apuntes sobre ningún NPC o Mapa aún.</p>';
@@ -998,10 +1055,10 @@ window.renderDMMirrorNotes = function (currentState) {
             }
 
             html += `
-                <div class="card" style="background: rgba(255,255,255,0.3);">
+            < div class="card" style = "background: rgba(255,255,255,0.3);" >
                     <h5 style="color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.2rem;"><i class="fa-solid ${isMap ? 'fa-map' : 'fa-user'}"></i> ${entityName}</h5>
                     <div style="white-space: pre-wrap; font-size: 0.9em; margin-top: 0.5rem;">${chronicles[k]}</div>
-                </div>
+                </div >
             `;
         });
         html += '</div>';
@@ -1017,17 +1074,17 @@ window.renderDMNpcs = function (currentState) {
     const container = document.getElementById('tab-npcs');
 
     let html = `
-        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            < div class="flex-between mb-1" style = "border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;" >
             <h3>Gestión de NPCs</h3>
             <button class="btn" onclick="window.createEntity('npc')"><i class="fa-solid fa-plus"></i> Nuevo NPC</button>
-        </div>
-    `;
+        </div >
+            `;
 
     html += '<div class="grid-2">';
     if (npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';
     npcs.forEach(n => {
         html += `
-            <div class="card" style="${n.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}">
+            < div class="card" style = "${n.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}" >
                 <div class="flex-between mb-1">
                     <input type="text" value="${n.name}" style="font-weight: bold; width: 60%; margin-bottom: 0;" onchange="window.updateEntity('npc', '${n.id}', 'name', this.value)">
                     <button class="btn ${n.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.updateEntity('npc', '${n.id}', 'isVisible', ${!n.isVisible})">
@@ -1050,8 +1107,8 @@ window.renderDMNpcs = function (currentState) {
                         </div>
                     `).join('')}
                 </div>
-            </div>
-        `;
+            </div >
+            `;
     });
     html += '</div>';
 
@@ -1063,17 +1120,17 @@ window.renderDMMaps = function (currentState) {
     const container = document.getElementById('tab-maps');
 
     let html = `
-        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            < div class="flex-between mb-1" style = "border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;" >
             <h3>Gestión de Mapas</h3>
             <button class="btn" onclick="window.createEntity('map')"><i class="fa-solid fa-plus"></i> Nuevo Mapa</button>
-        </div>
-    `;
+        </div >
+            `;
 
     html += '<div class="grid-2">';
     if (maps.length === 0) html += '<p class="text-muted">No hay Mapas.</p>';
     maps.forEach(m => {
         html += `
-            <div class="card" style="${m.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}">
+            < div class="card" style = "${m.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}" >
                 <div class="flex-between mb-1">
                     <input type="text" value="${m.name}" style="font-weight: bold; width: 60%; margin-bottom: 0;" onchange="window.updateEntity('map', '${m.id}', 'name', this.value)">
                     <button class="btn ${m.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.updateEntity('map', '${m.id}', 'isVisible', ${!m.isVisible})">
