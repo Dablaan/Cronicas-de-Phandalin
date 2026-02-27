@@ -186,6 +186,20 @@ function renderPlayerSheet(playerId, players) {
         return;
     }
 
+    // Save existing accordion states before replacing DOM
+    window.accordionStates = window.accordionStates || {};
+    const existingAccordions = container.querySelectorAll('details.sheet-accordion');
+    existingAccordions.forEach(el => {
+        if (el.dataset.id) {
+            window.accordionStates[playerId + '_' + el.dataset.id] = el.open;
+        }
+    });
+
+    const existingGrimorio = container.querySelector('#sheet-grimorio-container');
+    if (existingGrimorio) {
+        window.accordionStates[playerId + '_grimorio'] = existingGrimorio.style.display === 'block';
+    }
+
     // Default to view mode if viewing a different player
     if (window.currentSheetPlayerId !== playerId) {
         window.isSheetEditMode = false;
@@ -216,7 +230,8 @@ function renderPlayerSheet(playerId, players) {
 
     html += renderActionBarComp(playerId);
 
-    html += `<div id="sheet-grimorio-container" style="display: none;">${renderGrimorioComp(playerId, player)}</div>`;
+    const isGrimorioOpen = window.accordionStates && window.accordionStates[playerId + '_grimorio'] ? 'block' : 'none';
+    html += `<div id="sheet-grimorio-container" style="display: ${isGrimorioOpen};">${renderGrimorioComp(playerId, player)}</div>`;
     html += '</div>';
 
     container.innerHTML = html;
@@ -406,8 +421,9 @@ function renderSkillsComp(player) {
         { id: 'stealth', name: 'Sigilo', stat: 'dex' }, { id: 'survival', name: 'Supervivencia', stat: 'wis' }
     ];
 
+    const isOpen = window.accordionStates && window.accordionStates[player.id + '_skills'] ? 'open' : '';
     let html = '<div class="card" style="padding: 0.5rem 1rem;">';
-    html += '<details class="sheet-accordion">';
+    html += `<details class="sheet-accordion" data-id="skills" ${isOpen}>`;
     html += '<summary style="font-size:1.17em; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem; padding-bottom: 0.5rem; cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-list-check"></i> Habilidades</summary>';
     html += '<div class="accordion-content">';
     skillsMap.forEach(sk => {
@@ -441,9 +457,10 @@ function renderAttacksComp(playerId, player) {
 }
 
 function renderInventoryComp(player) {
+    const isOpen = window.accordionStates && window.accordionStates[player.id + '_inventory'] ? 'open' : '';
     return `
     <div class="card">
-        <details class="sheet-accordion">
+        <details class="sheet-accordion" data-id="inventory" ${isOpen}>
             <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</summary>
             <div class="accordion-content">
                 <div class="mt-1">
@@ -461,10 +478,11 @@ function renderInventoryComp(player) {
 }
 
 function renderTraitsComp(player) {
+    const isOpen = window.accordionStates && window.accordionStates[player.id + '_traits'] ? 'open' : '';
     return `
     <div class="card">
-        <details class="sheet-accordion">
-            <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-scroll"></i> Dotes y Rasgos</summary>
+        <details class="sheet-accordion" data-id="traits" ${isOpen}>
+            <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-scroll"></i> Rasgos y Dotes</summary>
             <div class="accordion-content">
                 <textarea name="traits" placeholder="Anota tus rasgos raciales, dotes, origen de clase, etc." style="min-height: 250px; height: 85%; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.traits || ''}</textarea>
             </div>

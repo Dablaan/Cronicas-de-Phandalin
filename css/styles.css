@@ -737,7 +737,7 @@ textarea {
     align-items: start;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
     .area-center-col {
         display: contents;
     }
@@ -778,9 +778,9 @@ textarea {
     }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1024px) {
     .sheet-layout {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1fr 2fr 2fr;
         grid-template-areas: none;
     }
 
