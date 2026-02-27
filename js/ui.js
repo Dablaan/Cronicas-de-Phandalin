@@ -257,7 +257,7 @@ function renderSheetLeftColumn(playerId, player) {
         return m >= 0 ? '+' + m : m;
     };
 
-    let statsHtml = '<div class="card" style="padding: 0.5rem;"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">';
+    let statsHtml = '<div class="card" style="padding: 0.5rem;"><div class="attributes-grid">';
     statsList.forEach(s => {
         const val = player.stats[s.key];
         const mod = getMod(val);
@@ -313,7 +313,7 @@ function renderSheetLeftColumn(playerId, player) {
 function renderSheetCenterColumn(playerId, player) {
     let defenseHtml = `
     <div class="card" style="padding: 0.5rem;">
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+        <div class="combat-stats-grid">
             <div class="defense-box">
                 <label>CA</label>
                 <input type="number" name="ac" value="${player.ac}" style="width: 100%;">
@@ -450,7 +450,7 @@ function renderSheetRightColumn(playerId, player) {
             <textarea name="traits" placeholder="Anota tus rasgos raciales, dotes, origen de clase, etc." style="min-height: 250px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.traits || ''}</textarea>
         </div>
         
-        <div class="sheet-mode-controls view-only-hide" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+        <div class="sheet-mode-controls view-only-hide sheet-action-bar" style="display: flex; flex-direction: column; gap: 0.5rem;">
             <button class="btn btn-edit-sheet view-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--leather-dark); color: var(--gold); box-shadow: 0 4px 8px rgba(0,0,0,0.5); font-size: 1.1rem; padding: 0.6rem 1.2rem;"><i class="fa-solid fa-pencil"></i> Editar Ficha</button>
             <button class="btn btn-save-sheet edit-only-btn" onclick="window.saveSheetChanges('${playerId}')" style="background: var(--gold-dim); color: var(--leather-dark); box-shadow: 0 4px 8px rgba(0,0,0,0.5); font-weight: bold; font-size: 1.1rem; padding: 0.6rem 1.2rem;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
         </div>
