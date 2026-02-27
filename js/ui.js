@@ -217,15 +217,18 @@ function renderPlayerSheet(playerId, players) {
 
 function renderSheetHeader(playerId, player) {
     return `
-    <div class="sheet-header-box">
-        <div style="flex: 0 0 auto; text-align: center; color: var(--gold-dim);">
-            <i class="fa-solid fa-dragon" style="font-size: 3rem;"></i>
-        </div>
-        <div class="sheet-header-name">
+    <div class="sheet-header-box" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+        <div class="sheet-header-name" style="flex: 1;">
             <input type="text" name="playerName" value="${player.playerName || ''}" placeholder="Nombre del Jugador" style="font-size: 0.8rem; border-bottom: none; color: var(--text-muted); margin-bottom: 0;">
-            <input type="text" name="name" value="${player.name || ''}" placeholder="Nombre del Personaje">
+            <input type="text" name="name" value="${player.name || ''}" placeholder="Nombre del Personaje" style="font-size: 1.5rem; margin-bottom: 0;">
         </div>
-        <div class="sheet-header-details">
+        <div style="flex: 0 0 auto; text-align: center; color: var(--gold-dim);">
+            <div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--leather-dark); overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--parchment-dark);">
+                <i class="fa-solid fa-dragon" style="font-size: 2.5rem; object-fit: cover;"></i>
+            </div>
+        </div>
+    </div>
+    <div class="sheet-header-details">
             <div>
                 <label>Clase y Nivel</label>
                 <div class="flex-row">
@@ -265,7 +268,7 @@ function renderStatsComp(player) {
         return m >= 0 ? '+' + m : m;
     };
 
-    let html = '<div class="card" style="padding: 0.5rem; height: 100%;"><div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+    let html = '<div class="card" style="padding: 0.5rem;"><div style="display: flex; flex-direction: column; gap: 0.5rem;">';
     statsList.forEach(s => {
         const val = player.stats[s.key];
         const mod = getMod(val);
@@ -286,7 +289,7 @@ function renderHPDeathComp(playerId, player) {
     let hpColor = hpBarPercent > 50 ? '#556b2f' : (hpBarPercent > 20 ? '#b8860b' : '#8b0000');
 
     return `
-    <div class="card" style="padding: 0.5rem; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+    <div class="card" style="padding: 0.5rem; display: flex; flex-direction: column; justify-content: center;">
         <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
             <label style="font-size: 0.75rem; text-transform:uppercase; font-weight:bold; color: var(--text-muted); margin:0;">
                 <i class="fa-solid fa-heart" style="color:var(--red-ink);"></i> Salud
@@ -325,7 +328,7 @@ function renderHPDeathComp(playerId, player) {
 
 function renderDefenseComp(player) {
     return `
-    <div class="card" style="padding: 0.5rem; height: 100%; display: flex; align-items: center; justify-content: center;">
+    <div class="card" style="padding: 0.5rem; display: flex; align-items: center; justify-content: center;">
         <div class="combat-stats-grid" style="display: grid; width: 100%; gap: 0.5rem;">
             <div class="defense-box">
                 <label>CA</label>
@@ -356,7 +359,7 @@ function renderSavesComp(player) {
         { key: 'con', label: 'Con' }, { key: 'int', label: 'Int' },
         { key: 'wis', label: 'Sab' }, { key: 'cha', label: 'Car' }
     ];
-    let html = '<div class="card" style="padding: 0.5rem; height: 100%;">';
+    let html = '<div class="card" style="padding: 0.5rem;">';
     html += '<h4 style="font-size:0.75rem; text-transform:uppercase; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.4rem; text-align:center; padding-bottom: 0.2rem;">Tiradas de Salvación</h4>';
     html += '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.2rem;">';
     savesList.forEach(s => {
@@ -375,7 +378,7 @@ function renderSavesComp(player) {
 
 function renderPassiveComp(player) {
     return `
-    <div class="card" style="padding: 0.5rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 1rem; background: rgba(255, 255, 255, 0.4); height: 100%;">
+    <div class="card" style="padding: 0.5rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 1rem; background: rgba(255, 255, 255, 0.4);">
         <label style="font-size: 0.8rem; text-transform:uppercase; font-weight:bold; color: var(--leather-light); margin: 0;">Percepción Pasiva</label>
         <div style="font-size: 1.5rem; font-family: var(--font-heading); color: var(--leather-dark); font-weight: bold;">
             <input type="number" name="passivePerception" value="${player.passivePerception || 10}" style="width: 50px; text-align:center; font-size: 1.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0;">
@@ -397,9 +400,9 @@ function renderSkillsComp(player) {
         { id: 'stealth', name: 'Sigilo', stat: 'dex' }, { id: 'survival', name: 'Supervivencia', stat: 'wis' }
     ];
 
-    let html = '<div class="card" style="padding: 0.5rem 1rem; height: 100%;">';
+    let html = '<div class="card" style="padding: 0.5rem 1rem;">';
     html += '<details class="sheet-accordion" open>';
-    html += '<summary style="font-size:0.8rem; text-transform:uppercase; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem; padding-bottom: 0.2rem; cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> Habilidades</summary>';
+    html += '<summary style="font-size:1.17em; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem; padding-bottom: 0.5rem; cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-list-check"></i> Habilidades</summary>';
     html += '<div class="accordion-content">';
     skillsMap.forEach(sk => {
         const skillData = (player.skills && player.skills[sk.id]) || { prof: false, bonus: 0 };
@@ -417,7 +420,7 @@ function renderSkillsComp(player) {
 
 function renderAttacksComp(playerId, player) {
     return `
-    <div class="card" style="height: 100%;">
+    <div class="card">
         <div class="flex-between mb-1" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3 style="margin:0;"><i class="fa-solid fa-khanda"></i> Ataques y Conjuros</h3>
             <button class="btn edit-only-btn" style="padding: 0.1rem 0.4rem; font-size: 0.7rem;" onclick="window.addAttack('${playerId}')">
@@ -433,7 +436,7 @@ function renderAttacksComp(playerId, player) {
 
 function renderInventoryComp(player) {
     return `
-    <div class="card" style="height: 100%;">
+    <div class="card">
         <details class="sheet-accordion" open>
             <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</summary>
             <div class="accordion-content">
@@ -453,7 +456,7 @@ function renderInventoryComp(player) {
 
 function renderTraitsComp(player) {
     return `
-    <div class="card" style="height: 100%;">
+    <div class="card">
         <details class="sheet-accordion" open>
             <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-scroll"></i> Dotes y Rasgos</summary>
             <div class="accordion-content">
@@ -466,14 +469,10 @@ function renderTraitsComp(player) {
 
 function renderActionBarComp(playerId) {
     return `
-    <div class="sheet-mode-controls view-only-hide sheet-action-bar flex-between" style="justify-content: space-between; align-items: stretch;">
-        <div style="flex: 1; max-width: 150px;">
-            <button class="btn" onclick="window.toggleGrimorio()" style="width: 100%; height: 100%; background: var(--leather-light); color: #fff; border:1px solid #111;"><i class="fa-solid fa-book-journal-whills"></i> Grimorio</button>
-        </div>
-        <div style="display: flex; gap: 10px; flex: 1; justify-content: flex-end;">
-            <button class="btn btn-edit-sheet view-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--leather-dark); color: var(--gold); border:1px solid #111;"><i class="fa-solid fa-pencil"></i> Editar Ficha</button>
-            <button class="btn btn-save-sheet edit-only-btn" onclick="window.saveSheetChanges('${playerId}')" style="background: var(--gold-dim); color: var(--leather-dark); font-weight: bold; border:1px solid #111;"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
-        </div>
+    <div class="sheet-mode-controls view-only-hide sheet-action-bar" style="justify-content: center; gap: 20px;">
+        <button class="btn" onclick="window.toggleGrimorio()" style="background: var(--leather-light); color: #fff; border:1px solid #111; padding: 0.5rem 1.5rem;"><i class="fa-solid fa-book-journal-whills"></i> Grimorio</button>
+        <button class="btn btn-edit-sheet view-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--leather-dark); color: var(--gold); border:1px solid #111; padding: 0.5rem 1.5rem;"><i class="fa-solid fa-pencil"></i> Editar Ficha</button>
+        <button class="btn btn-save-sheet edit-only-btn" onclick="window.saveSheetChanges('${playerId}')" style="background: var(--gold-dim); color: var(--leather-dark); font-weight: bold; border:1px solid #111; padding: 0.5rem 1.5rem;"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
     </div>
     `;
 }

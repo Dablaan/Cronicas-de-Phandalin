@@ -703,8 +703,8 @@ textarea {
             "stats   defense"
             "stats   saves"
             "stats   passive"
-            "skills  skills"
             "attacks attacks"
+            "skills  skills"
             "inv     inv"
             "traits  traits";
     }
@@ -732,11 +732,11 @@ textarea {
     .sheet-layout {
         grid-template-columns: 1fr 1fr 1fr;
         grid-template-areas:
-            "stats   hp        inv"
-            "skills  defense   inv"
-            "skills  saves     traits"
-            "passive attacks   traits"
-            ".       attacks   traits";
+            "stats   hp        skills"
+            "stats   defense   inv"
+            "stats   saves     inv"
+            "stats   passive   traits"
+            "stats   attacks   traits";
     }
 }
 
