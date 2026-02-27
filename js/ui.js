@@ -1,4 +1,5 @@
 import { state } from './state.js';
+import { storageAdapter } from './storageAdapter.js';
 
 export function initUI() {
     // Setup tabs
@@ -241,8 +242,21 @@ function renderSheetHeader(playerId, player) {
     return `
     <div class="card sheet-header-wrapper" style="margin-bottom: 0; padding: 1rem;">
         <div class="sheet-header-top" style="display: flex; gap: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--parchment-dark); padding-bottom: 1rem;">
-            <div class="header-avatar" style="flex: 0 0 auto; width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--leather-dark); overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--parchment-dark);">
-                <i class="fa-solid fa-dragon" style="font-size: 2.5rem; color: var(--gold-dim); object-fit: cover;"></i>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <div class="header-avatar" style="flex: 0 0 auto; width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--leather-dark); overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--parchment-dark);">
+                    ${player.avatarUrl
+            ? `<img src="${player.avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;">`
+            : `<i class="fa-solid fa-dragon" style="font-size: 2.5rem; color: var(--gold-dim); object-fit: cover;"></i>`
+        }
+                </div>
+                ${window.isSheetEditMode ? `
+                <div style="text-align: center; margin-top: -3px;">
+                    <label style="font-size: 0.7rem; cursor: pointer; color: var(--leather-dark); text-decoration: underline;">
+                        Subir Foto
+                        <input type="file" accept=".png, .jpg, .jpeg, .webp" style="display: none;" onchange="window.uploadPlayerAvatar(this, '${playerId}')">
+                    </label>
+                </div>
+                ` : ''}
             </div>
             <div class="header-names-container">
                 <input type="text" name="playerName" value="${player.playerName || ''}" placeholder="Nombre del Jugador" class="header-input-player">
@@ -1510,5 +1524,39 @@ window.toggleGrimorio = function () {
         } else {
             grimorio.style.display = 'none';
         }
+    }
+};
+
+window.uploadPlayerAvatar = async function (input, playerId) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+
+    const label = input.closest('label');
+    const originalText = label.innerHTML;
+    label.innerHTML = 'Subiendo... <i class="fa-solid fa-spinner fa-spin"></i>';
+
+    try {
+        const publicUrl = await storageAdapter.uploadAvatar(file);
+
+        // Update preview in UI immediately
+        const avatarContainer = document.querySelector('.header-avatar');
+        if (avatarContainer) {
+            avatarContainer.innerHTML = `<img src="${publicUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        }
+
+        // Save silently to global states so it gets picked up on "Guardar Cambios"
+        const currentPlayers = state.get().players;
+        const playerIndex = currentPlayers.findIndex(p => p.id === playerId);
+        if (playerIndex > -1) {
+            currentPlayers[playerIndex].avatarUrl = publicUrl;
+        }
+
+        label.innerHTML = '¡Subido! <i class="fa-solid fa-check"></i>';
+        setTimeout(() => { label.innerHTML = originalText; }, 2000);
+
+    } catch (error) {
+        console.error("Error al subir avatar:", error);
+        alert("Hubo un error al subir la imagen. Comprueba la consola.");
+        label.innerHTML = originalText;
     }
 };

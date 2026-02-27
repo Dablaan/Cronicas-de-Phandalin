@@ -70,5 +70,36 @@ export const storageAdapter = {
                 }
             )
             .subscribe();
+    },
+
+    /**
+     * Uploads an avatar image to Supabase Storage
+     * @param {File} file - The image file to upload
+     * @returns {Promise<string>} The public URL of the uploaded image
+     */
+    async uploadAvatar(file) {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `${fileName}`; // root of 'avatars' bucket
+
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file);
+
+            if (uploadError) {
+                console.error("Upload error details:", uploadError);
+                throw uploadError;
+            }
+
+            const { data } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (e) {
+            console.error("Error uploading avatar to Supabase:", e);
+            throw e;
+        }
     }
 };
