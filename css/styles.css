@@ -685,41 +685,28 @@ textarea {
 }
 
 /* ------------------------------------- */
-/* PLAYER SHEET RESPONSIVE UI (MOBILE)   */
+/* PLAYER SHEET RESPONSIVE UI            */
 /* ------------------------------------- */
 
-.attributes-grid {
+.sheet-layout {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
-}
-
-.combat-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    /* 4 cols on desktop */
-    gap: 0.5rem;
-}
-
-.sheet-action-bar {
-    position: sticky;
-    bottom: -1rem;
-    /* Aligns with the -1rem negative margin of the screen padding */
-    z-index: 100;
-    background: var(--parchment-bg);
-    padding: 1rem;
-    border-top: 2px solid var(--leather-dark);
-    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
-    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
-    margin: 1rem -1rem -1rem -1rem;
-    /* Stretch nicely to screen edges */
-    background-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="none" stroke="%23ccb997" stroke-width="2" stroke-dasharray="2 1"/></svg>');
+    grid-template-columns: 1fr;
+    align-items: start;
 }
 
 @media (max-width: 768px) {
-    .combat-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        /* Compact 2-column combat stats on phone */
+    .sheet-layout {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "stats   hp"
+            "stats   defense"
+            "stats   saves"
+            "passive passive"
+            "skills  skills"
+            "attacks attacks"
+            "inv     inv"
+            "traits  traits";
     }
 
     .stat-box {
@@ -734,15 +721,68 @@ textarea {
     .stat-box label,
     .defense-box label {
         font-size: 0.55rem;
-        /* Shrink labels slightly to fit 2 columns nicely */
     }
+}
 
-    .sheet-action-bar {
-        padding: 0.8rem;
+@media (min-width: 769px) {
+    .sheet-layout {
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-areas:
+            "stats   hp        inv"
+            "skills  defense   inv"
+            "skills  saves     traits"
+            "passive attacks   traits"
+            ".       attacks   traits";
     }
+}
 
-    .sheet-action-bar .btn {
-        font-size: 1rem !important;
-        padding: 0.5rem !important;
-    }
+.area-stats {
+    grid-area: stats;
+}
+
+.area-hp {
+    grid-area: hp;
+}
+
+.area-defense {
+    grid-area: defense;
+}
+
+.area-saves {
+    grid-area: saves;
+}
+
+.area-passive {
+    grid-area: passive;
+}
+
+.area-skills {
+    grid-area: skills;
+}
+
+.area-attacks {
+    grid-area: attacks;
+}
+
+.area-inv {
+    grid-area: inv;
+}
+
+.area-traits {
+    grid-area: traits;
+}
+
+.sheet-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    background: var(--parchment-bg);
+    /* Fondo sólido pergamino, sin imagen encima que transparente */
+    padding: 10px;
+    border-top: 3px solid var(--leather-dark);
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
+    margin: 1rem -1rem -1rem -1rem;
 }
