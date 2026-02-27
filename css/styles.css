@@ -776,6 +776,42 @@ textarea {
     .defense-box label {
         font-size: 0.55rem;
     }
+
+    .area-stats {
+        grid-area: stats;
+    }
+
+    .area-hp {
+        grid-area: hp;
+    }
+
+    .area-defense {
+        grid-area: defense;
+    }
+
+    .area-saves {
+        grid-area: saves;
+    }
+
+    .area-passive {
+        grid-area: passive;
+    }
+
+    .area-skills {
+        grid-area: skills;
+    }
+
+    .area-attacks {
+        grid-area: attacks;
+    }
+
+    .area-inv {
+        grid-area: inv;
+    }
+
+    .area-traits {
+        grid-area: traits;
+    }
 }
 
 @media (min-width: 1024px) {
@@ -810,41 +846,6 @@ textarea {
     }
 }
 
-.area-stats {
-    grid-area: stats;
-}
-
-.area-hp {
-    grid-area: hp;
-}
-
-.area-defense {
-    grid-area: defense;
-}
-
-.area-saves {
-    grid-area: saves;
-}
-
-.area-passive {
-    grid-area: passive;
-}
-
-.area-skills {
-    grid-area: skills;
-}
-
-.area-attacks {
-    grid-area: attacks;
-}
-
-.area-inv {
-    grid-area: inv;
-}
-
-.area-traits {
-    grid-area: traits;
-}
 
 .sheet-action-bar {
     position: sticky;
