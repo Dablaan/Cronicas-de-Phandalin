@@ -5,9 +5,8 @@ const defaultState = {
     // Player Array: { id, name, playerName, race, class, background, alignment, level, xp, hpCurrent, hpMax, hitDice, ac, speed, initiative, passivePerception, inspiration, stats, saves, skills, deathSaves, traits, attacks: [], spells: [], spellSlots, equipment: { equipped: "", backpack: "" } }
     players: [],
     notes: {},   // Object: { [playerId]: "personal notes text" }
-    npcs: [],    // Array of: { id, name, description, isVisible, secrets: [{ id, text, isVisible }] }
-    maps: [],    // Array of: { id, name, url, isVisible, secrets: [{ id, text, isVisible }] }
-    chronicles: {}, // Object: { "playerId_entityId": "player's shared notes about an npc/map" }
+    npcs: [],    // Array of: { id, name, description, isVisible, secrets: [{ id, text, isVisible }], notes: [{ playerId, text }] }
+    maps: [],    // Array of: { id, name, url, isVisible, secrets: [{ id, text, isVisible }], notes: [{ playerId, text }] }
     recursos: [] // Array of { id, nombre, portadaUrl, enlaceUrl }
 };
 

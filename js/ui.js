@@ -1032,7 +1032,7 @@ window.savePersonalNotes = function (playerId) {
 // Player Features: NPCs
 // ----------------------------------------------------
 function renderNpcs(currentState) {
-    const { session, npcs, chronicles } = currentState;
+    const { session, npcs } = currentState;
     const container = document.getElementById('tab-npcs');
 
     if (session.role === 'DM') {
@@ -1049,7 +1049,7 @@ function renderNpcs(currentState) {
 
     let html = '<h3><i class="fa-solid fa-users"></i> Personajes Conocidos</h3><div class="grid-2">';
     visibleNpcs.forEach(n => {
-        const playerNotesOnNpc = chronicles[`${session.playerId}_npc_${n.id} `] || '';
+        const playerNotesOnNpc = n.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
             <div class="card">
                  <h4>${n.name}</h4>
@@ -1057,8 +1057,8 @@ function renderNpcs(currentState) {
                  ${n.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
         <div class="mt-1">
             <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes sobre ${n.name}:</label>
-            <textarea id="chronicle-npc-${n.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
-            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'npc_${n.id}')">Guardar</button>
+            <textarea id="note-npc-${n.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
+            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveEntityNote(event, '${session.playerId}', 'npc', '${n.id}')">Guardar</button>
         </div>
              </div>
         `;
@@ -1072,7 +1072,7 @@ function renderNpcs(currentState) {
 // Player Features: Maps
 // ----------------------------------------------------
 function renderMaps(currentState) {
-    const { session, maps, chronicles } = currentState;
+    const { session, maps } = currentState;
     const container = document.getElementById('tab-maps');
 
     if (session.role === 'DM') {
@@ -1089,7 +1089,7 @@ function renderMaps(currentState) {
 
     let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div class="grid-2">';
     visibleMaps.forEach(m => {
-        const playerNotesOnMap = chronicles[`${session.playerId}_map_${m.id} `] || '';
+        const playerNotesOnMap = m.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
             <div class="card">
                 <h4>${m.name}</h4>
@@ -1097,8 +1097,8 @@ function renderMaps(currentState) {
                  ${m.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
         <div class="mt-1">
             <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes:</label>
-            <textarea id="chronicle-map-${m.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
-            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveChronicle(event, '${session.playerId}', 'map_${m.id}')">Guardar</button>
+            <textarea id="note-map-${m.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
+            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveEntityNote(event, '${session.playerId}', 'map', '${m.id}')">Guardar</button>
         </div>
              </div>
         `;
@@ -1108,11 +1108,28 @@ function renderMaps(currentState) {
     container.innerHTML = html;
 }
 
-window.saveChronicle = function (event, playerId, entityId) {
-    const text = document.getElementById(`chronicle - ${entityId.replace('_', '-')} `).value;
-    const key = `${playerId}_${entityId} `;
-    const chronicles = { ...state.get().chronicles, [key]: text };
-    state.update({ chronicles });
+window.saveEntityNote = function (event, playerId, type, entityId) {
+    const text = document.getElementById(`note-${type}-${entityId}`).value;
+    const listKey = type + 's';
+
+    // Nested update inside maps or npcs array
+    const list = state.get()[listKey].map(e => {
+        if (e.id === entityId) {
+            const currentNotes = e.notes || [];
+            const existingIndex = currentNotes.findIndex(n => n.playerId === playerId);
+            let updatedNotes = [...currentNotes];
+
+            if (existingIndex >= 0) {
+                updatedNotes[existingIndex] = { ...updatedNotes[existingIndex], text };
+            } else {
+                updatedNotes.push({ playerId, text });
+            }
+            return { ...e, notes: updatedNotes };
+        }
+        return e;
+    });
+
+    state.update({ [listKey]: list });
 
     // Quick aesthetic feedback
     const btn = event.currentTarget;
@@ -1123,7 +1140,7 @@ window.saveChronicle = function (event, playerId, entityId) {
 
 // Stubs for DM versions
 window.renderDMMirrorNotes = function (currentState) {
-    const { players, notes, chronicles, session } = currentState;
+    const { players, notes, npcs, maps, session } = currentState;
     const container = document.getElementById('tab-notes');
 
     // UI State for selected player in mirror
@@ -1170,34 +1187,34 @@ window.renderDMMirrorNotes = function (currentState) {
         </div>
     `;
 
-    // Filter chronicles belonging to this player
-    const playerChroniclesKeys = Object.keys(chronicles).filter(k => k.startsWith(currentlySelected + '_') && chronicles[k].trim() !== '');
+    // Get all nested notes belonging to this player inside Maps and NPCs
+    const playerEntityNotes = [];
 
-    html += `<h4><i class="fa-solid fa-feather"></i> Crónicas Guardadas(NPCs y Mapas)</h4>`;
+    npcs.forEach(n => {
+        const pNote = n.notes?.find(note => note.playerId === currentlySelected);
+        if (pNote && pNote.text.trim() !== '') {
+            playerEntityNotes.push({ type: 'npc', name: n.name, text: pNote.text });
+        }
+    });
 
-    if (playerChroniclesKeys.length === 0) {
+    maps.forEach(m => {
+        const pNote = m.notes?.find(note => note.playerId === currentlySelected);
+        if (pNote && pNote.text.trim() !== '') {
+            playerEntityNotes.push({ type: 'map', name: m.name, text: pNote.text });
+        }
+    });
+
+    html += `<h4><i class="fa-solid fa-feather"></i> Crónicas Guardadas (NPCs y Mapas)</h4>`;
+
+    if (playerEntityNotes.length === 0) {
         html += '<p class="text-muted">No ha escrito apuntes sobre ningún NPC o Mapa aún.</p>';
     } else {
         html += '<div class="grid-2">';
-        playerChroniclesKeys.forEach(k => {
-            const entityId = k.replace(currentlySelected + '_', '');
-            const isMap = entityId.startsWith('map_');
-            const trueId = entityId; // It's already map_123 or npc_123
-
-            // Find entity name
-            let entityName = "Desconocido";
-            if (isMap) {
-                const map = currentState.maps.find(m => m.id === trueId);
-                if (map) entityName = map.name;
-            } else {
-                const npc = currentState.npcs.find(n => n.id === trueId);
-                if (npc) entityName = npc.name;
-            }
-
+        playerEntityNotes.forEach(en => {
             html += `
                 <div class="card" style="background: rgba(255,255,255,0.3);">
-                    <h5 style="color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.2rem;"><i class="fa-solid ${isMap ? 'fa-map' : 'fa-user'}"></i> ${entityName}</h5>
-                    <div style="white-space: pre-wrap; font-size: 0.9em; margin-top: 0.5rem;">${chronicles[k]}</div>
+                    <h5 style="color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.2rem;"><i class="fa-solid ${en.type === 'map' ? 'fa-map' : 'fa-user'}"></i> ${en.name}</h5>
+                    <div style="white-space: pre-wrap; font-size: 0.9em; margin-top: 0.5rem;">${en.text}</div>
                 </div>
             `;
         });
@@ -1309,7 +1326,8 @@ window.createEntity = function (type) {
         description: '',
         url: '',
         isVisible: false,
-        secrets: []
+        secrets: [],
+        notes: []
     };
     state.update({ [type + 's']: [...list, newEntity] });
 };
