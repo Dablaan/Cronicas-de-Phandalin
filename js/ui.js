@@ -197,14 +197,21 @@ function renderPlayerSheet(playerId, players) {
 
     html += '<div class="sheet-layout mt-1">';
     html += `<div class="area-stats">${renderStatsComp(player)}</div>`;
+
+    html += `<div class="area-center-col">`;
     html += `<div class="area-hp">${renderHPDeathComp(playerId, player)}</div>`;
     html += `<div class="area-defense">${renderDefenseComp(player)}</div>`;
     html += `<div class="area-saves">${renderSavesComp(player)}</div>`;
     html += `<div class="area-passive">${renderPassiveComp(player)}</div>`;
-    html += `<div class="area-skills">${renderSkillsComp(player)}</div>`;
     html += `<div class="area-attacks">${renderAttacksComp(playerId, player)}</div>`;
+    html += `</div>`;
+
+    html += `<div class="area-right-col">`;
+    html += `<div class="area-skills">${renderSkillsComp(player)}</div>`;
     html += `<div class="area-inv">${renderInventoryComp(player)}</div>`;
     html += `<div class="area-traits">${renderTraitsComp(player)}</div>`;
+    html += `</div>`;
+
     html += '</div>';
 
     html += renderActionBarComp(playerId);
@@ -217,18 +224,17 @@ function renderPlayerSheet(playerId, players) {
 
 function renderSheetHeader(playerId, player) {
     return `
-    <div class="sheet-header-box" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem;">
-        <div class="sheet-header-name" style="flex: 1;">
-            <input type="text" name="playerName" value="${player.playerName || ''}" placeholder="Nombre del Jugador" style="font-size: 0.8rem; border-bottom: none; color: var(--text-muted); margin-bottom: 0;">
-            <input type="text" name="name" value="${player.name || ''}" placeholder="Nombre del Personaje" style="font-size: 1.5rem; margin-bottom: 0;">
-        </div>
-        <div style="flex: 0 0 auto; text-align: center; color: var(--gold-dim);">
-            <div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--leather-dark); overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--parchment-dark);">
-                <i class="fa-solid fa-dragon" style="font-size: 2.5rem; object-fit: cover;"></i>
+    <div class="card sheet-header-wrapper" style="margin-bottom: 0; padding: 1rem;">
+        <div class="sheet-header-top" style="display: flex; gap: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--parchment-dark); padding-bottom: 1rem;">
+            <div class="header-avatar" style="flex: 0 0 auto; width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--leather-dark); overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--parchment-dark);">
+                <i class="fa-solid fa-dragon" style="font-size: 2.5rem; color: var(--gold-dim); object-fit: cover;"></i>
+            </div>
+            <div class="header-names-container">
+                <input type="text" name="playerName" value="${player.playerName || ''}" placeholder="Nombre del Jugador" class="header-input-player">
+                <input type="text" name="name" value="${player.name || ''}" placeholder="Nombre del Personaje" class="header-input-char">
             </div>
         </div>
-    </div>
-    <div class="sheet-header-details">
+        <div class="sheet-header-details">
             <div>
                 <label>Clase y Nivel</label>
                 <div class="flex-row">
@@ -401,7 +407,7 @@ function renderSkillsComp(player) {
     ];
 
     let html = '<div class="card" style="padding: 0.5rem 1rem;">';
-    html += '<details class="sheet-accordion" open>';
+    html += '<details class="sheet-accordion">';
     html += '<summary style="font-size:1.17em; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem; padding-bottom: 0.5rem; cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-list-check"></i> Habilidades</summary>';
     html += '<div class="accordion-content">';
     skillsMap.forEach(sk => {
@@ -437,7 +443,7 @@ function renderAttacksComp(playerId, player) {
 function renderInventoryComp(player) {
     return `
     <div class="card">
-        <details class="sheet-accordion" open>
+        <details class="sheet-accordion">
             <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</summary>
             <div class="accordion-content">
                 <div class="mt-1">
@@ -457,7 +463,7 @@ function renderInventoryComp(player) {
 function renderTraitsComp(player) {
     return `
     <div class="card">
-        <details class="sheet-accordion" open>
+        <details class="sheet-accordion">
             <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-scroll"></i> Dotes y Rasgos</summary>
             <div class="accordion-content">
                 <textarea name="traits" placeholder="Anota tus rasgos raciales, dotes, origen de clase, etc." style="min-height: 250px; height: 85%; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.traits || ''}</textarea>

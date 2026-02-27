@@ -688,6 +688,48 @@ textarea {
 /* PLAYER SHEET RESPONSIVE UI            */
 /* ------------------------------------- */
 
+.header-names-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 0.2rem;
+}
+
+.header-input-player {
+    font-size: 0.9rem;
+    border-bottom: none;
+    color: var(--text-muted);
+    margin-bottom: 0;
+    padding: 0.2rem;
+}
+
+.header-input-char {
+    font-size: 1.5rem;
+    font-weight: bold;
+    font-family: var(--font-heading);
+    margin-bottom: 0;
+    padding: 0.2rem;
+}
+
+@media (min-width: 769px) {
+    .header-names-container {
+        flex-direction: row;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .header-input-player {
+        flex: 1;
+        font-size: 1.1rem;
+        border-bottom: 2px solid var(--leather-dark);
+    }
+
+    .header-input-char {
+        flex: 2;
+        font-size: 1.8rem;
+    }
+}
+
 .sheet-layout {
     display: grid;
     gap: 10px;
@@ -696,6 +738,14 @@ textarea {
 }
 
 @media (max-width: 768px) {
+    .area-center-col {
+        display: contents;
+    }
+
+    .area-right-col {
+        display: contents;
+    }
+
     .sheet-layout {
         grid-template-columns: 1fr 2.5fr;
         grid-template-areas:
@@ -731,12 +781,32 @@ textarea {
 @media (min-width: 769px) {
     .sheet-layout {
         grid-template-columns: 1fr 1fr 1fr;
-        grid-template-areas:
-            "stats   hp        skills"
-            "stats   defense   inv"
-            "stats   saves     inv"
-            "stats   passive   traits"
-            "stats   attacks   traits";
+        grid-template-areas: none;
+    }
+
+    .area-stats {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .area-center-col {
+        grid-column: 2;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .area-right-col {
+        grid-column: 3;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .combat-stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
     }
 }
 
