@@ -697,16 +697,20 @@ textarea {
 
 @media (max-width: 768px) {
     .sheet-layout {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 2.5fr;
         grid-template-areas:
             "stats   hp"
             "stats   defense"
             "stats   saves"
-            "passive passive"
+            "stats   passive"
             "skills  skills"
             "attacks attacks"
             "inv     inv"
             "traits  traits";
+    }
+
+    .combat-stats-grid {
+        grid-template-columns: 1fr 1fr !important;
     }
 
     .stat-box {
@@ -785,4 +789,49 @@ textarea {
     gap: 10px;
     box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.5);
     margin: 1rem -1rem -1rem -1rem;
+}
+
+/* Accordions for Sheet Layout */
+.sheet-accordion summary::-webkit-details-marker {
+    display: none;
+    /* Hide default arrow */
+}
+
+.sheet-accordion summary {
+    list-style: none;
+    /* Hide default arrow in firefox */
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.sheet-accordion summary:hover {
+    color: var(--gold-dim) !important;
+}
+
+.sheet-accordion[open] .accordion-icon {
+    transform: rotate(180deg);
+}
+
+.accordion-icon {
+    transition: transform 0.3s ease;
+    font-size: 0.9em;
+    margin-right: 5px;
+    opacity: 0.8;
+}
+
+.accordion-content {
+    margin-top: 0.5rem;
+    animation: fadeInAccordion 0.3s ease-in-out;
+}
+
+@keyframes fadeInAccordion {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

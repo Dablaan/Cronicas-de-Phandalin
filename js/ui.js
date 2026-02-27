@@ -326,18 +326,18 @@ function renderHPDeathComp(playerId, player) {
 function renderDefenseComp(player) {
     return `
     <div class="card" style="padding: 0.5rem; height: 100%; display: flex; align-items: center; justify-content: center;">
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; width: 100%;">
+        <div class="combat-stats-grid" style="display: grid; width: 100%; gap: 0.5rem;">
             <div class="defense-box">
                 <label>CA</label>
                 <input type="number" name="ac" value="${player.ac}" style="width: 100%;">
             </div>
             <div class="defense-box">
-                <label>Iniciativa</label>
-                <input type="number" name="initiative" value="${player.initiative || 0}" style="width: 100%;">
-            </div>
-            <div class="defense-box">
                 <label>Velocidad</label>
                 <input type="number" name="speed" value="${player.speed || 30}" style="width: 100%;">
+            </div>
+            <div class="defense-box">
+                <label>Iniciativa</label>
+                <input type="number" name="initiative" value="${player.initiative || 0}" style="width: 100%;">
             </div>
              <div class="defense-box">
                 <label>Insp.</label>
@@ -398,7 +398,9 @@ function renderSkillsComp(player) {
     ];
 
     let html = '<div class="card" style="padding: 0.5rem 1rem; height: 100%;">';
-    html += '<h4 style="font-size:0.8rem; text-transform:uppercase; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem; padding-bottom: 0.2rem;">Habilidades</h4>';
+    html += '<details class="sheet-accordion" open>';
+    html += '<summary style="font-size:0.8rem; text-transform:uppercase; color: var(--leather-light); border-bottom: 1px solid var(--parchment-dark); margin-bottom: 0.5rem; padding-bottom: 0.2rem; cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> Habilidades</summary>';
+    html += '<div class="accordion-content">';
     skillsMap.forEach(sk => {
         const skillData = (player.skills && player.skills[sk.id]) || { prof: false, bonus: 0 };
         html += `
@@ -409,7 +411,7 @@ function renderSkillsComp(player) {
             </div>
         `;
     });
-    html += '</div>';
+    html += '</div></details></div>';
     return html;
 }
 
@@ -432,15 +434,19 @@ function renderAttacksComp(playerId, player) {
 function renderInventoryComp(player) {
     return `
     <div class="card" style="height: 100%;">
-        <h3 style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark);"><i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</h3>
-        <div class="mt-1">
-            <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light);"><i class="fa-solid fa-shield-halved"></i> Equipado</h4>
-            <textarea name="equipment.equipped" placeholder="Armadura puesta, armas en mano, anillos..." style="min-height: 80px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm); margin-bottom:0.5rem;">${player.equipment ? player.equipment.equipped : ''}</textarea>
-        </div>
-        <div class="mt-1">
-            <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light);"><i class="fa-solid fa-backpack"></i> Mochila y Riquezas</h4>
-            <textarea name="equipment.backpack" placeholder="Oro, raciones, antorchas..." style="min-height: 120px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.equipment ? player.equipment.backpack : ''}</textarea>
-        </div>
+        <details class="sheet-accordion" open>
+            <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-sack-xmark"></i> Inventario y Equipo</summary>
+            <div class="accordion-content">
+                <div class="mt-1">
+                    <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light);"><i class="fa-solid fa-shield-halved"></i> Equipado</h4>
+                    <textarea name="equipment.equipped" placeholder="Armadura puesta, armas en mano, anillos..." style="min-height: 80px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm); margin-bottom:0.5rem;">${player.equipment ? player.equipment.equipped : ''}</textarea>
+                </div>
+                <div class="mt-1">
+                    <h4 style="font-size: 0.8rem; text-transform:uppercase; color: var(--leather-light);"><i class="fa-solid fa-backpack"></i> Mochila y Riquezas</h4>
+                    <textarea name="equipment.backpack" placeholder="Oro, raciones, antorchas..." style="min-height: 120px; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.equipment ? player.equipment.backpack : ''}</textarea>
+                </div>
+            </div>
+        </details>
     </div>
     `;
 }
@@ -448,18 +454,26 @@ function renderInventoryComp(player) {
 function renderTraitsComp(player) {
     return `
     <div class="card" style="height: 100%;">
-        <h3 style="margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark);"><i class="fa-solid fa-scroll"></i> Dotes y Rasgos</h3>
-        <textarea name="traits" placeholder="Anota tus rasgos raciales, dotes, origen de clase, etc." style="min-height: 250px; height: 85%; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.traits || ''}</textarea>
+        <details class="sheet-accordion" open>
+            <summary style="font-size:1.17em; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--parchment-dark); cursor:pointer;"><i class="fa-solid fa-chevron-down accordion-icon"></i> <i class="fa-solid fa-scroll"></i> Dotes y Rasgos</summary>
+            <div class="accordion-content">
+                <textarea name="traits" placeholder="Anota tus rasgos raciales, dotes, origen de clase, etc." style="min-height: 250px; height: 85%; font-size: 0.85em; padding:0.5rem; background: rgba(255,255,255,0.3); border:1px solid var(--parchment-dark); border-radius:var(--border-radius-sm);">${player.traits || ''}</textarea>
+            </div>
+        </details>
     </div>
     `;
 }
 
 function renderActionBarComp(playerId) {
     return `
-    <div class="sheet-mode-controls view-only-hide sheet-action-bar">
-        <button class="btn btn-edit-sheet view-only-btn" onclick="window.toggleSheetEditMode()" style="flex:1; background: var(--leather-dark); color: var(--gold); border:1px solid #111;"><i class="fa-solid fa-pencil"></i> Editar Ficha</button>
-        <button class="btn btn-save-sheet edit-only-btn" onclick="window.saveSheetChanges('${playerId}')" style="flex:1; background: var(--gold-dim); color: var(--leather-dark); font-weight: bold; border:1px solid #111;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
-        <button class="btn" onclick="window.toggleGrimorio()" style="flex:1; background: var(--leather-light); color: #fff; border:1px solid #111;"><i class="fa-solid fa-book-journal-whills"></i> Grimorio</button>
+    <div class="sheet-mode-controls view-only-hide sheet-action-bar flex-between" style="justify-content: space-between; align-items: stretch;">
+        <div style="flex: 1; max-width: 150px;">
+            <button class="btn" onclick="window.toggleGrimorio()" style="width: 100%; height: 100%; background: var(--leather-light); color: #fff; border:1px solid #111;"><i class="fa-solid fa-book-journal-whills"></i> Grimorio</button>
+        </div>
+        <div style="display: flex; gap: 10px; flex: 1; justify-content: flex-end;">
+            <button class="btn btn-edit-sheet view-only-btn" onclick="window.toggleSheetEditMode()" style="background: var(--leather-dark); color: var(--gold); border:1px solid #111;"><i class="fa-solid fa-pencil"></i> Editar Ficha</button>
+            <button class="btn btn-save-sheet edit-only-btn" onclick="window.saveSheetChanges('${playerId}')" style="background: var(--gold-dim); color: var(--leather-dark); font-weight: bold; border:1px solid #111;"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+        </div>
     </div>
     `;
 }
