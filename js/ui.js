@@ -122,49 +122,85 @@ window.loginAsPlayer = function (playerId) {
     if (!player) return;
 
     if (!player.passcode) {
-        // First login: Configure passcode
-        const newPass = prompt(`¡Bienvenido a tu ficha, ${player.name}!\nPor favor, establece una contraseña maestra (cerrojo mágico) para proteger este personaje de mirones:`);
-        if (!newPass) return; // Cancelled
-        const confirmPass = prompt(`¡Cuidado, si la olvidas tendrás que hablar con el DM!\nConfirma tu contraseña para ${player.name}:`);
+        window.openLoginModal('setup', playerId);
+    } else {
+        window.openLoginModal('login', playerId);
+    }
+};
 
-        if (newPass !== confirmPass) {
-            alert('Las contraseñas no coinciden. Inténtalo de nuevo.');
+window.openLoginModal = function (mode, playerId) {
+    const overlay = document.getElementById('login-modal-overlay');
+    const title = document.getElementById('login-modal-title');
+    const desc = document.getElementById('login-modal-desc');
+    const pass1 = document.getElementById('login-modal-pass1');
+    const pass2 = document.getElementById('login-modal-pass2');
+    const errorMsg = document.getElementById('login-modal-error');
+    const submitBtn = document.getElementById('login-modal-submit');
+
+    // Store data for the submit button
+    submitBtn.setAttribute('data-mode', mode);
+    submitBtn.setAttribute('data-player-id', playerId);
+
+    // Reset visual state
+    pass1.value = '';
+    pass2.value = '';
+    errorMsg.style.display = 'none';
+
+    if (mode === 'setup') {
+        title.innerHTML = '<i class="fa-solid fa-lock"></i> Sella tu Ficha';
+        desc.innerText = 'Establece una contraseña maestra (Cerrojo Mágico).';
+        pass2.style.display = 'block';
+    } else {
+        title.innerHTML = '<i class="fa-solid fa-key"></i> Ficha Protegida';
+        desc.innerText = 'Introduce tu Cerrojo Mágico para entrar.';
+        pass2.style.display = 'none';
+    }
+
+    overlay.classList.remove('hidden');
+    pass1.focus();
+};
+
+window.closeLoginModal = function () {
+    const overlay = document.getElementById('login-modal-overlay');
+    overlay.classList.add('hidden');
+};
+
+window.submitLoginModal = function () {
+    const submitBtn = document.getElementById('login-modal-submit');
+    const mode = submitBtn.getAttribute('data-mode');
+    const playerId = submitBtn.getAttribute('data-player-id');
+    const player = state.get().players.find(p => p.id === playerId);
+
+    const pass1 = document.getElementById('login-modal-pass1').value;
+    const pass2 = document.getElementById('login-modal-pass2').value;
+    const errorMsg = document.getElementById('login-modal-error');
+
+    if (!pass1) {
+        errorMsg.innerText = "La contraseña no puede estar vacía.";
+        errorMsg.style.display = 'block';
+        return;
+    }
+
+    if (mode === 'setup') {
+        if (pass1 !== pass2) {
+            errorMsg.innerText = "Las contraseñas no coinciden.";
+            errorMsg.style.display = 'block';
             return;
         }
-
-        // Save passcode
+        // Save passcode and login
         const currentPlayers = state.get().players.map(p =>
-            p.id === playerId ? { ...p, passcode: newPass } : p
+            p.id === playerId ? { ...p, passcode: pass1 } : p
         );
         state.update({ players: currentPlayers, session: { role: 'Player', playerId } });
-
-    } else {
-        // Subsequent logins: Validate passcode
-        const tryPass = prompt(`Escribe el Cerrojo Mágico de ${player.name}:`);
-        if (tryPass === null) return; // Cancelled
-
-        if (tryPass === player.passcode) {
+        window.closeLoginModal();
+    } else if (mode === 'login') {
+        if (pass1 === player.passcode) {
             state.update({ session: { role: 'Player', playerId } });
+            window.closeLoginModal();
         } else {
-            // Find the button that called this to inject error text below it
-            const container = document.getElementById('player-list-container');
-            const btns = container.querySelectorAll('button');
-            const targetBtn = Array.from(btns).find(b => b.getAttribute('onclick') === `window.loginAsPlayer('${playerId}')`);
-
-            if (targetBtn) {
-                const parentDiv = targetBtn.parentElement;
-                // Remove previous error if exists
-                const existingErr = parentDiv.nextElementSibling;
-                if (existingErr && existingErr.className === 'passcode-error-msg') {
-                    existingErr.remove();
-                }
-
-                const errHtml = document.createElement('p');
-                errHtml.className = 'passcode-error-msg';
-                errHtml.style = "color: darkred; margin: 2px 0 10px 0; text-align: center; width: 100%; font-size: 0.8rem; font-weight: bold;";
-                errHtml.innerText = "si no recuerdas la contraseña ponte en contacto con tu DM";
-                parentDiv.after(errHtml);
-            }
+            // Keep modal open, show specific error
+            errorMsg.innerText = "Ponte en contacto con tu DM para resetear la contraseña";
+            errorMsg.style.display = 'block';
         }
     }
 };
@@ -597,27 +633,31 @@ function renderGrimorioComp(playerId, player) {
 
 window.modifyHP = function (playerId, amount) {
     const currentState = state.get();
-    const p = currentState.players.find(p => p.id === playerId);
-    if (!p) return;
 
-    const max = p.hpMax || 0;
-    let current = p.hpCurrent || 0;
-    current += amount;
-    if (current > max) current = max;
-    if (current < 0) current = 0;
+    // Create a new players array with the modified HP
+    const players = currentState.players.map(p => {
+        if (p.id === playerId) {
+            const max = p.hpMax || 0;
+            let current = p.hpCurrent || 0;
+            current += amount;
+            if (current > max) current = max;
+            if (current < 0) current = 0;
+            return { ...p, hpCurrent: current };
+        }
+        return p;
+    });
 
-    p.hpCurrent = current;
+    const updatedPlayer = players.find(p => p.id === playerId);
+    if (!updatedPlayer) return;
 
-    // Save explicitly without invoking state.update to prevent full re-render
-    if (window.storageAdapter) {
-        window.storageAdapter.save(currentState);
-    }
+    // Use the safe smart state update with skipNotify = true to prevent full re-render
+    state.update({ players }, true);
 
     // Manually update the DOM for the HP input and bar in the individual sheet
     const hpInput = document.querySelector('input[name="hpCurrent"]');
-    if (hpInput) hpInput.value = current;
+    if (hpInput) hpInput.value = updatedPlayer.hpCurrent;
 
-    const hpBarPercent = Math.max(0, Math.min(100, (current / max) * 100));
+    const hpBarPercent = Math.max(0, Math.min(100, (updatedPlayer.hpCurrent / updatedPlayer.hpMax) * 100));
     let hpColor = hpBarPercent > 50 ? 'var(--leather-light)' : (hpBarPercent > 20 ? 'var(--gold-dim)' : 'var(--red-ink)');
 
     const hpBarFill = document.getElementById('hp-bar-fill-sheet');

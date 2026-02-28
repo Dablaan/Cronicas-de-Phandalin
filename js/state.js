@@ -60,16 +60,60 @@ export const state = {
     /**
      * Updates the state with a partial object, saves it, and notifies listeners.
      * @param {Object} partial - Object containing keys to update in state
+     * @param {boolean} skipNotify - If true, skips notifying local listeners to prevent re-renders
      */
-    async update(partial) {
+    async update(partial, skipNotify = false) {
         currentState = { ...currentState, ...partial };
 
         // CRITICAL DECOUPLING: Never save the UI session state to the cloud
-        const dataToSave = { ...currentState };
+        const localSession = currentState.session;
+        if (!skipNotify) {
+            this.notify();
+        }
+
+        // 1. Fetch latest remote state to prevent overwriting other users' data
+        const remoteState = await storageAdapter.load();
+
+        let dataToSave;
+        if (remoteState) {
+            dataToSave = { ...remoteState };
+
+            // Check if this is a regular sheet update by an active Player
+            const isRegularPlayerUpdate = localSession &&
+                localSession.role === 'Player' &&
+                !partial.session &&
+                partial.players;
+
+            if (isRegularPlayerUpdate) {
+                // Strict merge: only update THIS player's data in the remote array
+                const myPlayerId = localSession.playerId;
+                const myUpdatedPlayer = partial.players.find(p => p.id === myPlayerId);
+
+                if (myUpdatedPlayer) {
+                    const remotePlayers = dataToSave.players || [];
+                    const playerExists = remotePlayers.some(p => p.id === myPlayerId);
+                    if (playerExists) {
+                        dataToSave.players = remotePlayers.map(p => p.id === myPlayerId ? myUpdatedPlayer : p);
+                    } else {
+                        dataToSave.players = [...remotePlayers, myUpdatedPlayer];
+                    }
+                }
+            } else {
+                // DM updates, Player creation/deletion, or Login events
+                Object.keys(partial).forEach(k => {
+                    if (k !== 'session') {
+                        dataToSave[k] = partial[k];
+                    }
+                });
+            }
+        } else {
+            dataToSave = { ...currentState };
+        }
+
+        // Ensure session is never saved
         delete dataToSave.session;
 
         await storageAdapter.save(dataToSave);
-        this.notify();
     },
 
     /**

@@ -98,7 +98,8 @@
 
             <div class="tabs" id="app-tabs">
                 <button class="tab-btn active" data-target="tab-sheet" id="tab-btn-sheet"><i
-                        class="fa-solid fa-scroll"></i> Ficha</button>
+                        class="fa-solid fa-scroll"></i>
+                    Ficha</button>
                 <button class="tab-btn" data-target="tab-party" id="tab-btn-party"><i class="fa-solid fa-users"></i>
                     Grupo</button>
                 <button class="tab-btn" data-target="tab-npcs" id="tab-btn-npcs"><i class="fa-solid fa-bed"></i>
@@ -119,6 +120,40 @@
             <div class="tab-content" id="tab-library"></div>
             <div class="tab-content" id="tab-notes"></div>
         </div>
+
+        <!-- Custom Auth Modal (Magic Lock) -->
+        <div id="login-modal-overlay" class="auth-modal-overlay hidden">
+            <div id="login-modal" class="auth-modal">
+                <h2 id="login-modal-title" style="text-align: center; margin-bottom: 0.5rem;">
+                    <i class="fa-solid fa-lock"></i> Sella tu Ficha
+                </h2>
+                <p id="login-modal-desc" class="text-muted"
+                    style="text-align: center; font-size: 0.9em; margin-bottom: 1rem;">
+                    Establece una contraseña maestra.
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <input type="password" id="login-modal-pass1" placeholder="Cerrojo Mágico"
+                        style="text-align: center; font-size: 1.2rem; letter-spacing: 2px; color: var(--leather-dark); border-radius: 4px; border: 1px solid var(--leather-dark); padding: 5px;">
+                    <input type="password" id="login-modal-pass2" placeholder="Repite para confirmar"
+                        style="text-align: center; font-size: 1.2rem; letter-spacing: 2px; color: var(--leather-dark); border-radius: 4px; border: 1px solid var(--leather-dark); padding: 5px;">
+
+                    <p id="login-modal-error"
+                        style="color: #ff6b6b; font-weight: bold; text-align: center; font-size: 0.85rem; margin: 0; display: none;">
+                    </p>
+
+                    <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
+                        <button class="btn btn-danger" onclick="window.closeLoginModal()">
+                            <i class="fa-solid fa-xmark"></i> Atrás
+                        </button>
+                        <button class="btn" id="login-modal-submit" onclick="window.submitLoginModal()">
+                            <i class="fa-solid fa-key"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Main Module Script -->
