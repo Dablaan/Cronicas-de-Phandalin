@@ -118,7 +118,55 @@ function renderAuthPlayerList(players) {
 
 // Attach global functions
 window.loginAsPlayer = function (playerId) {
-    state.update({ session: { role: 'Player', playerId } });
+    const player = state.get().players.find(p => p.id === playerId);
+    if (!player) return;
+
+    if (!player.passcode) {
+        // First login: Configure passcode
+        const newPass = prompt(`¡Bienvenido a tu ficha, ${player.name}!\nPor favor, establece una contraseña maestra (cerrojo mágico) para proteger este personaje de mirones:`);
+        if (!newPass) return; // Cancelled
+        const confirmPass = prompt(`¡Cuidado, si la olvidas tendrás que hablar con el DM!\nConfirma tu contraseña para ${player.name}:`);
+
+        if (newPass !== confirmPass) {
+            alert('Las contraseñas no coinciden. Inténtalo de nuevo.');
+            return;
+        }
+
+        // Save passcode
+        const currentPlayers = state.get().players.map(p =>
+            p.id === playerId ? { ...p, passcode: newPass } : p
+        );
+        state.update({ players: currentPlayers, session: { role: 'Player', playerId } });
+
+    } else {
+        // Subsequent logins: Validate passcode
+        const tryPass = prompt(`Escribe el Cerrojo Mágico de ${player.name}:`);
+        if (tryPass === null) return; // Cancelled
+
+        if (tryPass === player.passcode) {
+            state.update({ session: { role: 'Player', playerId } });
+        } else {
+            // Find the button that called this to inject error text below it
+            const container = document.getElementById('player-list-container');
+            const btns = container.querySelectorAll('button');
+            const targetBtn = Array.from(btns).find(b => b.getAttribute('onclick') === `window.loginAsPlayer('${playerId}')`);
+
+            if (targetBtn) {
+                const parentDiv = targetBtn.parentElement;
+                // Remove previous error if exists
+                const existingErr = parentDiv.nextElementSibling;
+                if (existingErr && existingErr.className === 'passcode-error-msg') {
+                    existingErr.remove();
+                }
+
+                const errHtml = document.createElement('p');
+                errHtml.className = 'passcode-error-msg';
+                errHtml.style = "color: darkred; margin: 2px 0 10px 0; text-align: center; width: 100%; font-size: 0.8rem; font-weight: bold;";
+                errHtml.innerText = "si no recuerdas la contraseña ponte en contacto con tu DM";
+                parentDiv.after(errHtml);
+            }
+        }
+    }
 };
 
 window.deletePlayer = function (playerId, playerName) {
@@ -1220,7 +1268,12 @@ window.renderDMMirrorNotes = function (currentState) {
     // Personal notes
     html += `
         <div class="card mb-1" style="background: rgba(255,255,255,0.3);">
-            <h4><i class="fa-solid fa-book-journal-whills"></i> Diario Privado de ${selectedPlayer.name}</h4>
+            <div class="flex-between">
+                <h4><i class="fa-solid fa-book-journal-whills"></i> Diario Privado de ${selectedPlayer.name}</h4>
+                <button class="btn btn-danger" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="window.resetPlayerPassword('${selectedPlayer.id}')" title="Borrar Cerrojo Mágico de este jugador">
+                    <i class="fa-solid fa-unlock-keyhole"></i> Resetear Contraseña
+                </button>
+            </div>
             <div style="white-space: pre-wrap; margin-top: 1rem; padding: 1rem; border-left: 3px solid var(--leather-dark);">${personalNotes}</div>
         </div>
     `;
@@ -1309,6 +1362,16 @@ window.renderDMNpcs = function (currentState) {
 
     container.innerHTML = html;
 }
+
+window.resetPlayerPassword = function (playerId) {
+    if (confirm("¿Seguro que deseas romper el Cerrojo Mágico de este jugador? Tendrá que configurar uno nuevo al entrar.")) {
+        const currentPlayers = state.get().players.map(p =>
+            p.id === playerId ? { ...p, passcode: null } : p
+        );
+        state.update({ players: currentPlayers });
+        alert("Contraseña reseteada con éxito.");
+    }
+};
 
 window.renderDMMaps = function (currentState) {
     const { maps } = currentState;
