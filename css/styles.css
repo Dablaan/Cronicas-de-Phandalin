@@ -1504,7 +1504,7 @@ textarea {
 }
 
 .init-token-active .init-token-portrait {
-    outline: 5px solid var(--gold);
+    outline: 5px solid #1a73e8;
     outline-offset: 6px;
     animation: initGlow 1.2s ease-in-out infinite;
 }
@@ -1513,11 +1513,11 @@ textarea {
 
     0%,
     100% {
-        outline-color: rgba(212, 175, 55, 0.6);
+        outline-color: rgba(26, 115, 232, 0.6);
     }
 
     50% {
-        outline-color: rgba(212, 175, 55, 1);
+        outline-color: rgba(26, 115, 232, 1);
     }
 }
 
@@ -1627,5 +1627,37 @@ textarea {
         width: 70px;
         font-size: 0.8rem;
         padding: 3px 5px;
+    }
+
+    /* DM Dashboard & Notes */
+    .dm-dashboard {
+        padding: 1rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .dm-note-area {
+        width: 100%;
+        min-height: 150px;
+        background: transparent;
+        border: none;
+        resize: vertical;
+        font-family: 'Lora', serif;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: var(--leather-dark);
+        padding: 0.5rem;
+    }
+
+    .dm-note-area:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Responsive Dashboard */
+@media (max-width: 768px) {
+    .dm-dashboard .grid-2 {
+        grid-template-columns: 1fr;
     }
 }

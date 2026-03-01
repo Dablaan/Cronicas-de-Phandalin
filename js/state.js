@@ -11,7 +11,8 @@ const defaultState = {
     bestiario: [],// Array format for monsters and encounters
     grimorio: [], // Array format for spells
     encuentros: [],// Array for combat encounters
-    combatTracker: null // Active combat tracker: { active, phase, encounterName, turnIndex, entries }
+    combatTracker: null, // Active combat tracker: { active, phase, encounterName, turnIndex, entries }
+    dmNotes: { missions: '', summary: '', session: '', reminders: '' }
 };
 
 let currentState = { ...defaultState };

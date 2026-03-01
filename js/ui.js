@@ -213,13 +213,13 @@ window.submitLoginModal = function () {
             p.id === playerId ? { ...p, passcode: pass1 } : p
         );
         state.update({ players: currentPlayers, session: { role: 'Player', playerId } }).then(() => {
-            if (window.switchTab) window.switchTab('tab-ficha');
+            if (window.switchTab) window.switchTab('tab-sheet');
         });
         window.closeLoginModal();
     } else if (mode === 'login') {
         if (pass1 === player.passcode) {
             state.update({ session: { role: 'Player', playerId } }).then(() => {
-                if (window.switchTab) window.switchTab('tab-ficha');
+                if (window.switchTab) window.switchTab('tab-sheet');
             });
             window.closeLoginModal();
         } else {
@@ -423,15 +423,17 @@ function renderStatsComp(player) {
         return m >= 0 ? '+' + m : m;
     };
 
-    let html = '<div class="card" style="padding: 0.5rem;"><div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+    let html = '<div class="card" style="padding: 0.5rem;"><div style="display: flex; flex-direction: column; gap: 0.8rem;">';
     statsList.forEach(s => {
         const val = player.stats[s.key];
         const mod = getMod(val);
         html += `
-            <div class="stat-box" style="margin-bottom: 12px;">
-                <label>${s.label}</label>
-                <input class="stat-val" type="number" name="stats.${s.key}" value="${val}">
-                <div class="stat-mod">${mod}</div>
+            <div class="stat-box-row" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.2); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 0.4rem 0.8rem;">
+                <label style="font-size: 0.8rem; font-weight: bold; margin: 0; flex: 1;">${s.label}</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex: 0 0 auto;">
+                    <input class="stat-val" type="number" name="stats.${s.key}" value="${val}" style="width: 45px; font-size: 1.1rem; font-weight: bold; text-align: center; border: none; background: transparent; padding: 0;">
+                    <div class="stat-mod" style="font-size: 1.1rem; color: var(--leather-dark); font-weight: bold; background: var(--parchment-dark); min-width: 40px; text-align: center; border-radius: 4px; padding: 2px 4px;">${mod}</div>
+                </div>
             </div>
         `;
     });
@@ -1076,13 +1078,54 @@ window.updateSheetStat = function (playerId, stat, value) {
 
 function renderDMSheet() {
     const container = document.getElementById('tab-sheet');
+    const notes = state.get().dmNotes || { missions: '', summary: '', session: '', reminders: '' };
+
     container.innerHTML = `
-        <div class="card text-center">
-            <h3>Bienvenido, Dungeon Master</h3>
-            <p>Utiliza las pestañas superiores para gestionar el Grupo, NPCs, Mapas y las Notas de los jugadores.</p>
+        <div class="dm-dashboard">
+            <div class="flex-between mb-1">
+                <h2 style="margin:0; color:var(--red-ink);"><i class="fa-solid fa-dragon"></i> Crónicas del Master</h2>
+                <span id="dm-save-status" style="font-size:0.8rem; color:var(--leather-light); opacity:0.5;">Cambios guardados</span>
+            </div>
+            
+            <div class="grid-2">
+                <div class="card" style="display:flex; flex-direction:column; background: rgba(0,0,0,0.03);">
+                    <h4 style="margin:0 0 0.5rem 0; color:var(--leather-dark); border-bottom: 2px solid var(--parchment-dark);"><i class="fa-solid fa-flag"></i> Misiones Activas</h4>
+                    <textarea class="dm-note-area" oninput="window.updateDmNote('missions', this.value)" placeholder="Objetivos del grupo...">${notes.missions}</textarea>
+                </div>
+                <div class="card" style="display:flex; flex-direction:column; background: rgba(0,0,0,0.03);">
+                    <h4 style="margin:0 0 0.5rem 0; color:var(--leather-dark); border-bottom: 2px solid var(--parchment-dark);"><i class="fa-solid fa-calendar-check"></i> Resumen Anterior</h4>
+                    <textarea class="dm-note-area" oninput="window.updateDmNote('summary', this.value)" placeholder="Lo que sucedió el último día...">${notes.summary}</textarea>
+                </div>
+                <div class="card" style="display:flex; flex-direction:column; background: rgba(0,0,0,0.03);">
+                    <h4 style="margin:0 0 0.5rem 0; color:var(--leather-dark); border-bottom: 2px solid var(--parchment-dark);"><i class="fa-solid fa-pen-fancy"></i> Notas de Sesión</h4>
+                    <textarea class="dm-note-area" oninput="window.updateDmNote('session', this.value)" placeholder="Ideas constantes, PNJs nuevos, giros...">${notes.session}</textarea>
+                </div>
+                <div class="card" style="display:flex; flex-direction:column; background: rgba(0,0,0,0.03);">
+                    <h4 style="margin:0 0 0.5rem 0; color:var(--leather-dark); border-bottom: 2px solid var(--parchment-dark);"><i class="fa-solid fa-treasure-chest"></i> Recordatorios y Botín</h4>
+                    <textarea class="dm-note-area" oninput="window.updateDmNote('reminders', this.value)" placeholder="Checks de habilidad, tesoros pendientes...">${notes.reminders}</textarea>
+                </div>
+            </div>
         </div>
     `;
 }
+
+window.updateDmNote = function (field, value) {
+    const notes = { ...state.get().dmNotes, [field]: value };
+    // Skip notify for input event to keep focus and prevent lag, but save to state
+    state.update({ dmNotes: notes }, true);
+
+    // Virtual visual indicator
+    const status = document.getElementById('dm-save-status');
+    if (status) {
+        status.innerText = "Escribiendo...";
+        clearTimeout(window.dmSaveTimeout);
+        window.dmSaveTimeout = setTimeout(() => {
+            status.innerText = "Cambios guardados";
+            // Final update with notify to ensure sync across tabs if needed
+            state.update({ dmNotes: notes });
+        }, 1000);
+    }
+};
 
 // ----------------------------------------------------
 // Player Features: Party
@@ -1239,7 +1282,7 @@ function renderNpcs(currentState) {
                      
                      <p style="white-space: pre-wrap; margin-bottom: 0.5rem; font-size: 0.9em;"><i class="fa-solid fa-theater-masks"></i> <strong>Actitud/Voz:</strong> ${n.behavior || '...'}</p>
                      
-                     ${(n.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
+                      ${n.secretVisible && n.motivation ? `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Secreto Descubierto:</strong> ${n.motivation}</p>` : ''}
                      
                      <!-- Apuntes Privados (Ahora dentro del flujo correcto) -->
                      <div style="border-top: 1px dashed var(--parchment-dark); padding-top: 0.8rem; margin-top: 0.8rem; width: 100%;">
@@ -1292,7 +1335,7 @@ function renderMaps(currentState) {
                 <!-- Content (Right/Bottom) -->
                 <div class="card-horizontal-content">
                     <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2em;">${m.name} ${m.environmentType ? `<span style="font-size:0.6em; color:var(--text-muted); text-transform:uppercase;">(${m.environmentType})</span>` : ''}</h4>
-                     ${(m.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
+                    ${m.secretVisible && m.dmNotes ? `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Descubrimiento:</strong> ${m.dmNotes}</p>` : ''}
                     
                     <!-- Apuntes Privados (Ahora dentro del flujo correcto) -->
                     <div style="border-top: 1px dashed var(--parchment-dark); padding-top: 0.8rem; margin-top: 0.8rem; width: 100%;">
@@ -1476,13 +1519,15 @@ window.renderDMNpcs = function (currentState) {
 
                         <p style="font-size: 0.9em; white-space: pre-wrap; margin-bottom: 0.5rem;"><i class="fa-solid fa-theater-masks"></i> <strong>Actitud/Voz:</strong> ${n.behavior || '...'}</p>
                         
-                        <!-- Contenedor Secreto Expandible -->
+                        <!-- Contenedor Secreto (Visible para DM, toggle para Jugadores) -->
                         <div style="background: rgba(0,0,0,0.03); border-left: 3px solid var(--red-ink); padding: 0.5rem; margin-bottom: 1rem; border-radius: 0 4px 4px 0;">
-                            <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('npc', '${n.id}')">
+                            <div class="flex-between">
                                 <strong style="color: var(--red-ink); font-size: 0.85em;"><i class="fa-solid fa-user-secret"></i> Secreto DM</strong>
-                                <i class="fa-solid ${isSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
+                                <button class="btn" style="padding: 0.1rem 0.4rem; font-size: 0.7rem; background: ${n.secretVisible ? 'var(--gold-dim)' : 'transparent'}; border: 1px solid var(--parchment-dark);" onclick="event.stopPropagation(); window.toggleSecretVisibility('npc', '${n.id}')" title="${n.secretVisible ? 'Visible para Jugadores' : 'Oculto para Jugadores'}">
+                                    <i class="fa-solid ${n.secretVisible ? 'fa-unlock' : 'fa-lock'}"></i>
+                                </button>
                             </div>
-                            ${isSecretVisible ? `<p style="font-size: 0.85em; white-space: pre-wrap; margin-top: 0.5em; margin-bottom: 0;">${n.motivation || 'Sin notas secretas.'}</p>` : ''}
+                            <p style="font-size: 0.85em; white-space: pre-wrap; margin-top: 0.5em; margin-bottom: 0;">${n.motivation || 'Sin notas secretas.'}</p>
                         </div>
 
                         <!-- Acciones -->
@@ -1933,6 +1978,8 @@ window.applyTrackerHP = function (instanceId, inputEl) {
 
     if (entry.type === 'monster') {
         entry.hpCurrent = newHP;
+        // Auto-reveal if dead
+        if (newHP <= 0) entry.revealed = true;
     } else if (entry.type === 'player') {
         // Update player HP in both tracker and players array atomically
         updatePayload.players = state.get().players.map(p =>
@@ -2062,7 +2109,9 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
             const hiddenDmStyle = (isHidden && isDM) ? 'opacity:0.5;' : '';
 
             html += `
-                <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''} ${hpHaloClass}" style="${hiddenDmStyle}">
+                <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''} ${hpHaloClass}" 
+                     style="${hiddenDmStyle}" 
+                     ondblclick="event.stopPropagation(); window.openQuickLook('${entry.type === 'player' ? entry.id : entry.monsterId}', '${entry.type}')">
                     <div class="init-token-portrait">${portraitHtml}</div>
                     <div class="init-token-name">${nameHtml}</div>
                     ${isDM ? `<input class="init-hp-input" placeholder="" onkeydown="if(event.key==='Enter'){window.applyTrackerHP('${entryId}', this);}">` : ''}
@@ -2114,13 +2163,15 @@ window.renderDMMaps = function (currentState) {
                         
                         <p style="font-size: 0.8em; font-weight: bold; color: var(--gold-dim); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">${m.environmentType || 'Ubicación Desconocida'}</p>
                         
-                         <!-- Contenedor Secreto Expandible -->
+                         <!-- Contenedor Secreto (Notas DM) -->
                         <div style="background: rgba(0,0,0,0.03); border-left: 3px solid var(--red-ink); padding: 0.5rem; margin-bottom: 1rem; border-radius: 0 4px 4px 0;">
-                            <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('map', '${m.id}')">
+                            <div class="flex-between">
                                 <strong style="color: var(--red-ink); font-size: 0.85em;"><i class="fa-solid fa-mask"></i> Notas DM</strong>
-                                <i class="fa-solid ${isSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
+                                <button class="btn" style="padding: 0.1rem 0.4rem; font-size: 0.7rem; background: ${m.secretVisible ? 'var(--gold-dim)' : 'transparent'}; border: 1px solid var(--parchment-dark);" onclick="event.stopPropagation(); window.toggleSecretVisibility('map', '${m.id}')" title="${m.secretVisible ? 'Visible para Jugadores' : 'Oculto para Jugadores'}">
+                                    <i class="fa-solid ${m.secretVisible ? 'fa-unlock' : 'fa-lock'}"></i>
+                                </button>
                             </div>
-                            ${isSecretVisible ? `<div style="font-size: 0.85em; white-space: pre-wrap; margin-top: 0.5em; margin-bottom: 0;">${m.dmNotes || 'Sin notas del master.'}</div>` : ''}
+                            <div style="font-size: 0.85em; white-space: pre-wrap; margin-top: 0.5em; margin-bottom: 0;">${m.dmNotes || 'Sin notas del master.'}</div>
                         </div>
 
                         <!-- Acciones -->
@@ -2156,22 +2207,30 @@ window.toggleEntityVisibility = async function (type, id) {
     await state.update({ [listKey]: updatedList });
 };
 
+window.toggleSecretVisibility = async function (type, id) {
+    const listKeyDict = { 'npc': 'npcs', 'map': 'maps', 'monster': 'bestiario' };
+    const listKey = listKeyDict[type] || type + 's';
+    const list = state.get()[listKey];
+    const item = list.find(e => e.id === id);
+    if (!item) return;
+
+    const newValue = !item.secretVisible;
+    const updatedList = list.map(e => e.id === id ? { ...e, secretVisible: newValue } : e);
+    await state.update({ [listKey]: updatedList });
+};
+
 window.toggleDmSecretVisibility = function (type, id) {
+    // Mantengo esta función para bloques que no se sincronizan con el jugador (ej: monstruos)
     const listKeyDict = { 'npc': 'npcs', 'map': 'maps', 'monster': 'bestiario', 'encuentro': 'encuentros' };
     const listKey = listKeyDict[type] || type + 's';
     const list = state.get()[listKey];
     const item = list.find(e => e.id === id);
     if (!item) return;
 
-    // UI Transient State - Doesn't need to be saved to Backend
-    // We mutate the proxy state structure gently to avoid excessive backend trips
-    // Note: If you want persistent UI states you'd have to save them, but for accordions local memory is usually best.
     const currentValue = item._uiSecretVisible || false;
     const updatedList = list.map(e => e.id === id ? { ...e, _uiSecretVisible: !currentValue } : e);
-    // Use state.update WITH skipNotify = false to trigger UI refresh WITHOUT writing to DB (avoid bandwidth loop logic below)
-
-    state.get()[listKey] = updatedList; // direct mutant edit in JS memory
-    state.notify(); // force UI rerender
+    state.get()[listKey] = updatedList;
+    state.notify();
 };
 
 // ----------------------------------------------------
