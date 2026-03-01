@@ -278,8 +278,8 @@ function renderTabContent(tabId, currentState) {
 // Player Features: Sheet
 // ----------------------------------------------------
 
-function renderPlayerSheet(playerId, players) {
-    const container = document.getElementById('tab-sheet');
+function renderPlayerSheet(playerId, players, targetId = 'tab-sheet') {
+    const container = document.getElementById(targetId);
     const player = players.find(p => p.id === playerId);
 
     if (!player) {
@@ -1090,7 +1090,7 @@ function renderPartyInfo(players, isDM) {
         };
 
         html += `
-            <div class="card">
+            <div class="card" ondblclick="window.openQuickLook('${p.id}', 'player')" style="cursor: pointer;" title="Doble toque para Visión Rápida">
                 <div class="flex-between" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
                     <h3 style="margin:0;">${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:var(--text-muted)">Lvl ${p.level} ${p.class}</span></h3>
                     ${isDM ? `
@@ -1193,7 +1193,7 @@ function renderNpcs(currentState) {
     visibleNpcs.forEach(n => {
         const playerNotesOnNpc = n.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
-            <div class="card">
+            <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer;" title="Doble toque para Visión Rápida">
                  <h4>${n.name}</h4>
                  <p style="white-space: pre-wrap;">${n.description}</p>
                  ${n.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
@@ -1388,7 +1388,7 @@ window.renderDMNpcs = function (currentState) {
     if (npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';
     npcs.forEach(n => {
         html += `
-            <div class="card" style="${n.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}">
+            <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; ${n.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}">
                 <div class="flex-between mb-1">
                     <input type="text" value="${n.name}" style="font-weight: bold; width: 60%; margin-bottom: 0;" onchange="window.updateEntity('npc', '${n.id}', 'name', this.value)">
                     <button class="btn ${n.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.updateEntity('npc', '${n.id}', 'isVisible', ${!n.isVisible})">
@@ -1679,3 +1679,60 @@ window.uploadPlayerAvatar = async function (input, playerId) {
         label.innerHTML = originalText;
     }
 };
+
+// ----------------------------------------------------
+// QUICK LOOK MODAL (Double Click / Double Tap Modal)
+// ----------------------------------------------------
+window.openQuickLook = function (id, type) {
+    const overlay = document.getElementById('quick-look-modal-overlay');
+    const container = document.getElementById('quick-look-container');
+    const currentState = window.state.get();
+
+    // Save current mode and enforce view-only mode for Quick Look to avoid accidental edits
+    const oldEditMode = window.isSheetEditMode;
+    const oldSheetPlayer = window.currentSheetPlayerId;
+    window.isSheetEditMode = false;
+
+    if (type === 'player') {
+        // DRY: Reutilizamos la función nativa que pinta fichas pero inyectada en el modal.
+        renderPlayerSheet(id, currentState.players, 'quick-look-container');
+    } else if (type === 'npc') {
+        const npc = currentState.npcs.find(n => n.id === id);
+        if (npc) {
+            let html = `
+                 <div class="card view-mode" style="padding: 2rem; border: none; box-shadow: none;">
+                     <h2 style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem; color: var(--leather-dark);">${npc.name}</h2>
+                     <p style="white-space: pre-wrap; font-size: 1.2rem; line-height: 1.6;">${npc.description}</p>
+                 `;
+            if (npc.secrets && npc.secrets.length > 0) {
+                const visibleSecrets = npc.secrets.filter(s => currentState.session.role === 'DM' || s.isVisible);
+                if (visibleSecrets.length > 0) {
+                    html += visibleSecrets.map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-eye"></i> <strong>Secreto:</strong> ${s.text}</p>`).join('');
+                }
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+    }
+
+    // Restore variables so the rest of the UI doesn't break when we close
+    window.isSheetEditMode = oldEditMode;
+    window.currentSheetPlayerId = oldSheetPlayer; // Fixes side-effect of renderPlayerSheet
+
+    overlay.classList.remove('hidden');
+};
+
+window.closeQuickLook = function () {
+    const overlay = document.getElementById('quick-look-modal-overlay');
+    if (overlay && !overlay.classList.contains('hidden')) {
+        overlay.classList.add('hidden');
+        document.getElementById('quick-look-container').innerHTML = ''; // Clear DOM memory
+    }
+};
+
+// Escape Key Support for closing the Giant Modal
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        window.closeQuickLook();
+    }
+});
