@@ -1213,16 +1213,16 @@ function renderNpcs(currentState) {
     visibleNpcs.forEach(n => {
         const playerNotesOnNpc = n.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
-            <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px;">
+            <div class="card card-horizontal" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative;">
                  
-                 <!-- Image (Left fixed) -->
+                 <!-- Image (Left/Top) -->
                  ${n.url
-                ? `<img src="${n.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">`
-                : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-user fa-2x text-muted"></i></div>`
+                ? `<img src="${n.url}" class="card-horizontal-img" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">`
+                : `<div class="card-horizontal-img" style="background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-user fa-2x text-muted"></i></div>`
             }
                  
-                 <!-- Content (Right flexible) -->
-                 <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                 <!-- Content (Right/Bottom) -->
+                 <div class="card-horizontal-content">
                      <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${n.name}">${n.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${n.raceAlignment || 'Desconocido'})</span></h4>
                      
                      <div style="display:flex; gap:15px; font-size: 0.85em; margin-bottom: 0.8rem; color: var(--leather-dark); font-weight: bold;">
@@ -1234,14 +1234,13 @@ function renderNpcs(currentState) {
                      
                      ${(n.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
                      
-                 </div>
-
-                 <!-- Apuntes y Expandible debajo de la Flexbox principal si hiciera falta, pero queda mejor full-width dentro del flex derecho -->
-                 <div style="flex-basis: 100%; border-top: 1px dashed var(--parchment-dark); padding-top: 0.8rem; margin-top: 0.5rem; width: 100%;">
-                     <label style="font-size: 0.85em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes privados sobre este NPC:</label>
-                     <textarea id="note-npc-${n.id}" placeholder="Escribe aquí los apuntes que te parezcan relevantes (el resto del grupo no los verá)..." style="min-height: 80px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
-                     <div style="display:flex; justify-content:flex-end;">
-                         <button class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="event.stopPropagation(); window.saveEntityNote(event, '${session.playerId}', 'npc', '${n.id}')">Guardar</button>
+                     <!-- Apuntes Privados (Ahora dentro del flujo correcto) -->
+                     <div style="border-top: 1px dashed var(--parchment-dark); padding-top: 0.8rem; margin-top: 0.8rem; width: 100%;">
+                         <label style="font-size: 0.85em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes privados:</label>
+                         <textarea id="note-npc-${n.id}" placeholder="Escribe aquí tus apuntes..." style="min-height: 80px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
+                         <div style="display:flex; justify-content:flex-end;">
+                             <button class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="event.stopPropagation(); window.saveEntityNote(event, '${session.playerId}', 'npc', '${n.id}')">Guardar</button>
+                         </div>
                      </div>
                  </div>
              </div>
@@ -1275,26 +1274,26 @@ function renderMaps(currentState) {
     visibleMaps.forEach(m => {
         const playerNotesOnMap = m.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
-            <div class="card" style="display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; position: relative;">
+            <div class="card card-horizontal" style="position: relative;">
                 
-                <!-- Image (Left fixed) -->
+                <!-- Image (Left/Top) -->
                 ${m.url
-                ? `<img src="${m.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid var(--leather-dark); cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
-                : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-map fa-2x text-muted"></i></div>`
+                ? `<img src="${m.url}" class="card-horizontal-img" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
+                : `<div class="card-horizontal-img" style="background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-map fa-2x text-muted"></i></div>`
             }
                 
-                <!-- Content (Right flexible) -->
-                <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                <!-- Content (Right/Bottom) -->
+                <div class="card-horizontal-content">
                     <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2em;">${m.name} ${m.environmentType ? `<span style="font-size:0.6em; color:var(--text-muted); text-transform:uppercase;">(${m.environmentType})</span>` : ''}</h4>
-                    ${(m.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
-                </div>
-
-                <!-- Footer / Player Notes -->
-                <div style="flex-basis: 100%; border-top: 1px dashed var(--parchment-dark); padding-top: 0.8rem; margin-top: 0.5rem; width: 100%;">
-                    <label style="font-size: 0.85em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes cartográficos:</label>
-                    <textarea id="note-map-${m.id}" placeholder="Escondites, trampas o hallazgos privados..." style="min-height: 80px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="event.stopPropagation(); window.saveEntityNote(event, '${session.playerId}', 'map', '${m.id}')">Guardar</button>
+                     ${(m.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
+                    
+                    <!-- Apuntes Privados (Ahora dentro del flujo correcto) -->
+                    <div style="border-top: 1px dashed var(--parchment-dark); padding-top: 0.8rem; margin-top: 0.8rem; width: 100%;">
+                        <label style="font-size: 0.85em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes cartográficos:</label>
+                        <textarea id="note-map-${m.id}" placeholder="Notas sobre este lugar..." style="min-height: 80px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
+                        <div style="display:flex; justify-content:flex-end;">
+                            <button class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="event.stopPropagation(); window.saveEntityNote(event, '${session.playerId}', 'map', '${m.id}')">Guardar</button>
+                        </div>
                     </div>
                 </div>
              </div>
@@ -1446,16 +1445,16 @@ window.renderDMNpcs = function (currentState) {
             const isSecretVisible = n._uiSecretVisible || false;
 
             html += `
-                <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; ${n.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
+                <div class="card card-horizontal" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; ${n.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     
-                    <!-- Image (Left fixed) -->
+                    <!-- Image -->
                     ${n.url
-                    ? `<img src="${n.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">`
-                    : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-user fa-2x text-muted"></i></div>`
+                    ? `<img src="${n.url}" class="card-horizontal-img" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">`
+                    : `<div class="card-horizontal-img" style="background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-user fa-2x text-muted"></i></div>`
                 }
                     
-                    <!-- Content (Right flexible) -->
-                    <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                    <!-- Content -->
+                    <div class="card-horizontal-content">
                         <div class="flex-between mb-1" style="flex-wrap: nowrap;">
                             <h4 style="margin: 0; font-size: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${n.name}">${n.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${n.raceAlignment || 'Desconocido'})</span></h4>
                             <button class="btn ${n.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-left: 10px;" onclick="event.stopPropagation(); window.toggleEntityVisibility('npc', '${n.id}')" title="${n.isVisible ? 'Visible por Jugadores' : 'Oculto a Jugadores'}">
@@ -1517,16 +1516,16 @@ window.renderBestiario = function (currentState) {
             const isSecretVisible = m._uiSecretVisible || false;
 
             html += `
-                <div class="card" ondblclick="window.openQuickLook('${m.id}', 'monster')" style="cursor: pointer; position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'} padding: 1rem;">
+                <div class="card card-horizontal" ondblclick="window.openQuickLook('${m.id}', 'monster')" style="cursor: pointer; position: relative; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     
-                    <!-- Image (Left fixed) -->
+                    <!-- Image -->
                     ${m.url
-                    ? `<img src="${m.url}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
-                    : `<div style="width: 120px; height: 120px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark); box-shadow: 0 4px 6px rgba(0,0,0,0.3);"><i class="fa-solid fa-dragon fa-3x text-muted"></i></div>`
+                    ? `<img src="${m.url}" class="card-horizontal-img" style="width: 120px; height: 120px;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
+                    : `<div class="card-horizontal-img" style="width: 120px; height: 120px; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark); box-shadow: 0 4px 6px rgba(0,0,0,0.3);"><i class="fa-solid fa-dragon fa-3x text-muted"></i></div>`
                 }
                     
-                    <!-- Content (Right flexible - STAT BLOCK 5e) -->
-                    <div style="display: flex; flex-direction: column; flex: 1; min-width: 0; color: var(--leather-dark);">
+                    <!-- Content -->
+                    <div class="card-horizontal-content" style="color: var(--leather-dark);">
                         
                         <!-- Header -->
                         <div class="flex-between mb-1" style="flex-wrap: nowrap;">
@@ -1754,16 +1753,16 @@ window.renderDMMaps = function (currentState) {
             const isSecretVisible = m._uiSecretVisible || false;
 
             html += `
-                <div class="card" style="position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
+                <div class="card card-horizontal" style="position: relative; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     
-                    <!-- Image (Left fixed) -->
+                    <!-- Image -->
                     ${m.url
-                    ? `<img src="${m.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
-                    : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-map fa-2x text-muted"></i></div>`
+                    ? `<img src="${m.url}" class="card-horizontal-img" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
+                    : `<div class="card-horizontal-img" style="background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-map fa-2x text-muted"></i></div>`
                 }
                     
-                    <!-- Content (Right flexible) -->
-                    <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                    <!-- Content -->
+                    <div class="card-horizontal-content">
                         <div class="flex-between mb-1" style="flex-wrap: nowrap;">
                             <h4 style="margin: 0; font-size: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${m.name}"><i class="fa-solid fa-map"></i> ${m.name}</h4>
                             <button class="btn ${m.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-left: 10px;" onclick="event.stopPropagation(); window.toggleEntityVisibility('map', '${m.id}')" title="${m.isVisible ? 'Visible por Jugadores' : 'Oculto a Jugadores'}">

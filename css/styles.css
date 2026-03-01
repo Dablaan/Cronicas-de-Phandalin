@@ -156,8 +156,45 @@ h6 {
     margin-bottom: 1rem;
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
     position: relative;
-    /* Ragged look approximation via borders */
     border-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="none" stroke="%23ccb997" stroke-width="2" stroke-dasharray="2 1"/></svg>') 2 stretch;
+}
+
+/* Horizontal variant for NPCs, Maps and Monsters */
+.card-horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+    width: 100%;
+}
+
+.card-horizontal-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.card-horizontal-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+@media (max-width: 600px) {
+    .card-horizontal {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .card-horizontal-img {
+        width: 100%;
+        height: 180px;
+        margin-bottom: 0.5rem;
+    }
 }
 
 .btn {
