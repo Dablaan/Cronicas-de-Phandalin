@@ -1114,9 +1114,9 @@ function renderPartyInfo(players, isDM) {
                 <div class="flex-between" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
                     <h3 style="margin:0;">${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:var(--text-muted)">Lvl ${p.level} ${p.class}</span></h3>
                     ${isDM ? `
-                        <div>
-                            <button class="btn" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent - 1})">-</button>
-                            <button class="btn" style="padding: 0.1rem 0.4rem; font-size: 0.8rem;" onclick="window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent + 1})">+</button>
+                        <div style="display:flex; gap:0.3rem;" ondblclick="event.stopPropagation()">
+                            <button class="btn" style="padding: 0.3rem 0.7rem; font-size: 1rem; font-weight:bold;" onclick="event.stopPropagation(); window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent - 1})">−</button>
+                            <button class="btn" style="padding: 0.3rem 0.7rem; font-size: 1rem; font-weight:bold;" onclick="event.stopPropagation(); window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent + 1})">+</button>
                         </div>
                     ` : ''}
                 </div>
@@ -1911,47 +1911,38 @@ window.applyTrackerHP = function (instanceId, inputEl) {
     );
     if (!entry) return;
 
-    let delta = 0;
+    // Parse expression
+    let newHP;
     if (expression.startsWith('+') || expression.startsWith('-')) {
-        delta = parseInt(expression, 10);
+        const delta = parseInt(expression, 10);
+        if (isNaN(delta) || delta === 0) { inputEl.value = ''; return; }
+        if (entry.type === 'monster') {
+            newHP = Math.max(0, entry.hpCurrent + delta);
+        } else {
+            const player = state.get().players.find(p => p.id === entry.id);
+            newHP = Math.max(0, ((player?.hpCurrent) || 0) + delta);
+        }
     } else {
-        // Absolute value: set HP directly
         const abs = parseInt(expression, 10);
-        if (!isNaN(abs)) {
-            if (entry.type === 'monster') {
-                entry.hpCurrent = Math.max(0, abs);
-            } else {
-                // For players, update the actual player state too
-                entry.initiative = entry.initiative; // keep
-                const players = state.get().players.map(p =>
-                    p.id === entry.id ? { ...p, hpCurrent: Math.max(0, abs) } : p
-                );
-                state.update({ players });
-            }
-            inputEl.value = '';
-            state.update({ combatTracker: tracker });
-            return;
-        }
-    }
-
-    if (isNaN(delta) || delta === 0) { inputEl.value = ''; return; }
-
-    if (entry.type === 'monster') {
-        entry.hpCurrent = Math.max(0, entry.hpCurrent + delta);
-    } else if (entry.type === 'player') {
-        // Update player's actual HP in the game state
-        const player = state.get().players.find(p => p.id === entry.id);
-        if (player) {
-            const newHP = Math.max(0, (player.hpCurrent || 0) + delta);
-            const players = state.get().players.map(p =>
-                p.id === entry.id ? { ...p, hpCurrent: newHP } : p
-            );
-            state.update({ players });
-        }
+        if (isNaN(abs)) { inputEl.value = ''; return; }
+        newHP = Math.max(0, abs);
     }
 
     inputEl.value = '';
-    state.update({ combatTracker: tracker });
+
+    // Build a SINGLE atomic update to prevent bounce-back
+    const updatePayload = { combatTracker: tracker };
+
+    if (entry.type === 'monster') {
+        entry.hpCurrent = newHP;
+    } else if (entry.type === 'player') {
+        // Update player HP in both tracker and players array atomically
+        updatePayload.players = state.get().players.map(p =>
+            p.id === entry.id ? { ...p, hpCurrent: newHP } : p
+        );
+    }
+
+    state.update(updatePayload);
 };
 
 window.endCombat = function () {
@@ -2073,7 +2064,7 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
             const hiddenDmStyle = (isHidden && isDM) ? 'opacity:0.5;' : '';
 
             html += `
-                <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''} ${!isActive && !isDead ? hpHaloClass : ''}" style="${hiddenDmStyle}">
+                <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''} ${hpHaloClass}" style="${hiddenDmStyle}">
                     <div class="init-token-portrait">${portraitHtml}</div>
                     <div class="init-token-name">${nameHtml}</div>
                     ${isDM ? `<input class="init-hp-input" placeholder="" onkeydown="if(event.key==='Enter'){window.applyTrackerHP('${entryId}', this);}">` : ''}

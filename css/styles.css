@@ -1498,14 +1498,14 @@ textarea {
     box-shadow: 0 0 10px rgba(85, 107, 47, 0.5);
 }
 
-/* Active turn: golden glow */
+/* Active turn: golden outline (does NOT overlap HP halo) */
 .init-token-active {
     transform: scale(1.1);
 }
 
 .init-token-active .init-token-portrait {
-    border-color: var(--gold);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.7), 0 0 30px rgba(212, 175, 55, 0.3);
+    outline: 3px solid var(--gold);
+    outline-offset: 4px;
     animation: initGlow 1.2s ease-in-out infinite;
 }
 
@@ -1513,11 +1513,11 @@ textarea {
 
     0%,
     100% {
-        box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+        outline-color: rgba(212, 175, 55, 0.6);
     }
 
     50% {
-        box-shadow: 0 0 25px rgba(212, 175, 55, 0.9), 0 0 40px rgba(212, 175, 55, 0.4);
+        outline-color: rgba(212, 175, 55, 1);
     }
 }
 
@@ -1531,20 +1531,20 @@ textarea {
     filter: grayscale(100%);
 }
 
-/* Dynamic HP halos */
+/* Dynamic HP halos (thick box-shadow) */
 .init-token-hp-healthy .init-token-portrait {
     border-color: #2e7d32;
-    box-shadow: 0 0 8px rgba(46, 125, 50, 0.4);
+    box-shadow: 0 0 10px rgba(46, 125, 50, 0.5), 0 0 20px rgba(46, 125, 50, 0.2);
 }
 
 .init-token-hp-wounded .init-token-portrait {
     border-color: #f9a825;
-    box-shadow: 0 0 8px rgba(249, 168, 37, 0.5);
+    box-shadow: 0 0 10px rgba(249, 168, 37, 0.6), 0 0 22px rgba(249, 168, 37, 0.25);
 }
 
 .init-token-hp-critical .init-token-portrait {
     border-color: #c62828;
-    box-shadow: 0 0 10px rgba(198, 40, 40, 0.6);
+    box-shadow: 0 0 12px rgba(198, 40, 40, 0.7), 0 0 25px rgba(198, 40, 40, 0.3);
     animation: criticalPulse 1s ease-in-out infinite;
 }
 
@@ -1552,11 +1552,11 @@ textarea {
 
     0%,
     100% {
-        box-shadow: 0 0 6px rgba(198, 40, 40, 0.4);
+        box-shadow: 0 0 8px rgba(198, 40, 40, 0.4);
     }
 
     50% {
-        box-shadow: 0 0 14px rgba(198, 40, 40, 0.8);
+        box-shadow: 0 0 18px rgba(198, 40, 40, 0.9), 0 0 30px rgba(198, 40, 40, 0.4);
     }
 }
 
@@ -1598,5 +1598,34 @@ textarea {
     .init-hp-input {
         width: 48px;
         font-size: 0.65rem;
+    }
+}
+
+/* Desktop: 50% larger tokens */
+@media (min-width: 768px) {
+    .init-token {
+        min-width: 100px;
+        max-width: 120px;
+    }
+
+    .init-token-portrait {
+        width: 90px;
+        height: 90px;
+        border-width: 4px;
+    }
+
+    .init-token-name {
+        font-size: 0.75rem;
+        max-width: 110px;
+    }
+
+    .init-token-init {
+        font-size: 0.8rem;
+    }
+
+    .init-hp-input {
+        width: 70px;
+        font-size: 0.8rem;
+        padding: 3px 5px;
     }
 }
