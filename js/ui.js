@@ -1209,20 +1209,41 @@ function renderNpcs(currentState) {
         return;
     }
 
-    let html = '<h3><i class="fa-solid fa-users"></i> Personajes Conocidos</h3><div class="grid-2">';
+    let html = '<h3><i class="fa-solid fa-users"></i> Personajes Conocidos</h3><div class="grid-1">';
     visibleNpcs.forEach(n => {
         const playerNotesOnNpc = n.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
-            <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer;" title="Doble toque para Visión Rápida">
-                 <h4>${n.name}</h4>
-                 ${n.url ? `<img src="${n.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">` : ''}
-                 <p style="white-space: pre-wrap;">${n.description}</p>
-                 ${(n.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
-        <div class="mt-1">
-            <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes sobre ${n.name}:</label>
-            <textarea id="note-npc-${n.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
-            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveEntityNote(event, '${session.playerId}', 'npc', '${n.id}')">Guardar</button>
-        </div>
+            <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px;">
+                 
+                 <!-- Image (Left fixed) -->
+                 ${n.url
+                ? `<img src="${n.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">`
+                : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-user fa-2x text-muted"></i></div>`
+            }
+                 
+                 <!-- Content (Right flexible) -->
+                 <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                     <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${n.name}">${n.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${n.raceAlignment || 'Desconocido'})</span></h4>
+                     
+                     <div style="display:flex; gap:15px; font-size: 0.85em; margin-bottom: 0.8rem; color: var(--leather-dark); font-weight: bold;">
+                         <span title="Clase de Armadura"><i class="fa-solid fa-shield"></i> CA: ${n.ac || '-'}</span>
+                         <span title="Puntos de Golpe"><i class="fa-solid fa-heart" style="color: var(--red-ink);"></i> HP: ${n.hp || '-'}</span>
+                     </div>
+                     
+                     <p style="white-space: pre-wrap; margin-bottom: 0.5rem; font-size: 0.9em;"><i class="fa-solid fa-theater-masks"></i> <strong>Actitud/Voz:</strong> ${n.behavior || '...'}</p>
+                     
+                     ${(n.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
+                     
+                 </div>
+
+                 <!-- Apuntes y Expandible debajo de la Flexbox principal si hiciera falta, pero queda mejor full-width dentro del flex derecho -->
+                 <div style="flex-basis: 100%; border-top: 1px dashed var(--parchment-dark); padding-top: 0.8rem; margin-top: 0.5rem; width: 100%;">
+                     <label style="font-size: 0.85em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes privados sobre este NPC:</label>
+                     <textarea id="note-npc-${n.id}" placeholder="Escribe aquí los apuntes que te parezcan relevantes (el resto del grupo no los verá)..." style="min-height: 80px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
+                     <div style="display:flex; justify-content:flex-end;">
+                         <button class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="event.stopPropagation(); window.saveEntityNote(event, '${session.playerId}', 'npc', '${n.id}')">Guardar</button>
+                     </div>
+                 </div>
              </div>
         `;
     });
@@ -1250,19 +1271,32 @@ function renderMaps(currentState) {
         return;
     }
 
-    let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div class="grid-2">';
+    let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div class="grid-1">';
     visibleMaps.forEach(m => {
         const playerNotesOnMap = m.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
-            <div class="card">
-                <h4>${m.name}</h4>
-                 ${m.url ? `<img src="${m.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem; cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">` : ''}
-                 ${(m.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
-        <div class="mt-1">
-            <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes:</label>
-            <textarea id="note-map-${m.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
-            <button class="btn" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.saveEntityNote(event, '${session.playerId}', 'map', '${m.id}')">Guardar</button>
-        </div>
+            <div class="card" style="display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; position: relative;">
+                
+                <!-- Image (Left fixed) -->
+                ${m.url
+                ? `<img src="${m.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid var(--leather-dark); cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
+                : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-map fa-2x text-muted"></i></div>`
+            }
+                
+                <!-- Content (Right flexible) -->
+                <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2em;">${m.name} ${m.environmentType ? `<span style="font-size:0.6em; color:var(--text-muted); text-transform:uppercase;">(${m.environmentType})</span>` : ''}</h4>
+                    ${(m.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 0.85em;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
+                </div>
+
+                <!-- Footer / Player Notes -->
+                <div style="flex-basis: 100%; border-top: 1px dashed var(--parchment-dark); padding-top: 0.8rem; margin-top: 0.5rem; width: 100%;">
+                    <label style="font-size: 0.85em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes cartográficos:</label>
+                    <textarea id="note-map-${m.id}" placeholder="Escondites, trampas o hallazgos privados..." style="min-height: 80px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.4; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;" onclick="event.stopPropagation(); window.saveEntityNote(event, '${session.playerId}', 'map', '${m.id}')">Guardar</button>
+                    </div>
+                </div>
              </div>
         `;
     });

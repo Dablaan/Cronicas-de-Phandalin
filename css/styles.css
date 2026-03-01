@@ -695,8 +695,8 @@ textarea {
 
 .biblioteca-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
     justify-items: center;
     align-items: start;
     margin-top: 1.5rem;
@@ -719,7 +719,7 @@ textarea {
 
 .biblioteca-item img {
     width: 100%;
-    max-width: 280px;
+    max-width: 160px;
     height: auto;
     border-radius: 6px;
     box-shadow: 3px 6px 12px rgba(0, 0, 0, 0.6);
@@ -727,18 +727,18 @@ textarea {
 }
 
 .biblioteca-item span {
-    margin-top: 1.2rem;
+    margin-top: 0.8rem;
     font-family: var(--font-heading);
     font-weight: bold;
     color: var(--leather-dark);
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
-    line-height: 1.3;
+    line-height: 1.2;
 }
 
 @media (max-width: 600px) {
     .biblioteca-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -1154,7 +1154,7 @@ textarea {
 
     /* Biblioteca responsive landscape */
     .biblioteca-grid {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
