@@ -1621,12 +1621,7 @@ window.saveEntityForm = async function (event, type, id) {
         const fileInput = document.getElementById('ef-image');
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
-            if (window.storageAdapter && window.storageAdapter.uploadCampaignMedia) {
-                imageUrl = await window.storageAdapter.uploadCampaignMedia(file);
-            } else {
-                console.warn("Storage API no detectado, emulando para testing...");
-                imageUrl = URL.createObjectURL(file); // fallback si storage falla en test
-            }
+            imageUrl = await storageAdapter.uploadCampaignMedia(file);
         }
 
         // Recuperar y Empaquetar Datos
