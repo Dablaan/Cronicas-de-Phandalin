@@ -9,7 +9,8 @@
     --gold-dim: #a68b2a;
     --red-ink: #8b0000;
     --text-main: #302013;
-    --text-muted: #5c4e40;
+    --text-muted: #4a3424;
+    /* Darkened for better WCAG contrast */
 
     /* Typography */
     --font-heading: 'Cinzel', serif;
@@ -42,6 +43,27 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
+}
+
+/* Custom Scrollbars global */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--leather-dark);
+    border-left: 1px solid #111;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--parchment-dark);
+    border: 2px solid var(--leather-dark);
+    border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-dim);
 }
 
 h1,
@@ -98,6 +120,19 @@ h6 {
 
 .screen.active {
     display: flex;
+    animation: fadeInSlideUp 0.4s ease-out forwards;
+}
+
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Loader */
@@ -147,6 +182,12 @@ h6 {
     background: var(--leather-light);
     color: #fff;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), var(--box-shadow-glow);
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 .btn-danger {
@@ -180,6 +221,8 @@ select:focus {
     outline: none;
     border-color: var(--gold-dim);
     background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 5px var(--gold-dim);
+    transition: all 0.2s ease;
 }
 
 textarea {
@@ -234,16 +277,23 @@ textarea {
     border-bottom: 3px solid transparent;
     white-space: nowrap;
     transition: all 0.2s;
+    border-top-left-radius: var(--border-radius-sm);
+    border-top-right-radius: var(--border-radius-sm);
 }
 
 .tab-btn:hover {
     color: var(--leather-dark);
+    background: rgba(42, 27, 18, 0.05);
+    /* very light leather on hover */
 }
 
 .tab-btn.active {
-    color: var(--leather-dark);
+    color: var(--gold);
+    background: var(--leather-dark);
     border-bottom-color: var(--red-ink);
     font-weight: 700;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 1px 2px #000;
 }
 
 .tab-content {
@@ -252,6 +302,7 @@ textarea {
 
 .tab-content.active {
     display: block;
+    animation: fadeInSlideUp 0.3s ease-out forwards;
 }
 
 /* Utility layout */
@@ -604,17 +655,18 @@ textarea {
 .sheet-container:not(.view-mode) input:not([type="checkbox"]),
 .sheet-container:not(.view-mode) textarea,
 .sheet-container:not(.view-mode) select {
-    background: rgba(255, 255, 255, 0.2) !important;
-    border-bottom: 2px dotted var(--leather-light) !important;
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 2px solid var(--leather-dark) !important;
+    border-radius: 0;
     padding: 0.1rem;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, box-shadow 0.2s ease;
 }
 
 .sheet-container:not(.view-mode) input:focus,
 .sheet-container:not(.view-mode) textarea:focus {
-    background: rgba(255, 255, 255, 0.6) !important;
+    background: rgba(255, 255, 255, 0.3) !important;
     outline: none;
+    box-shadow: 0 2px 4px var(--gold-dim);
 }
 
 /* ------------------------------------- */
@@ -753,25 +805,29 @@ textarea {
     }
 
     .sheet-layout {
-        grid-template-columns: 1fr 2.5fr;
+        grid-template-columns: 1fr 1fr 1fr;
         grid-template-areas:
-            "stats   hp"
-            "stats   defense"
-            "stats   saves"
-            "stats   passive"
-            "attacks attacks"
-            "skills  skills"
-            "inv     inv"
-            "traits  traits";
+            "stats hp hp"
+            "stats defense defense"
+            "stats saves saves"
+            "stats passive passive"
+            "attacks attacks attacks"
+            "skills skills skills"
+            "inv inv inv"
+            "traits traits traits";
     }
 
     .combat-stats-grid {
-        grid-template-columns: 1fr 1fr !important;
+        grid-template-columns: repeat(4, 1fr) !important;
     }
 
     .stat-box {
-        padding: 0.25rem;
-        margin-bottom: 20px;
+        padding: 0.15rem;
+        margin-bottom: 15px;
+    }
+
+    .stat-box .stat-val {
+        font-size: 1.2rem;
     }
 
     .defense-box {
