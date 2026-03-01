@@ -99,14 +99,19 @@ function renderAuthPlayerList(players) {
         return;
     }
 
-    let html = '<div class="grid-2">';
+    let html = '<div style="display: flex; flex-direction: column; gap: 16px; align-items: center; max-width: 500px; margin: 0 auto; width: 100%;">';
     players.forEach(p => {
+        const fallbackAvatar = `<div style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid #c0a062; margin-right: 16px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);"><i class="fa-solid fa-dragon" style="color: var(--gold-dim); font-size: 1.5rem;"></i></div>`;
+        const avatarHtml = p.avatarUrl ? `<img src="${p.avatarUrl}" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #c0a062; margin-right: 16px; flex-shrink: 0;">` : fallbackAvatar;
+
         html += `
-            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                <button class="btn" onclick="window.loginAsPlayer('${p.id}')" style="flex: 1;">
-                    ${p.name || 'Sin nombre'} (Lvl ${p.level})
-                </button>
-                <button class="btn btn-danger" onclick="window.deletePlayer('${p.id}', '${(p.name || 'Sin nombre').replace(/'/g, "\\'")}')" title="Borrar Personaje para siempre" style="padding: 0.2rem 0.6rem;">
+            <div class="epic-hero-card" onclick="window.loginAsPlayer('${p.id}')">
+                ${avatarHtml}
+                <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                    <span style="font-size: 1.2rem; font-weight: bold; color: #fff;">${p.name || 'Sin nombre'}</span>
+                    <span style="font-size: 0.9rem; color: #e6d4b8; opacity: 0.8;">${p.class || 'Aventurero'} - Nivel ${p.level}</span>
+                </div>
+                <button class="btn btn-danger" onclick="event.stopPropagation(); window.deletePlayer('${p.id}', '${(p.name || 'Sin nombre').replace(/'/g, "\\'")}')" title="Borrar Personaje" style="padding: 0.3rem 0.6rem; margin-left: auto;">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
@@ -432,9 +437,9 @@ function renderHPDeathComp(playerId, player) {
             <div style="display:flex; align-items:center; gap: 0.2rem;">
                 <button class="btn" style="padding: 0 0.4rem; font-size: 1.2rem;" onclick="window.modifyHP('${playerId}', -1)">-</button>
                 <div style="font-size: 1.5rem; font-family: var(--font-heading); font-weight:bold; color: var(--leather-dark); display:flex; align-items:baseline;">
-                    <input type="number" name="hpCurrent" value="${player.hpCurrent}" style="width:45px; text-align:center; font-size:1.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0;">
+                    <input type="number" class="hp-input" name="hpCurrent" value="${player.hpCurrent}" style="width:45px; text-align:center; font-size:1.5rem; border:none; border-bottom: 2px solid var(--leather-dark); background:transparent; padding:0; margin:0;" onchange="window.updateSheet('${playerId}', 'hpCurrent', Number(this.value))">
                     <span style="font-size:0.9rem; color:var(--text-muted); margin:0 2px;">/</span>
-                    <input type="number" name="hpMax" value="${player.hpMax}" style="width:35px; text-align:center; font-size:0.9rem; border:none; background:transparent; padding:0; margin:0;">
+                    <input type="number" class="hp-input" name="hpMax" value="${player.hpMax}" style="width:35px; text-align:center; font-size:0.9rem; border:none; background:transparent; padding:0; margin:0;" onchange="window.updateSheet('${playerId}', 'hpMax', Number(this.value))">
                 </div>
                 <button class="btn" style="padding: 0 0.4rem; font-size: 1.2rem;" onclick="window.modifyHP('${playerId}', 1)">+</button>
             </div>
@@ -480,7 +485,7 @@ function renderDefenseComp(player) {
              <div class="defense-box">
                 <label>Insp.</label>
                 <div style="display:flex; justify-content:center; align-items:center; height: 100%;">
-                    <input type="checkbox" name="inspiration" ${player.inspiration ? 'checked' : ''} style="width:18px; height:18px; accent-color: var(--gold-dim); cursor:pointer;">
+                    <input type="checkbox" class="inspiration-input" name="inspiration" ${player.inspiration ? 'checked' : ''} style="width:18px; height:18px; accent-color: var(--gold-dim); cursor:pointer;" onchange="window.updateSheet('${playerId}', 'inspiration', this.checked)">
                 </div>
             </div>
         </div>
