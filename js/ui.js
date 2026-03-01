@@ -1209,7 +1209,7 @@ function renderNpcs(currentState) {
         return;
     }
 
-    let html = '<h3><i class="fa-solid fa-users"></i> Personajes Conocidos</h3><div class="grid-1">';
+    let html = '<h3><i class="fa-solid fa-users"></i> Personajes Conocidos</h3><div class="grid-2">';
     visibleNpcs.forEach(n => {
         const playerNotesOnNpc = n.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
@@ -1270,7 +1270,7 @@ function renderMaps(currentState) {
         return;
     }
 
-    let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div class="grid-1">';
+    let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div class="grid-2">';
     visibleMaps.forEach(m => {
         const playerNotesOnMap = m.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
