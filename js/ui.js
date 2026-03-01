@@ -68,9 +68,9 @@ export function initUI() {
 
         const currentPlayers = state.get().players;
         state.update({
-            players: [...currentPlayers, newPlayer],
-            session: { role: 'Player', playerId: newPlayerId }
+            players: [...currentPlayers, newPlayer]
         });
+        window.openLoginModal('setup', newPlayerId);
     });
 }
 
@@ -150,10 +150,12 @@ window.openLoginModal = function (mode, playerId) {
         title.innerHTML = '<i class="fa-solid fa-lock"></i> Sella tu Ficha';
         desc.innerText = 'Establece una contraseña maestra (Cerrojo Mágico).';
         pass2.style.display = 'block';
+        submitBtn.innerHTML = '<i class="fa-solid fa-key"></i> Guardar';
     } else {
         title.innerHTML = '<i class="fa-solid fa-key"></i> Ficha Protegida';
         desc.innerText = 'Introduce tu Cerrojo Mágico para entrar.';
         pass2.style.display = 'none';
+        submitBtn.innerHTML = '<i class="fa-solid fa-door-open"></i> Entrar';
     }
 
     overlay.classList.remove('hidden');

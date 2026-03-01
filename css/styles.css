@@ -960,3 +960,10 @@ textarea {
         opacity: 1;
     }
 }
+
+@media (max-width: 768px) {
+    .auth-modal-overlay {
+        align-items: flex-start;
+        padding-top: 15vh;
+    }
+}
