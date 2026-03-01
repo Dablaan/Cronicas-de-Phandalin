@@ -1039,12 +1039,12 @@ textarea {
     }
 
     .area-stats {
-        width: 10%;
+        width: 20%;
         flex-shrink: 0;
     }
 
     .area-center-col {
-        width: 45%;
+        width: 40%;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
@@ -1052,7 +1052,7 @@ textarea {
     }
 
     .area-right-col {
-        width: 45%;
+        width: 40%;
         flex-grow: 1;
         display: flex;
         flex-direction: column;

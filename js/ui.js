@@ -158,6 +158,20 @@ window.openLoginModal = function (mode, playerId) {
         submitBtn.innerHTML = '<i class="fa-solid fa-door-open"></i> Entrar';
     }
 
+    // Enter key support for modal inputs
+    const handleEnter = (e) => {
+        if (e.key === 'Enter') {
+            window.submitLoginModal();
+        }
+    };
+
+    // Remove old listeners to avoid duplicates if modal is opened multiple times
+    pass1.removeEventListener('keypress', handleEnter);
+    pass2.removeEventListener('keypress', handleEnter);
+
+    pass1.addEventListener('keypress', handleEnter);
+    pass2.addEventListener('keypress', handleEnter);
+
     overlay.classList.remove('hidden');
     pass1.focus();
 };
