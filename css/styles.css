@@ -971,7 +971,7 @@ textarea {
 /* ------------------------------------- */
 /* LANDSCAPE OPTIMIZATION (Mobile/Tablet)*/
 /* ------------------------------------- */
-@media (max-width: 1023px) and (orientation: landscape) {
+@media (max-width: 1024px) and (orientation: landscape) {
     body {
         overflow-x: hidden;
     }
@@ -1033,28 +1033,30 @@ textarea {
 
     /* Layout Ficha de PJ (Sheet) en Landscape */
     .sheet-layout {
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas: none;
-        /* Resetear areas para flow natural horizontal */
-        gap: 1rem;
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
     }
 
-    .area-center-col,
-    .area-right-col {
+    .area-stats {
+        width: 10%;
+        flex-shrink: 0;
+    }
+
+    .area-center-col {
+        width: 45%;
+        flex-grow: 1;
         display: flex;
         flex-direction: column;
         gap: 0.8rem;
     }
 
-    .area-stats {
-        grid-column: 1 / -1;
-        /* Enseñar stats en línea en lugar de columna única */
-    }
-
-    .area-stats .card>div {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 0.5rem;
+    .area-right-col {
+        width: 45%;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
     }
 
     .stat-box {
