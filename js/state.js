@@ -12,7 +12,8 @@ const defaultState = {
     grimorio: [], // Array format for spells
     encuentros: [],// Array for combat encounters
     combatTracker: null, // Active combat tracker: { active, phase, encounterName, turnIndex, entries }
-    dmNotes: { missions: '', summary: '', session: '', reminders: '' }
+    dmNotes: { missions: '', summary: '', session: '', reminders: '' },
+    publicDisplay: { imageUrl: null } // Public screen projection: null = show party, URL = show image
 };
 
 let currentState = { ...defaultState };

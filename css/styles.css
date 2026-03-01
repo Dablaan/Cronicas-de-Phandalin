@@ -1661,3 +1661,53 @@ textarea {
         grid-template-columns: 1fr;
     }
 }
+
+/* Login Grid: 3 columns */
+.grid-3-login {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 900px) {
+    .grid-3-login {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Public Screen (Player Facing Display) */
+.public-screen {
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+.public-screen-projecting {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0a;
+    padding: 0;
+}
+
+.public-screen-image {
+    max-width: 100%;
+    max-height: 100vh;
+    object-fit: contain;
+    display: block;
+}
+
+.public-screen-party {
+    background: linear-gradient(135deg, #1a1008 0%, #2a1a0e 50%, #1a1008 100%);
+    padding: 2rem 1rem;
+}
+
+/* Projection Button */
+.btn-project {
+    transition: all 0.2s ease;
+}
+
+.btn-project:hover {
+    background: var(--gold-dim) !important;
+    color: #fff !important;
+    transform: scale(1.1);
+}

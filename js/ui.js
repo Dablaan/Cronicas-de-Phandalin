@@ -84,6 +84,11 @@ export function renderApp(currentState) {
         // Show Auth
         document.getElementById('auth-screen').classList.add('active');
         renderAuthPlayerList(players);
+    } else if (session.role === 'PublicScreen') {
+        // Show Public Screen (fullscreen, no chrome)
+        document.getElementById('main-screen').classList.add('active');
+        setupMainScreenForRole(session);
+        renderPublicScreen(currentState);
     } else {
         // Show Main App
         document.getElementById('main-screen').classList.add('active');
@@ -241,7 +246,22 @@ window.isSheetEditMode = false;
 
 function setupMainScreenForRole(session) {
     const isDM = session.role === 'DM';
+    const isPublicScreen = session.role === 'PublicScreen';
+    const headerBar = document.querySelector('#main-screen > .flex-between');
+    const tabsBar = document.getElementById('app-tabs');
     const headerTitle = document.getElementById('main-header-title');
+
+    if (isPublicScreen) {
+        // Hide all chrome for fullscreen projection
+        if (headerBar) headerBar.style.display = 'none';
+        if (tabsBar) tabsBar.style.display = 'none';
+        return;
+    }
+
+    // Restore chrome for normal roles
+    if (headerBar) headerBar.style.display = '';
+    if (tabsBar) tabsBar.style.display = '';
+
     headerTitle.innerText = isDM ? 'Panel del Dungeon Master' : 'Crónicas de Phandalin';
 
     const tabSheetBtn = document.getElementById('tab-btn-sheet');
@@ -1131,6 +1151,83 @@ window.updateDmNote = function (field, value) {
 };
 
 // ----------------------------------------------------
+// Public Screen (Player Facing Display)
+// ----------------------------------------------------
+
+function renderPublicScreen(currentState) {
+    const { players, publicDisplay, combatTracker } = currentState;
+    // Use tab-sheet as the container since tabs are hidden
+    const container = document.getElementById('tab-sheet');
+    container.classList.add('active');
+    // Deactivate other tabs
+    document.querySelectorAll('.tab-content').forEach(c => { if (c.id !== 'tab-sheet') c.classList.remove('active'); });
+
+    const imageUrl = publicDisplay?.imageUrl || null;
+
+    if (imageUrl) {
+        // PROJECTING MODE: fullscreen image
+        container.innerHTML = `
+            <div class="public-screen public-screen-projecting">
+                <img src="${imageUrl}" class="public-screen-image" alt="Proyección del Master">
+            </div>
+        `;
+    } else {
+        // DEFAULT MODE: party + initiative tracker (player perspective)
+        let html = '<div class="public-screen public-screen-party">';
+        html += '<h2 style="text-align:center; margin-bottom:1rem; color:var(--gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"><i class="fa-solid fa-users"></i> El Grupo de Aventureros</h2>';
+        html += '<div class="grid-2" style="max-width: 1200px; margin: 0 auto;">';
+
+        players.forEach(p => {
+            let hpPercent = Math.max(0, Math.min(100, (p.hpCurrent / p.hpMax) * 100));
+            let hpColor = hpPercent > 50 ? 'darkolivegreen' : (hpPercent > 20 ? 'darkgoldenrod' : 'darkred');
+
+            html += `
+                <div class="card" style="background: rgba(30,20,10,0.7); border: 1px solid var(--gold-dim); color: #e6d4b8;">
+                    <div class="flex-between" style="border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                        <h3 style="margin:0; color:var(--gold);">${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:#aaa">Lvl ${p.level} ${p.class}</span></h3>
+                    </div>
+                    <div class="party-hp-bar-container">
+                        <div class="party-hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor};"></div>
+                        <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1rem; font-weight: 900; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
+                            ${p.hpCurrent} / ${p.hpMax} HP
+                        </div>
+                    </div>
+                    <div class="flex-between" style="font-size: 0.95rem; padding-top: 0.5rem;">
+                        <span><i class="fa-solid fa-shield" style="color:var(--gold-dim)"></i> CA: <strong>${p.ac || 10}</strong></span>
+                        <span><i class="fa-solid fa-bolt" style="color:var(--gold-dim)"></i> Inic: <strong>${p.initiative || 0}</strong></span>
+                        <span><i class="fa-solid fa-eye" style="color:var(--gold-dim)"></i> Pasiva: <strong>${p.passivePerception || 10}</strong></span>
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+
+        // Inject Initiative Tracker (player perspective = fog of war active, isDM = false)
+        if (combatTracker && combatTracker.active) {
+            html += renderInitiativeTracker(combatTracker, false, players);
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+}
+
+window.projectToScreen = function (imageUrl) {
+    const currentUrl = (state.get().publicDisplay || {}).imageUrl;
+    // Toggle: if same image is already projected, stop projecting
+    if (currentUrl === imageUrl) {
+        state.update({ publicDisplay: { imageUrl: null } });
+    } else {
+        state.update({ publicDisplay: { imageUrl: imageUrl } });
+    }
+};
+
+window.stopProjection = function () {
+    state.update({ publicDisplay: { imageUrl: null } });
+};
+
+// ----------------------------------------------------
 // Player Features: Party
 // ----------------------------------------------------
 
@@ -1533,6 +1630,7 @@ window.renderDMNpcs = function (currentState) {
 
                         <!-- Acciones -->
                         <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                            ${n.url ? `<button class="btn btn-project" style="padding: 0.3rem 0.6rem; font-size:0.9rem; ${(state.get().publicDisplay || {}).imageUrl === n.url ? 'background: var(--gold-dim); color: #fff;' : ''}" onclick="event.stopPropagation(); window.projectToScreen('${n.url}')" title="Proyectar imagen"><i class="fa-solid fa-display"></i></button>` : ''}
                             <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('npc', '${n.id}')" title="Editar este NPC"><i class="fa-solid fa-pen"></i></button>
                             <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('npc', '${n.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -1627,10 +1725,10 @@ window.renderBestiario = function (currentState) {
                         <div style="background: rgba(0,0,0,0.02); padding: 0.5rem; margin-bottom: 1rem; border-radius: 4px;">
                             <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('monster', '${m.id}')">
                                 <strong style="color: var(--red-ink); font-size: 0.9em;"><i class="fa-solid fa-book-skull"></i> Bloque de Combate y Rasgos</strong>
-                                <i class="fa-solid ${isSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
+                                <i class="fa-solid ${m._uiSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
                             </div>
                             
-                            ${isSecretVisible ? `
+                            ${m._uiSecretVisible ? `
                                 <div style="font-size: 0.85em; margin-top: 1rem;">
                                     ${m.features ? `<div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.features}</div>` : ''}
                                     
@@ -1653,6 +1751,7 @@ window.renderBestiario = function (currentState) {
 
                         <!-- Acciones CRUD -->
                         <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                            ${m.url ? `<button class="btn btn-project" style="padding: 0.3rem 0.6rem; font-size:0.9rem; ${(state.get().publicDisplay || {}).imageUrl === m.url ? 'background: var(--gold-dim); color: #fff;' : ''}" onclick="event.stopPropagation(); window.projectToScreen('${m.url}')" title="Proyectar imagen"><i class="fa-solid fa-display"></i></button>` : ''}
                             <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('monster', '${m.id}')" title="Editar este Monstruo"><i class="fa-solid fa-pen"></i></button>
                             <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('monster', '${m.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                         </div>
@@ -2140,8 +2239,6 @@ window.renderDMMaps = function (currentState) {
     if (!maps || maps.length === 0) html += '<p class="text-muted">No hay Mapas.</p>';
     else {
         maps.forEach(m => {
-            const isSecretVisible = m._uiSecretVisible || false;
-
             html += `
                 <div class="card card-horizontal" style="position: relative; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     
@@ -2175,6 +2272,7 @@ window.renderDMMaps = function (currentState) {
 
                         <!-- Acciones -->
                         <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                            ${m.url ? `<button class="btn btn-project" style="padding: 0.3rem 0.6rem; font-size:0.9rem; ${(state.get().publicDisplay || {}).imageUrl === m.url ? 'background: var(--gold-dim); color: #fff;' : ''}" onclick="event.stopPropagation(); window.projectToScreen('${m.url}')" title="Proyectar imagen"><i class="fa-solid fa-display"></i></button>` : ''}
                             <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('map', '${m.id}')" title="Editar este Mapa"><i class="fa-solid fa-pen"></i></button>
                             <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('map', '${m.id}')" title="Borrar"><i class="fa-solid fa-trash"></i></button>
                         </div>

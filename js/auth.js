@@ -47,6 +47,14 @@ export function initAuth() {
         }
     });
 
+    // Public Screen Login (no password needed)
+    const btnLoginScreen = document.getElementById('btn-login-screen');
+    if (btnLoginScreen) {
+        btnLoginScreen.addEventListener('click', () => {
+            state.update({ session: { role: 'PublicScreen', playerId: null } });
+        });
+    }
+
     // Logout
     btnLogout.addEventListener('click', () => {
         state.update({ session: { role: null, playerId: null } });
