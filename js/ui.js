@@ -1202,7 +1202,7 @@ function renderNpcs(currentState) {
                  <h4>${n.name}</h4>
                  ${n.url ? `<img src="${n.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">` : ''}
                  <p style="white-space: pre-wrap;">${n.description}</p>
-                 ${n.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
+                 ${(n.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
         <div class="mt-1">
             <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes sobre ${n.name}:</label>
             <textarea id="note-npc-${n.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnNpc}</textarea>
@@ -1242,7 +1242,7 @@ function renderMaps(currentState) {
             <div class="card">
                 <h4>${m.name}</h4>
                  ${m.url ? `<img src="${m.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem; cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">` : ''}
-                 ${m.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
+                 ${(m.secrets || []).filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
         <div class="mt-1">
             <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes:</label>
             <textarea id="note-map-${m.id}" placeholder="Empieza a escribir..." style="min-height: 120px; font-family: 'Lora', serif; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; resize: vertical; margin-bottom: 0.5rem;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${playerNotesOnMap}</textarea>
@@ -1397,7 +1397,7 @@ window.renderDMNpcs = function (currentState) {
             html += `
                 <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; overflow: hidden; display: flex; flex-direction: column; ${n.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     <!-- Image Header -->
-                    ${n.url ? `<div style="width: calc(100% + 1rem); margin: -0.5rem -0.5rem 0.5rem -0.5rem; height: 180px; overflow: hidden;"><img src="${n.url}" style="width: 100%; height: 100%; object-fit: cover;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar"></div>` : ''}
+                    ${n.url ? `<img src="${n.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">` : ''}
                     
                     <div class="flex-between mb-1">
                         <h4 style="margin: 0; font-size: 1.3em;">${n.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${n.raceAlignment || 'Desconocido'})</span></h4>
@@ -1453,7 +1453,7 @@ window.renderDMMaps = function (currentState) {
             html += `
                 <div class="card" style="position: relative; overflow: hidden; display: flex; flex-direction: column; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     <!-- Image Header -->
-                    ${m.url ? `<div style="width: calc(100% + 1rem); margin: -0.5rem -0.5rem 0.5rem -0.5rem; height: 180px; overflow: hidden; cursor:pointer;"><img src="${m.url}" style="width: 100%; height: 100%; object-fit: cover;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar"></div>` : ''}
+                    ${m.url ? `<img src="${m.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem; cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">` : ''}
                     
                     <div class="flex-between mb-1">
                         <h4 style="margin: 0; font-size: 1.3em;"><i class="fa-solid fa-map"></i> ${m.name}</h4>
@@ -1656,20 +1656,16 @@ window.saveEntityForm = async function (event, type, id) {
         if (id) {
             // Edit
             const updatedList = list.map(e => e.id === id ? { ...e, ...entityData } : e);
-            state.update({ [listKey]: updatedList });
+            await state.update({ [listKey]: updatedList });
         } else {
             // Create
             const newEntity = {
                 id: type + '_' + Date.now(),
                 ...entityData,
-                notes: [] // Importante: Array salvavidas para player private notes.
+                notes: [], // Importante: Array salvavidas para player private notes.
+                secrets: [] // VITAL: Evitar crashes visuales al iterar en vistas de Jugador
             };
-            state.update({ [listKey]: [...list, newEntity] });
-        }
-
-        // Guardado forzoso en Supabase vía storageAdapter
-        if (window.storageAdapter) {
-            await window.storageAdapter.save(state.get());
+            await state.update({ [listKey]: [...list, newEntity] });
         }
 
         window.closeEntityModal();
@@ -1687,11 +1683,7 @@ window.deleteEntity = async function (type, id) {
         const list = state.get()[listKey] || [];
         const updatedList = list.filter(e => e.id !== id);
 
-        state.update({ [listKey]: updatedList });
-
-        if (window.storageAdapter) {
-            await window.storageAdapter.save(state.get());
-        }
+        await state.update({ [listKey]: updatedList });
     }
 };
 
