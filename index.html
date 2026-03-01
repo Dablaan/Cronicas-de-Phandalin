@@ -171,6 +171,22 @@
             </div>
         </div>
 
+        <!-- Entity Form Modal (NPC/Map Editor) -->
+        <div id="entity-form-modal" class="auth-modal-overlay hidden" style="z-index: 9000; align-items: center;">
+            <div class="auth-modal" style="width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+                <div class="flex-between mb-1"
+                    style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+                    <h2 id="entity-form-title" style="margin-bottom: 0;"><i class="fa-solid fa-pen-to-square"></i>
+                        Editor</h2>
+                    <button class="btn btn-danger" onclick="window.closeEntityModal()"
+                        style="padding: 0.3rem 0.6rem;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div id="entity-form-content">
+                    <!-- Dynamic form injected by JS -->
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Main Module Script -->

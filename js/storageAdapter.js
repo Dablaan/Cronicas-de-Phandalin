@@ -101,5 +101,36 @@ export const storageAdapter = {
             console.error("Error uploading avatar to Supabase:", e);
             throw e;
         }
+    },
+
+    /**
+     * Uploads campaign media (NPC portraits, Maps) to Supabase Storage
+     * @param {File} file - The image file to upload
+     * @returns {Promise<string>} The public URL of the uploaded image
+     */
+    async uploadCampaignMedia(file) {
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `${fileName}`; // root of 'campaign_media' bucket
+
+            const { error: uploadError } = await supabase.storage
+                .from('campaign_media')
+                .upload(filePath, file);
+
+            if (uploadError) {
+                console.error("Campaign Media Upload error details:", uploadError);
+                throw uploadError;
+            }
+
+            const { data } = supabase.storage
+                .from('campaign_media')
+                .getPublicUrl(filePath);
+
+            return data.publicUrl;
+        } catch (e) {
+            console.error("Error uploading media to Supabase:", e);
+            throw e;
+        }
     }
 };

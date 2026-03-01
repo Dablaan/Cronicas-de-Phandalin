@@ -1386,44 +1386,42 @@ window.renderDMNpcs = function (currentState) {
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3>Gestión de NPCs</h3>
-            <button class="btn" onclick="window.createEntity('npc')"><i class="fa-solid fa-plus"></i> Nuevo NPC</button>
+            <button class="btn" onclick="window.openEntityModal('npc')"><i class="fa-solid fa-user-plus"></i> Nuevo NPC</button>
         </div>
+        <div class="grid-2">
     `;
 
-    html += '<div class="grid-2">';
-    if (npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';
-    npcs.forEach(n => {
-        html += `
-            <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; ${n.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}">
-                <div class="flex-between mb-1">
-                    <input type="text" value="${n.name}" style="font-weight: bold; width: 60%; margin-bottom: 0;" onchange="window.updateEntity('npc', '${n.id}', 'name', this.value)">
-                    <button class="btn ${n.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.updateEntity('npc', '${n.id}', 'isVisible', ${!n.isVisible})">
-                        <i class="fa-solid ${n.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i> ${n.isVisible ? 'Visible' : 'Oculto'}
-                    </button>
-                </div>
-                ${n.url ? `<img src="${n.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">` : ''}
-                <input type="text" placeholder="URL del Retrato..." value="${n.url || ''}" onchange="window.updateEntity('npc', '${n.id}', 'url', this.value)">
-                <textarea style="min-height: 60px;" placeholder="Descripción..." onchange="window.updateEntity('npc', '${n.id}', 'description', this.value)">${n.description}</textarea>
-                
-                <div class="mt-1">
+    if (!npcs || npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';
+    else {
+        npcs.forEach(n => {
+            html += `
+                <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; overflow: hidden; display: flex; flex-direction: column; ${n.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
+                    <!-- Image Header -->
+                    ${n.url ? `<div style="width: calc(100% + 1rem); margin: -0.5rem -0.5rem 0.5rem -0.5rem; height: 180px; overflow: hidden;"><img src="${n.url}" style="width: 100%; height: 100%; object-fit: cover;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar"></div>` : ''}
+                    
                     <div class="flex-between mb-1">
-                         <span style="font-size: 0.9em; font-weight: bold; color: var(--text-muted);">Secretos</span>
-                         <button class="btn" style="padding: 0.1rem 0.3rem; font-size: 0.7rem;" onclick="window.addSecret('npc', '${n.id}')"><i class="fa-solid fa-plus"></i></button>
+                        <h4 style="margin: 0; font-size: 1.3em;">${n.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${n.raceAlignment || 'Desconocido'})</span></h4>
+                        <span title="${n.isVisible ? 'Público' : 'Oculto'}"><i class="fa-solid ${n.isVisible ? 'fa-eye' : 'fa-eye-slash'}" style="color: ${n.isVisible ? 'var(--leather-dark)' : 'var(--red-ink)'};"></i></span>
                     </div>
-                    ${n.secrets.map(s => `
-                        <div class="flex-row mb-1">
-                            <button class="btn" style="padding: 0.2rem; font-size: 0.8rem; background: transparent; border: none; color: ${s.isVisible ? 'var(--leather-dark)' : 'var(--text-muted)'}; box-shadow: none;" onclick="window.toggleSecret('npc', '${n.id}', '${s.id}')">
-                                <i class="fa-solid ${s.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
-                            </button>
-                            <input type="text" value="${s.text}" style="margin-bottom: 0; font-size: 0.9em;" placeholder="Escribe el secreto..." onchange="window.updateSecretText('npc', '${n.id}', '${s.id}', this.value)">
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    });
-    html += '</div>';
+                    
+                    <div style="display:flex; gap:15px; font-size: 0.9em; margin-bottom: 1rem; color: var(--leather-dark); font-weight: bold;">
+                        <span title="Clase de Armadura"><i class="fa-solid fa-shield"></i> CA: ${n.ac || '-'}</span>
+                        <span title="Puntos de Golpe"><i class="fa-solid fa-heart" style="color: var(--red-ink);"></i> HP: ${n.hp || '-'}</span>
+                    </div>
 
+                    <p style="font-size: 0.95em; white-space: pre-wrap; margin-bottom: 0.5rem;"><i class="fa-solid fa-theater-masks"></i> <strong>Actitud/Voz:</strong><br>${n.behavior || '...'}</p>
+                    <p style="font-size: 0.95em; white-space: pre-wrap; margin-bottom: 1rem; color: var(--red-ink);"><i class="fa-solid fa-user-secret"></i> <strong>Motivación/Secreto:</strong><br>${n.motivation || '...'}</p>
+
+                    <!-- Acciones -->
+                    <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('npc', '${n.id}')" title="Editar este NPC"><i class="fa-solid fa-pen"></i> Editar</button>
+                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('npc', '${n.id}')" title="Eliminar para siempre"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    html += '</div>';
     container.innerHTML = html;
 }
 
@@ -1443,104 +1441,258 @@ window.renderDMMaps = function (currentState) {
 
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
-            <h3>Gestión de Mapas</h3>
-            <button class="btn" onclick="window.createEntity('map')"><i class="fa-solid fa-plus"></i> Nuevo Mapa</button>
+            <h3>Gestión de Localizaciones</h3>
+            <button class="btn" onclick="window.openEntityModal('map')"><i class="fa-solid fa-map-location-dot"></i> Nuevo Mapa</button>
         </div>
+        <div class="grid-2">
     `;
 
-    html += '<div class="grid-2">';
-    if (maps.length === 0) html += '<p class="text-muted">No hay Mapas.</p>';
-    maps.forEach(m => {
-        html += `
-            <div class="card" style="${m.isVisible ? '' : 'opacity: 0.7; border-style: dashed;'}">
-                <div class="flex-between mb-1">
-                    <input type="text" value="${m.name}" style="font-weight: bold; width: 60%; margin-bottom: 0;" onchange="window.updateEntity('map', '${m.id}', 'name', this.value)">
-                    <button class="btn ${m.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;" onclick="window.updateEntity('map', '${m.id}', 'isVisible', ${!m.isVisible})">
-                        <i class="fa-solid ${m.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i> ${m.isVisible ? 'Visible' : 'Oculto'}
-                    </button>
-                </div>
-                ${m.url ? `<img src="${m.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem; cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">` : ''}
-                <input type="text" placeholder="URL del mapa..." value="${m.url || ''}" onchange="window.updateEntity('map', '${m.id}', 'url', this.value)">
-                
-                <div class="mt-1">
+    if (!maps || maps.length === 0) html += '<p class="text-muted">No hay Mapas.</p>';
+    else {
+        maps.forEach(m => {
+            html += `
+                <div class="card" style="position: relative; overflow: hidden; display: flex; flex-direction: column; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
+                    <!-- Image Header -->
+                    ${m.url ? `<div style="width: calc(100% + 1rem); margin: -0.5rem -0.5rem 0.5rem -0.5rem; height: 180px; overflow: hidden; cursor:pointer;"><img src="${m.url}" style="width: 100%; height: 100%; object-fit: cover;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar"></div>` : ''}
+                    
                     <div class="flex-between mb-1">
-                         <span style="font-size: 0.9em; font-weight: bold; color: var(--text-muted);">Secretos / Sitios Importantes</span>
-                         <button class="btn" style="padding: 0.1rem 0.3rem; font-size: 0.7rem;" onclick="window.addSecret('map', '${m.id}')"><i class="fa-solid fa-plus"></i></button>
+                        <h4 style="margin: 0; font-size: 1.3em;"><i class="fa-solid fa-map"></i> ${m.name}</h4>
+                        <span title="${m.isVisible ? 'Público' : 'Oculto'}"><i class="fa-solid ${m.isVisible ? 'fa-eye' : 'fa-eye-slash'}" style="color: ${m.isVisible ? 'var(--leather-dark)' : 'var(--red-ink)'};"></i></span>
                     </div>
-                    ${m.secrets.map(s => `
-                        <div class="flex-row mb-1">
-                            <button class="btn" style="padding: 0.2rem; font-size: 0.8rem; background: transparent; border: none; color: ${s.isVisible ? 'var(--leather-dark)' : 'var(--text-muted)'}; box-shadow: none;" onclick="window.toggleSecret('map', '${m.id}', '${s.id}')">
-                                <i class="fa-solid ${s.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
-                            </button>
-                            <input type="text" value="${s.text}" style="margin-bottom: 0; font-size: 0.9em;" placeholder="Sitio descubierto..." onchange="window.updateSecretText('map', '${m.id}', '${s.id}', this.value)">
-                        </div>
-                    `).join('')}
+                    
+                    <p style="font-size: 0.85em; font-weight: bold; color: var(--gold-dim); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">${m.environmentType || 'Ubicación Desconocida'}</p>
+                    <div style="font-size: 0.95em; white-space: pre-wrap; margin-bottom: 1rem; background: rgba(0,0,0,0.05); padding: 0.8rem; border-left: 3px solid var(--red-ink);"><i class="fa-solid fa-mask"></i> <strong>Notas Privadas del DM:</strong><br>${m.dmNotes || '...'}</div>
+
+                    <!-- Acciones -->
+                    <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('map', '${m.id}')" title="Editar este Mapa"><i class="fa-solid fa-pen"></i> Editar</button>
+                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('map', '${m.id}')" title="Borrar para siempre"><i class="fa-solid fa-trash"></i></button>
+                    </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
+    }
     html += '</div>';
 
     container.innerHTML = html;
 }
 
-window.createEntity = function (type) {
-    const list = state.get()[type + 's'];
-    const newEntity = {
-        id: type + '_' + Date.now(),
-        name: 'Nuevo ' + (type === 'npc' ? 'NPC' : 'Mapa'),
-        description: '',
-        url: '',
-        isVisible: false,
-        secrets: [],
-        notes: []
-    };
-    state.update({ [type + 's']: [...list, newEntity] });
+// ----------------------------------------------------
+// ENTITY MODAL CRUD LOGIC (NPCs & Maps)
+// ----------------------------------------------------
+
+window.openEntityModal = function (type, id = null) {
+    const isEdit = id !== null;
+    const currentState = state.get();
+    const list = currentState[type + 's'] || [];
+
+    let entity = isEdit ? list.find(e => e.id === id) : {};
+
+    const titleEl = document.getElementById('entity-form-title');
+    const contentEl = document.getElementById('entity-form-content');
+    const overlay = document.getElementById('entity-form-modal');
+
+    titleEl.innerHTML = `<i class="fa-solid ${type === 'npc' ? 'fa-user' : 'fa-map'}"></i> ${isEdit ? 'Editar' : 'Crear'} ${type === 'npc' ? 'Personaje' : 'Localización'}`;
+
+    let html = '';
+
+    if (type === 'npc') {
+        html += `
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+                <!-- Row 1: Nombre y Visibilidad -->
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="flex: 1;">
+                        <label style="font-size:0.8rem; font-weight:bold;">Nombre del NPC <span style="color:red;">*</span></label>
+                        <input type="text" id="ef-name" value="${entity.name || ''}" placeholder="Ej: Sildar Hallwinter">
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px;">
+                        <label style="font-size:0.7rem; font-weight:bold;">¿Visible a Jugadores?</label>
+                        <input type="checkbox" id="ef-visible" ${entity.isVisible ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--leather-dark);">
+                    </div>
+                </div>
+                
+                <!-- Row 2: Stats Grid -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">Raza y Alineamiento</label>
+                        <input type="text" id="ef-race" value="${entity.raceAlignment || ''}" placeholder="Ej: Humano Legal Bueno">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">CA</label>
+                        <input type="number" id="ef-ac" value="${entity.ac || ''}" placeholder="10">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">HP</label>
+                        <input type="number" id="ef-hp" value="${entity.hp || ''}" placeholder="8">
+                    </div>
+                </div>
+
+                <!-- Row 3: Image -->
+                 <div>
+                    <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-image"></i> Retrato Oficial (Sustituye al actual)</label>
+                    <input type="file" id="ef-image" accept="image/*" style="font-size:0.8rem; padding: 0.2rem;">
+                    ${entity.url ? `<p style="font-size: 0.75rem; color: var(--gold-dim); margin-top:-0.5rem;">* Ya tiene imagen. Sube otra solo si quieres cambiarla.</p>` : ''}
+                </div>
+
+                <!-- Row 4: TextAreas -->
+                <div>
+                     <label style="font-size:0.8rem; font-weight:bold;">Voz y Comportamiento Público</label>
+                     <textarea id="ef-behavior" placeholder="Se frota las manos, habla rápido, cojea levemente..." style="min-height: 50px;">${entity.behavior || ''}</textarea>
+                </div>
+                 <div>
+                     <label style="font-size:0.8rem; font-weight:bold; color:var(--red-ink);">Secreto / Motivación Privada (Solo DM)</label>
+                     <textarea id="ef-motivation" placeholder="Sirve a los Magos Rojos, tiene terror a las arañas..." style="min-height: 70px;">${entity.motivation || ''}</textarea>
+                </div>
+            </div>
+        `;
+    } else {
+        // MAP FORM
+        html += `
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="flex: 1;">
+                        <label style="font-size:0.8rem; font-weight:bold;">Nombre del Mapa/Lugar <span style="color:red;">*</span></label>
+                        <input type="text" id="ef-name" value="${entity.name || ''}" placeholder="Ej: Guarida Crackmaw">
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px;">
+                        <label style="font-size:0.7rem; font-weight:bold;">¿Visible a Jugadores?</label>
+                        <input type="checkbox" id="ef-visible" ${entity.isVisible ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--leather-dark);">
+                    </div>
+                </div>
+
+                 <div>
+                    <label style="font-size:0.8rem; font-weight:bold;">Entorno / Tipo</label>
+                    <input type="text" id="ef-type" value="${entity.environmentType || ''}" placeholder="Ej: Ruinas Subterráneas, Taberna">
+                </div>
+
+                <!-- Image -->
+                 <div>
+                    <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-image"></i> Fotografía del Mapa</label>
+                    <input type="file" id="ef-image" accept="image/*" style="font-size:0.8rem; padding: 0.2rem;">
+                    ${entity.url ? `<p style="font-size: 0.75rem; color: var(--gold-dim); margin-top:-0.5rem;">* Ya tiene mapa. Subir uno nuevo lo reemplazará.</p>` : ''}
+                </div>
+
+                 <div>
+                     <label style="font-size:0.8rem; font-weight:bold; color:var(--red-ink);">Notas Privadas del DM (Trampas, monstruos, DCs)</label>
+                     <textarea id="ef-dmnotes" placeholder="Secreto nivel pasillo este: Trampa foso (DC 15 Dex)..." style="min-height: 120px;">${entity.dmNotes || ''}</textarea>
+                </div>
+            </div>
+        `;
+    }
+
+    // Modal Action Buttons
+    html += `
+         <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem; border-top: 2px solid var(--parchment-dark); padding-top: 1rem;">
+            <button class="btn btn-danger" onclick="window.closeEntityModal()">Cancelar</button>
+            <button class="btn" id="ef-save-btn" onclick="window.saveEntityForm(event, '${type}', ${isEdit ? `'${id}'` : `null`})">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Guardar
+            </button>
+        </div>
+    `;
+
+    contentEl.innerHTML = html;
+    overlay.classList.remove('hidden');
 };
 
-window.updateEntity = function (type, id, field, value) {
-    const listKey = type + 's';
-    const list = state.get()[listKey].map(e => e.id === id ? { ...e, [field]: value } : e);
-    state.update({ [listKey]: list });
+window.closeEntityModal = function () {
+    document.getElementById('entity-form-modal').classList.add('hidden');
+    document.getElementById('entity-form-content').innerHTML = ''; // Limpiar memoria
 };
 
-window.addSecret = function (type, id) {
-    const listKey = type + 's';
-    const list = state.get()[listKey].map(e => {
-        if (e.id === id) {
-            return { ...e, secrets: [...e.secrets, { id: 'sec_' + Date.now(), text: '', isVisible: false }] };
+window.saveEntityForm = async function (event, type, id) {
+    const btn = event.currentTarget;
+    const oldText = btn.innerHTML;
+
+    // Validar Requisitos Base
+    const nameInput = document.getElementById('ef-name').value.trim();
+    if (!nameInput) {
+        alert("El Nombre es obligatorio.");
+        return;
+    }
+
+    // Iniciar Feedback Visual
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Grabando...';
+    btn.disabled = true;
+
+    try {
+        let imageUrl = id ? state.get()[type + 's'].find(e => e.id === id).url : ''; // Conservar vieja si existe
+
+        // Comprobar Si se Adjuntó un Fichero
+        const fileInput = document.getElementById('ef-image');
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            if (window.storageAdapter && window.storageAdapter.uploadCampaignMedia) {
+                imageUrl = await window.storageAdapter.uploadCampaignMedia(file);
+            } else {
+                console.warn("Storage API no detectado, emulando para testing...");
+                imageUrl = URL.createObjectURL(file); // fallback si storage falla en test
+            }
         }
-        return e;
-    });
-    state.update({ [listKey]: list });
-};
 
-window.toggleSecret = function (type, id, secretId) {
-    const listKey = type + 's';
-    const list = state.get()[listKey].map(e => {
-        if (e.id === id) {
-            return {
-                ...e,
-                secrets: e.secrets.map(s => s.id === secretId ? { ...s, isVisible: !s.isVisible } : s)
+        // Recuperar y Empaquetar Datos
+        let entityData = {
+            name: nameInput,
+            isVisible: document.getElementById('ef-visible').checked,
+            url: imageUrl
+        };
+
+        if (type === 'npc') {
+            entityData.raceAlignment = document.getElementById('ef-race').value.trim();
+            entityData.ac = document.getElementById('ef-ac').value.trim();
+            entityData.hp = document.getElementById('ef-hp').value.trim();
+            entityData.behavior = document.getElementById('ef-behavior').value.trim();
+            entityData.motivation = document.getElementById('ef-motivation').value.trim();
+            // Migrar `description` al form o abandonarlo. Como abandonamos description, dejamos lo vital nuevo.
+            entityData.description = "";
+        } else {
+            entityData.environmentType = document.getElementById('ef-type').value.trim();
+            entityData.dmNotes = document.getElementById('ef-dmnotes').value.trim();
+        }
+
+        // Fusionar al State
+        const listKey = type + 's';
+        const list = state.get()[listKey] || [];
+
+        if (id) {
+            // Edit
+            const updatedList = list.map(e => e.id === id ? { ...e, ...entityData } : e);
+            state.update({ [listKey]: updatedList });
+        } else {
+            // Create
+            const newEntity = {
+                id: type + '_' + Date.now(),
+                ...entityData,
+                notes: [] // Importante: Array salvavidas para player private notes.
             };
+            state.update({ [listKey]: [...list, newEntity] });
         }
-        return e;
-    });
-    state.update({ [listKey]: list });
+
+        // Guardado forzoso en Supabase vía storageAdapter
+        if (window.storageAdapter) {
+            await window.storageAdapter.save(state.get());
+        }
+
+        window.closeEntityModal();
+    } catch (e) {
+        console.error("Error al guardar la Entidad:", e);
+        alert("Hubo un fallo al subir la fotografía o guardar los datos. Ver consola.");
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+    }
 };
 
-window.updateSecretText = function (type, id, secretId, text) {
-    const listKey = type + 's';
-    const list = state.get()[listKey].map(e => {
-        if (e.id === id) {
-            return {
-                ...e,
-                secrets: e.secrets.map(s => s.id === secretId ? { ...s, text } : s)
-            };
+window.deleteEntity = async function (type, id) {
+    if (confirm(`¿Estás completamente seguro de borrar esta entidad para siempre? Los jugadores también perderán los apuntes que hayan hecho sobre ella.`)) {
+        const listKey = type + 's';
+        const list = state.get()[listKey] || [];
+        const updatedList = list.filter(e => e.id !== id);
+
+        state.update({ [listKey]: updatedList });
+
+        if (window.storageAdapter) {
+            await window.storageAdapter.save(state.get());
         }
-        return e;
-    });
-    state.update({ [listKey]: list });
+    }
 };
 
 // ----------------------------------------------------
