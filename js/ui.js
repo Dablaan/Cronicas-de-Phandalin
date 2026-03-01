@@ -1701,19 +1701,14 @@ window.addMonsterToBuilder = function () {
     const monsterData = state.get().bestiario.find(b => b.id === monsterId);
     if (!monsterData) return;
 
-    // Verificar si ya está en la lista para sumar cantidades
-    const existingIndex = window.currentEncounterBuilder.findIndex(m => m.id === monsterId);
-    if (existingIndex > -1) {
-        window.currentEncounterBuilder[existingIndex].qty += qty;
-        window.currentEncounterBuilder[existingIndex].initiative = initiative; // Update initiative
-    } else {
-        window.currentEncounterBuilder.push({
-            id: monsterData.id,
-            name: monsterData.name,
-            qty: qty,
-            initiative: initiative
-        });
-    }
+    // Always create a NEW independent pack (allows same monster with different init/qty)
+    window.currentEncounterBuilder.push({
+        id: monsterData.id,
+        packId: 'pack_' + Date.now() + '_' + Math.random().toString(36).substring(7),
+        name: monsterData.name,
+        qty: qty,
+        initiative: initiative
+    });
 
     // Resetear formcito
     qtyInput.value = 1;
@@ -1723,8 +1718,8 @@ window.addMonsterToBuilder = function () {
     window.renderEncounterBuilderList();
 };
 
-window.removeMonsterFromBuilder = function (monsterId) {
-    window.currentEncounterBuilder = window.currentEncounterBuilder.filter(m => m.id !== monsterId);
+window.removeMonsterFromBuilder = function (packId) {
+    window.currentEncounterBuilder = window.currentEncounterBuilder.filter(m => (m.packId || m.id) !== packId);
     window.renderEncounterBuilderList();
 };
 
@@ -1737,12 +1732,15 @@ window.renderEncounterBuilderList = function () {
         return;
     }
 
-    builderUl.innerHTML = window.currentEncounterBuilder.map(m => `
+    builderUl.innerHTML = window.currentEncounterBuilder.map(m => {
+        const removeKey = m.packId || m.id;
+        return `
         <li style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--parchment-dark); padding:0.2rem 0;">
             <span><strong>${m.qty}x</strong> ${m.name} <span style="color:var(--gold-dim); font-size:0.8em;">(Init: ${m.initiative || '?'})</span></span>
-            <button class="btn btn-danger" style="padding:0.1rem 0.3rem; font-size:0.75rem;" onclick="window.removeMonsterFromBuilder('${m.id}')"><i class="fa-solid fa-xmark"></i></button>
+            <button class="btn btn-danger" style="padding:0.1rem 0.3rem; font-size:0.75rem;" onclick="window.removeMonsterFromBuilder('${removeKey}')"><i class="fa-solid fa-xmark"></i></button>
         </li>
-    `).join('');
+    `;
+    }).join('');
 };
 
 

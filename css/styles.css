@@ -1504,8 +1504,8 @@ textarea {
 }
 
 .init-token-active .init-token-portrait {
-    outline: 3px solid var(--gold);
-    outline-offset: 4px;
+    outline: 5px solid var(--gold);
+    outline-offset: 6px;
     animation: initGlow 1.2s ease-in-out infinite;
 }
 
