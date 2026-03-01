@@ -241,10 +241,14 @@ function setupMainScreenForRole(session) {
     headerTitle.innerText = isDM ? 'Panel del Dungeon Master' : 'Crónicas de Phandalin';
 
     const tabSheetBtn = document.getElementById('tab-btn-sheet');
+    const tabBestiarioBtn = document.getElementById('tab-btn-bestiario');
+
     if (isDM) {
         tabSheetBtn.innerHTML = '<i class="fa-solid fa-dragon"></i> Dashboard';
+        if (tabBestiarioBtn) tabBestiarioBtn.style.display = 'inline-block';
     } else {
         tabSheetBtn.innerHTML = '<i class="fa-solid fa-scroll"></i> Ficha';
+        if (tabBestiarioBtn) tabBestiarioBtn.style.display = 'none';
     }
 }
 
@@ -1394,28 +1398,47 @@ window.renderDMNpcs = function (currentState) {
     if (!npcs || npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';
     else {
         npcs.forEach(n => {
+            const isSecretVisible = n._uiSecretVisible || false;
+
             html += `
-                <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; overflow: hidden; display: flex; flex-direction: column; ${n.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
-                    <!-- Image Header -->
-                    ${n.url ? `<img src="${n.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">` : ''}
+                <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; ${n.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     
-                    <div class="flex-between mb-1">
-                        <h4 style="margin: 0; font-size: 1.3em;">${n.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${n.raceAlignment || 'Desconocido'})</span></h4>
-                        <span title="${n.isVisible ? 'Público' : 'Oculto'}"><i class="fa-solid ${n.isVisible ? 'fa-eye' : 'fa-eye-slash'}" style="color: ${n.isVisible ? 'var(--leather-dark)' : 'var(--red-ink)'};"></i></span>
-                    </div>
+                    <!-- Image (Left fixed) -->
+                    ${n.url
+                    ? `<img src="${n.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">`
+                    : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-user fa-2x text-muted"></i></div>`
+                }
                     
-                    <div style="display:flex; gap:15px; font-size: 0.9em; margin-bottom: 1rem; color: var(--leather-dark); font-weight: bold;">
-                        <span title="Clase de Armadura"><i class="fa-solid fa-shield"></i> CA: ${n.ac || '-'}</span>
-                        <span title="Puntos de Golpe"><i class="fa-solid fa-heart" style="color: var(--red-ink);"></i> HP: ${n.hp || '-'}</span>
-                    </div>
+                    <!-- Content (Right flexible) -->
+                    <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                        <div class="flex-between mb-1" style="flex-wrap: nowrap;">
+                            <h4 style="margin: 0; font-size: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${n.name}">${n.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${n.raceAlignment || 'Desconocido'})</span></h4>
+                            <button class="btn ${n.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-left: 10px;" onclick="event.stopPropagation(); window.toggleEntityVisibility('npc', '${n.id}')" title="${n.isVisible ? 'Visible por Jugadores' : 'Oculto a Jugadores'}">
+                                <i class="fa-solid ${n.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                            </button>
+                        </div>
+                        
+                        <div style="display:flex; gap:15px; font-size: 0.85em; margin-bottom: 0.8rem; color: var(--leather-dark); font-weight: bold;">
+                            <span title="Clase de Armadura"><i class="fa-solid fa-shield"></i> CA: ${n.ac || '-'}</span>
+                            <span title="Puntos de Golpe"><i class="fa-solid fa-heart" style="color: var(--red-ink);"></i> HP: ${n.hp || '-'}</span>
+                        </div>
 
-                    <p style="font-size: 0.95em; white-space: pre-wrap; margin-bottom: 0.5rem;"><i class="fa-solid fa-theater-masks"></i> <strong>Actitud/Voz:</strong><br>${n.behavior || '...'}</p>
-                    <p style="font-size: 0.95em; white-space: pre-wrap; margin-bottom: 1rem; color: var(--red-ink);"><i class="fa-solid fa-user-secret"></i> <strong>Motivación/Secreto:</strong><br>${n.motivation || '...'}</p>
+                        <p style="font-size: 0.9em; white-space: pre-wrap; margin-bottom: 0.5rem;"><i class="fa-solid fa-theater-masks"></i> <strong>Actitud/Voz:</strong> ${n.behavior || '...'}</p>
+                        
+                        <!-- Contenedor Secreto Expandible -->
+                        <div style="background: rgba(0,0,0,0.03); border-left: 3px solid var(--red-ink); padding: 0.5rem; margin-bottom: 1rem; border-radius: 0 4px 4px 0;">
+                            <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('npc', '${n.id}')">
+                                <strong style="color: var(--red-ink); font-size: 0.85em;"><i class="fa-solid fa-user-secret"></i> Secreto DM</strong>
+                                <i class="fa-solid ${isSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
+                            </div>
+                            ${isSecretVisible ? `<p style="font-size: 0.85em; white-space: pre-wrap; margin-top: 0.5em; margin-bottom: 0;">${n.motivation || 'Sin notas secretas.'}</p>` : ''}
+                        </div>
 
-                    <!-- Acciones -->
-                    <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
-                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('npc', '${n.id}')" title="Editar este NPC"><i class="fa-solid fa-pen"></i> Editar</button>
-                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('npc', '${n.id}')" title="Eliminar para siempre"><i class="fa-solid fa-trash"></i></button>
+                        <!-- Acciones -->
+                        <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                            <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('npc', '${n.id}')" title="Editar este NPC"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('npc', '${n.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1450,23 +1473,42 @@ window.renderDMMaps = function (currentState) {
     if (!maps || maps.length === 0) html += '<p class="text-muted">No hay Mapas.</p>';
     else {
         maps.forEach(m => {
-            html += `
-                <div class="card" style="position: relative; overflow: hidden; display: flex; flex-direction: column; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
-                    <!-- Image Header -->
-                    ${m.url ? `<img src="${m.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem; cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">` : ''}
-                    
-                    <div class="flex-between mb-1">
-                        <h4 style="margin: 0; font-size: 1.3em;"><i class="fa-solid fa-map"></i> ${m.name}</h4>
-                        <span title="${m.isVisible ? 'Público' : 'Oculto'}"><i class="fa-solid ${m.isVisible ? 'fa-eye' : 'fa-eye-slash'}" style="color: ${m.isVisible ? 'var(--leather-dark)' : 'var(--red-ink)'};"></i></span>
-                    </div>
-                    
-                    <p style="font-size: 0.85em; font-weight: bold; color: var(--gold-dim); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">${m.environmentType || 'Ubicación Desconocida'}</p>
-                    <div style="font-size: 0.95em; white-space: pre-wrap; margin-bottom: 1rem; background: rgba(0,0,0,0.05); padding: 0.8rem; border-left: 3px solid var(--red-ink);"><i class="fa-solid fa-mask"></i> <strong>Notas Privadas del DM:</strong><br>${m.dmNotes || '...'}</div>
+            const isSecretVisible = m._uiSecretVisible || false;
 
-                    <!-- Acciones -->
-                    <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
-                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('map', '${m.id}')" title="Editar este Mapa"><i class="fa-solid fa-pen"></i> Editar</button>
-                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('map', '${m.id}')" title="Borrar para siempre"><i class="fa-solid fa-trash"></i></button>
+            html += `
+                <div class="card" style="position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
+                    
+                    <!-- Image (Left fixed) -->
+                    ${m.url
+                    ? `<img src="${m.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
+                    : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-map fa-2x text-muted"></i></div>`
+                }
+                    
+                    <!-- Content (Right flexible) -->
+                    <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                        <div class="flex-between mb-1" style="flex-wrap: nowrap;">
+                            <h4 style="margin: 0; font-size: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${m.name}"><i class="fa-solid fa-map"></i> ${m.name}</h4>
+                            <button class="btn ${m.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-left: 10px;" onclick="event.stopPropagation(); window.toggleEntityVisibility('map', '${m.id}')" title="${m.isVisible ? 'Visible por Jugadores' : 'Oculto a Jugadores'}">
+                                <i class="fa-solid ${m.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                            </button>
+                        </div>
+                        
+                        <p style="font-size: 0.8em; font-weight: bold; color: var(--gold-dim); margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">${m.environmentType || 'Ubicación Desconocida'}</p>
+                        
+                         <!-- Contenedor Secreto Expandible -->
+                        <div style="background: rgba(0,0,0,0.03); border-left: 3px solid var(--red-ink); padding: 0.5rem; margin-bottom: 1rem; border-radius: 0 4px 4px 0;">
+                            <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('map', '${m.id}')">
+                                <strong style="color: var(--red-ink); font-size: 0.85em;"><i class="fa-solid fa-mask"></i> Notas DM</strong>
+                                <i class="fa-solid ${isSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
+                            </div>
+                            ${isSecretVisible ? `<div style="font-size: 0.85em; white-space: pre-wrap; margin-top: 0.5em; margin-bottom: 0;">${m.dmNotes || 'Sin notas del master.'}</div>` : ''}
+                        </div>
+
+                        <!-- Acciones -->
+                        <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                            <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('map', '${m.id}')" title="Editar este Mapa"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('map', '${m.id}')" title="Borrar"><i class="fa-solid fa-trash"></i></button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1476,6 +1518,40 @@ window.renderDMMaps = function (currentState) {
 
     container.innerHTML = html;
 }
+
+// ----------------------------------------------------
+// ENTITY TOGGLES & HELPERS
+// ----------------------------------------------------
+
+window.toggleEntityVisibility = async function (type, id) {
+    const listKey = type + 's';
+    const list = state.get()[listKey];
+    const item = list.find(e => e.id === id);
+    if (!item) return;
+
+    const newValue = !item.isVisible;
+    const updatedList = list.map(e => e.id === id ? { ...e, isVisible: newValue } : e);
+
+    // Save state completely (this causes re-render via listener in init())
+    await state.update({ [listKey]: updatedList });
+};
+
+window.toggleDmSecretVisibility = function (type, id) {
+    const listKey = type + 's';
+    const list = state.get()[listKey];
+    const item = list.find(e => e.id === id);
+    if (!item) return;
+
+    // UI Transient State - Doesn't need to be saved to Backend
+    // We mutate the proxy state structure gently to avoid excessive backend trips
+    // Note: If you want persistent UI states you'd have to save them, but for accordions local memory is usually best.
+    const currentValue = item._uiSecretVisible || false;
+    const updatedList = list.map(e => e.id === id ? { ...e, _uiSecretVisible: !currentValue } : e);
+    // Use state.update WITH skipNotify = false to trigger UI refresh WITHOUT writing to DB (avoid bandwidth loop logic below)
+
+    state.get()[listKey] = updatedList; // direct mutant edit in JS memory
+    state.notify(); // force UI rerender
+};
 
 // ----------------------------------------------------
 // ENTITY MODAL CRUD LOGIC (NPCs & Maps)
@@ -1723,7 +1799,12 @@ window.renderLibrary = function (currentState) {
     recursos.forEach(r => {
         html += `
             <div style="position: relative; display: flex; flex-direction: column; align-items: center; width: 100%;">
-                ${isDM ? `<button onclick="window.deleteRecurso('${r.id}')" style="position: absolute; top: -10px; right: -10px; background: var(--red-ink); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; z-index: 10;" title="Borrar Recurso"><i class="fa-solid fa-times"></i></button>` : ''}
+                ${isDM ? `
+                <div style="position: absolute; top: -10px; right: -10px; z-index: 10; display: flex; gap: 5px;">
+                    <button onclick="window.showAddRecursoForm('${r.id}')" style="background: var(--leather-dark); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; justify-content: center; align-items: center;" title="Editar Recurso"><i class="fa-solid fa-pen" style="font-size: 0.7em;"></i></button>
+                    <button onclick="window.deleteRecurso('${r.id}')" style="background: var(--red-ink); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; justify-content: center; align-items: center;" title="Borrar Recurso"><i class="fa-solid fa-times" style="font-size: 0.9em;"></i></button>
+                </div>
+                ` : ''}
                 <a href="${r.enlaceUrl}" target="_blank" class="biblioteca-item">
                     <img src="${r.portadaUrl}" alt="${r.nombre}" onerror="this.src='https://via.placeholder.com/150x200?text=Manual'">
                     <span>${r.nombre}</span>
@@ -1736,8 +1817,25 @@ window.renderLibrary = function (currentState) {
     container.innerHTML = html;
 };
 
-window.showAddRecursoForm = function () {
+let editingRecursoId = null;
+
+window.showAddRecursoForm = function (id = null) {
+    editingRecursoId = id;
     const form = document.getElementById('formulario-recurso');
+
+    if (id) {
+        const recurso = state.get().recursos.find(r => r.id === id);
+        if (recurso) {
+            document.getElementById('nuevo-recurso-nombre').value = recurso.nombre;
+            document.getElementById('nuevo-recurso-portada').value = recurso.portadaUrl;
+            document.getElementById('nuevo-recurso-enlace').value = recurso.enlaceUrl;
+        }
+    } else {
+        document.getElementById('nuevo-recurso-nombre').value = '';
+        document.getElementById('nuevo-recurso-portada').value = '';
+        document.getElementById('nuevo-recurso-enlace').value = '';
+    }
+
     if (form) form.style.display = 'block';
 };
 
@@ -1745,13 +1843,11 @@ window.hideAddRecursoForm = function () {
     const form = document.getElementById('formulario-recurso');
     if (form) {
         form.style.display = 'none';
-        document.getElementById('nuevo-recurso-nombre').value = '';
-        document.getElementById('nuevo-recurso-portada').value = '';
-        document.getElementById('nuevo-recurso-enlace').value = '';
+        editingRecursoId = null;
     }
 };
 
-window.submitRecurso = function () {
+window.submitRecurso = async function () {
     const nombre = document.getElementById('nuevo-recurso-nombre').value.trim();
     const portadaUrl = document.getElementById('nuevo-recurso-portada').value.trim();
     const enlaceUrl = document.getElementById('nuevo-recurso-enlace').value.trim();
@@ -1761,17 +1857,27 @@ window.submitRecurso = function () {
         return;
     }
 
-    const newRecurso = {
-        id: 'rec_' + Date.now(),
-        nombre,
-        portadaUrl,
-        enlaceUrl
-    };
-
     const currentRecursos = state.get().recursos || [];
-    state.update({ recursos: [...currentRecursos, newRecurso] });
 
-    // El state.update disparará un re-render de la UI de todos modos
+    if (editingRecursoId) {
+        // Edit Mode
+        const updatedRecursos = currentRecursos.map(r =>
+            r.id === editingRecursoId ? { ...r, nombre, portadaUrl, enlaceUrl } : r
+        );
+        await state.update({ recursos: updatedRecursos });
+    } else {
+        // Create Mode
+        const newRecurso = {
+            id: 'rec_' + Date.now(),
+            nombre,
+            portadaUrl,
+            enlaceUrl
+        };
+        await state.update({ recursos: [...currentRecursos, newRecurso] });
+    }
+
+    editingRecursoId = null;
+    window.hideAddRecursoForm();
     // pero si hace falta podríamos llamar a hideAddRecursoForm()
 };
 

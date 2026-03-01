@@ -7,7 +7,9 @@ const defaultState = {
     notes: {},   // Object: { [playerId]: "personal notes text" }
     npcs: [],    // Array of: { id, name, description, isVisible, secrets: [{ id, text, isVisible }], notes: [{ playerId, text }] }
     maps: [],    // Array of: { id, name, url, isVisible, secrets: [{ id, text, isVisible }], notes: [{ playerId, text }] }
-    recursos: [] // Array of { id, nombre, portadaUrl, enlaceUrl }
+    recursos: [], // Array of { id, nombre, portadaUrl, enlaceUrl }
+    bestiario: [],// Array format for monsters and encounters
+    grimorio: []  // Array format for spells
 };
 
 let currentState = { ...defaultState };
