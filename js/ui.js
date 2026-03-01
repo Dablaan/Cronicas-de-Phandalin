@@ -1110,21 +1110,24 @@ function renderDMSheet() {
 }
 
 window.updateDmNote = function (field, value) {
-    const notes = { ...state.get().dmNotes, [field]: value };
-    // Skip notify for input event to keep focus and prevent lag, but save to state
-    state.update({ dmNotes: notes }, true);
+    const currentNotes = state.get().dmNotes || {};
+    const updatedNotes = { ...currentNotes, [field]: value };
+    // Write to state immediately (skip re-render to keep focus)
+    state.get().dmNotes = updatedNotes;
 
-    // Virtual visual indicator
+    // Visual indicator
     const status = document.getElementById('dm-save-status');
-    if (status) {
-        status.innerText = "Escribiendo...";
-        clearTimeout(window.dmSaveTimeout);
-        window.dmSaveTimeout = setTimeout(() => {
-            status.innerText = "Cambios guardados";
-            // Final update with notify to ensure sync across tabs if needed
-            state.update({ dmNotes: notes });
-        }, 1000);
-    }
+    if (status) status.innerText = "Escribiendo...";
+
+    // Debounce: save to backend after 1s of inactivity
+    clearTimeout(window.dmSaveTimeout);
+    window.dmSaveTimeout = setTimeout(() => {
+        // Read the CURRENT value from state (not the stale closure)
+        const latestNotes = state.get().dmNotes;
+        state.update({ dmNotes: latestNotes });
+        const st = document.getElementById('dm-save-status');
+        if (st) st.innerText = "Cambios guardados";
+    }, 1000);
 };
 
 // ----------------------------------------------------
@@ -1492,8 +1495,6 @@ window.renderDMNpcs = function (currentState) {
     if (!npcs || npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';
     else {
         npcs.forEach(n => {
-            const isSecretVisible = n._uiSecretVisible || false;
-
             html += `
                 <div class="card card-horizontal" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer; position: relative; ${n.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     
@@ -1565,8 +1566,6 @@ window.renderBestiario = function (currentState) {
         };
 
         bestiario.forEach(m => {
-            const isSecretVisible = m._uiSecretVisible || false;
-
             html += `
                 <div class="card card-horizontal" ondblclick="window.openQuickLook('${m.id}', 'monster')" style="cursor: pointer; position: relative; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     
@@ -2799,15 +2798,44 @@ window.openQuickLook = function (id, type) {
             let html = `
                  <div class="card view-mode" style="padding: 2rem; border: none; box-shadow: none;">
                      <h2 style="font-size: 2.5rem; text-align: center; margin-bottom: 1rem; color: var(--leather-dark);">${npc.name}</h2>
-                     <p style="white-space: pre-wrap; font-size: 1.2rem; line-height: 1.6;">${npc.description}</p>
+                     <p style="font-size: 0.9em; color: var(--text-muted); text-align:center;">${npc.raceAlignment || ''}</p>
+                     <p style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.6; margin-top: 1rem;"><i class="fa-solid fa-theater-masks"></i> <strong>Actitud/Voz:</strong> ${npc.behavior || '...'}</p>
                  `;
-            if (npc.secrets && npc.secrets.length > 0) {
-                const visibleSecrets = npc.secrets.filter(s => currentState.session.role === 'DM' || s.isVisible);
-                if (visibleSecrets.length > 0) {
-                    html += visibleSecrets.map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 1.2rem; margin-top: 1rem;"><i class="fa-solid fa-eye"></i> <strong>Secreto:</strong> ${s.text}</p>`).join('');
-                }
+            if (currentState.session.role === 'DM' && npc.motivation) {
+                html += `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 1.1rem; margin-top: 1rem; border-left: 3px solid var(--red-ink); padding-left: 0.8rem;"><i class="fa-solid fa-user-secret"></i> <strong>Secreto:</strong> ${npc.motivation}</p>`;
+            } else if (npc.secretVisible && npc.motivation) {
+                html += `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap; font-size: 1.1rem; margin-top: 1rem;"><i class="fa-solid fa-eye"></i> <strong>Secreto Descubierto:</strong> ${npc.motivation}</p>`;
             }
             html += `</div>`;
+            container.innerHTML = html;
+        }
+    } else if (type === 'monster') {
+        const monster = currentState.bestiario.find(m => m.id === id);
+        if (monster) {
+            const getMod = (val) => { const v = parseInt(val, 10) || 10; const mod = Math.floor((v - 10) / 2); return mod >= 0 ? '+' + mod : mod; };
+            let html = `
+                <div class="card view-mode" style="padding: 2rem; border: none; box-shadow: none;">
+                    <h2 style="font-size: 2rem; text-align: center; margin-bottom: 0; color: var(--red-ink); text-transform: uppercase;">${monster.name}</h2>
+                    <p style="font-style: italic; color: #555; text-align: center; margin-bottom: 1rem;">${monster.subtitle || ''}</p>
+                    <div style="border-top: 3px solid var(--red-ink); border-bottom: 3px solid var(--red-ink); padding: 0.5rem 0; margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.6;">
+                        <div><strong style="color:var(--red-ink)">CA</strong> ${monster.ac || '-'}</div>
+                        <div><strong style="color:var(--red-ink)">HP</strong> ${monster.hp || '-'}</div>
+                        <div><strong style="color:var(--red-ink)">Velocidad</strong> ${monster.speed || '30 pies'}</div>
+                    </div>
+                    <div style="display:flex; justify-content:space-around; text-align:center; margin-bottom:1rem; font-size:0.85rem;">
+                        <div><strong>FUE</strong><br>${monster.str || 10} (${getMod(monster.str)})</div>
+                        <div><strong>DES</strong><br>${monster.dex || 10} (${getMod(monster.dex)})</div>
+                        <div><strong>CON</strong><br>${monster.con || 10} (${getMod(monster.con)})</div>
+                        <div><strong>INT</strong><br>${monster.int || 10} (${getMod(monster.int)})</div>
+                        <div><strong>SAB</strong><br>${monster.wis || 10} (${getMod(monster.wis)})</div>
+                        <div><strong>CAR</strong><br>${monster.cha || 10} (${getMod(monster.cha)})</div>
+                    </div>
+                    ${monster.features ? `<div style="margin-bottom:0.8rem;"><strong style="color:var(--red-ink)">Rasgos.</strong><div style="white-space:pre-wrap;">${monster.features}</div></div>` : ''}
+                    ${monster.actions ? `<div style="margin-bottom:0.8rem;"><strong style="color:var(--red-ink)">Acciones.</strong><div style="white-space:pre-wrap;">${monster.actions}</div></div>` : ''}
+                    ${monster.bonus ? `<div style="margin-bottom:0.8rem;"><strong style="color:var(--red-ink)">Acc. Adicionales.</strong><div style="white-space:pre-wrap;">${monster.bonus}</div></div>` : ''}
+                    ${monster.reactions ? `<div style="margin-bottom:0.8rem;"><strong style="color:var(--red-ink)">Reacciones.</strong><div style="white-space:pre-wrap;">${monster.reactions}</div></div>` : ''}
+                </div>
+            `;
             container.innerHTML = html;
         }
     }

@@ -32,7 +32,7 @@ export function initAuth() {
         if (password === DM_PASSWORD) {
             document.getElementById('dm-error').style.display = 'none';
             state.update({ session: { role: 'DM', playerId: null } }).then(() => {
-                if (window.switchTab) window.switchTab('tab-dashboard');
+                if (window.switchTab) window.switchTab('tab-sheet');
             });
             dmPasswordInput.value = '';
         } else {

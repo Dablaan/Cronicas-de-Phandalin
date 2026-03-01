@@ -1628,31 +1628,31 @@ textarea {
         font-size: 0.8rem;
         padding: 3px 5px;
     }
+}
 
-    /* DM Dashboard & Notes */
-    .dm-dashboard {
-        padding: 1rem;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
+/* DM Dashboard & Notes */
+.dm-dashboard {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
 
-    .dm-note-area {
-        width: 100%;
-        min-height: 150px;
-        background: transparent;
-        border: none;
-        resize: vertical;
-        font-family: 'Lora', serif;
-        font-size: 0.95rem;
-        line-height: 1.5;
-        color: var(--leather-dark);
-        padding: 0.5rem;
-    }
+.dm-note-area {
+    width: 100%;
+    min-height: 150px;
+    background: transparent;
+    border: none;
+    resize: vertical;
+    font-family: 'Lora', serif;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--leather-dark);
+    padding: 0.5rem;
+}
 
-    .dm-note-area:focus {
-        outline: none;
-        background: rgba(255, 255, 255, 0.2);
-    }
+.dm-note-area:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* Responsive Dashboard */
