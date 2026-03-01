@@ -1162,43 +1162,42 @@ function renderPublicScreen(currentState) {
 
     const imageUrl = publicDisplay?.imageUrl || null;
 
-    // BASE CONTENT (Always visible background)
-    let html = '<div class="public-screen public-screen-party">';
+    // BASE CONTENT (Inherits parchment background from .app-container)
+    let html = '<div class="public-screen">';
 
-    // Proyected Image Overlay
+    // REUSE LIGHTBOX SYSTEM FOR PROJECTION
     if (imageUrl) {
         html += `
-            <div class="public-screen-projection-overlay" onclick="window.stopProjection()">
-                <div class="public-screen-image-wrapper">
-                    <img src="${imageUrl}" class="public-screen-image" alt="Proyección">
-                    <div class="public-screen-image-frame"></div>
+            <div class="lightbox-overlay" style="position: absolute; z-index: 100;" onclick="window.stopProjection()">
+                <div class="lightbox-container">
+                    <img src="${imageUrl}" alt="Proyección">
                 </div>
             </div>
         `;
     }
 
-    html += '<h2 style="text-align:center; margin-bottom:1rem; color:var(--gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 2.5rem;"><i class="fa-solid fa-users"></i> El Grupo de Aventureros</h2>';
-    html += '<div class="grid-2" style="max-width: 1200px; margin: 0 auto; gap: 2rem;">';
+    html += '<h2 style="text-align:center; margin-bottom:1.5rem; color:var(--leather-dark); letter-spacing: 2px;"><i class="fa-solid fa-users"></i> El Grupo de Aventureros</h2>';
+    html += '<div class="grid-2" style="max-width: 1200px; margin: 0 auto; gap: 1.5rem;">';
 
     players.forEach(p => {
         let hpPercent = Math.max(0, Math.min(100, (p.hpCurrent / p.hpMax) * 100));
         let hpColor = hpPercent > 50 ? 'darkolivegreen' : (hpPercent > 20 ? 'darkgoldenrod' : 'darkred');
 
         html += `
-            <div class="card" style="background: rgba(30,20,10,0.85); border: 2px solid var(--gold-dim); color: #e6d4b8; padding: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
-                <div class="flex-between" style="border-bottom: 1px solid rgba(212,175,55,0.4); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
-                    <h3 style="margin:0; color:var(--gold); font-size: 1.8rem; font-family: 'Times New Roman', serif;">${p.name || 'Desconocido'} <span style="font-size:1rem; color:#aaa; font-family: var(--font-body);">Lvl ${p.level} ${p.class}</span></h3>
+            <div class="card" style="padding: 1.2rem; box-shadow: var(--box-shadow-main);">
+                <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.8rem;">
+                    <h3 style="margin:0; font-size: 1.5rem;">${p.name || 'Desconocido'} <span style="font-size:0.8rem; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">Lvl ${p.level} ${p.class}</span></h3>
                 </div>
-                <div class="party-hp-bar-container" style="height: 35px; border-radius: 6px; overflow: hidden; border: 1px solid #000;">
-                    <div class="party-hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor}; transition: width 0.5s ease;"></div>
-                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; font-weight: 900; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
+                <div class="party-hp-bar-container" style="height: 25px; border-radius: 4px; overflow: hidden; border: 1px solid var(--leather-dark);">
+                    <div class="party-hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor}; transition: width 0.4s ease;"></div>
+                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.9rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
                         ${p.hpCurrent} / ${p.hpMax} HP
                     </div>
                 </div>
-                <div class="flex-between" style="font-size: 1.1rem; padding-top: 1rem;">
-                    <span><i class="fa-solid fa-shield" style="color:var(--gold-dim)"></i> CA: <strong>${p.ac || 10}</strong></span>
-                    <span><i class="fa-solid fa-bolt" style="color:var(--gold-dim)"></i> Inic: <strong>${p.initiative || 0}</strong></span>
-                    <span><i class="fa-solid fa-eye" style="color:var(--gold-dim)"></i> Pasiva: <strong>${p.passivePerception || 10}</strong></span>
+                <div class="flex-between" style="font-size: 1rem; padding-top: 0.8rem; color: var(--leather-dark); font-weight: bold;">
+                    <span><i class="fa-solid fa-shield" style="color:var(--gold-dim)"></i> CA: ${p.ac || 10}</span>
+                    <span><i class="fa-solid fa-bolt" style="color:var(--gold-dim)"></i> INIC: ${p.initiative || 0}</span>
+                    <span><i class="fa-solid fa-eye" style="color:var(--gold-dim)"></i> PAS: ${p.passivePerception || 10}</span>
                 </div>
             </div>
         `;
