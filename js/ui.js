@@ -1543,7 +1543,6 @@ window.renderEncuentros = function (currentState) {
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3>Gestor de Escenas de Combate</h3>
-            <button class="btn" onclick="window.showEncounterForm()"><i class="fa-solid fa-swords"></i> Crear Encuentro</button>
         </div>
         
         <!-- Formulario (Oculto por defecto) -->
@@ -1574,15 +1573,25 @@ window.renderEncuentros = function (currentState) {
                     </ul>
                 </div>
 
+                <!-- Campo Nuevo: Botín (Loot) -->
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-sack-dollar"></i> Botín del Encuentro</label>
+                    <input type="text" id="enc-loot" placeholder="Ej: 50 po, 2 Pociones de Curación y Espada Larga" style="padding: 0.5rem;">
+                </div>
+
                 <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
-                    <button class="btn btn-danger" onclick="window.hideEncounterForm()">Cancelar</button>
+                    <button class="btn btn-danger" onclick="window.hideEncounterForm()">Cancelar / Volver</button>
                     <button class="btn" onclick="window.saveEncounter()"><i class="fa-solid fa-floppy-disk"></i> Guardar Encuentro</button>
                 </div>
             </div>
         </div>
 
         <!-- Lista de Encuentros Creados -->
-        <div class="grid-2 mt-2" id="encounter-list-container">
+        <div id="encounter-list-container">
+            <div style="display:flex; justify-content: flex-end; margin-bottom: 1rem;">
+                <button class="btn" onclick="window.showEncounterForm()"><i class="fa-solid fa-swords"></i> Añadir Encuentro</button>
+            </div>
+            <div class="grid-2">
     `;
 
     if (!encuentros || encuentros.length === 0) {
@@ -1595,12 +1604,13 @@ window.renderEncuentros = function (currentState) {
                     <div style="flex: 1;">
                         <h4 style="margin: 0 0 0.5rem 0; color:var(--red-ink);"><i class="fa-solid fa-swords"></i> ${enc.name}</h4>
                         <p style="font-size: 0.85em; margin-bottom: 0.8rem;"><i class="fa-solid fa-location-dot"></i> ${enc.location || 'Desconocida'}</p>
-                        <div style="background: rgba(0,0,0,0.03); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark);">
+                        <div style="background: rgba(0,0,0,0.03); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark); margin-bottom: 0.5rem;">
                             <h5 style="margin:0 0 0.3rem 0; font-size: 0.8em; text-transform:uppercase;">Hostiles:</h5>
                             <ul style="margin:0; padding-left: 1rem; font-size: 0.85em;">
                                 ${listHtml || '<li>Ninguno (Escena social o trampa)</li>'}
                             </ul>
                         </div>
+                        ${enc.loot ? `<p style="font-size: 0.85em; margin: 0; color: var(--gold-dark);"><i class="fa-solid fa-sack-dollar"></i> <strong>Botín:</strong> ${enc.loot}</p>` : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 1rem; margin-top: auto;">
                         <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.showEncounterForm('${enc.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
@@ -1612,6 +1622,7 @@ window.renderEncuentros = function (currentState) {
     }
 
     html += `
+            </div>
         </div>
     `;
 
@@ -1621,8 +1632,14 @@ window.renderEncuentros = function (currentState) {
 window.showEncounterForm = function (encounterId = null) {
     const currentState = state.get();
     const formContainer = document.getElementById('encounter-form-container');
+    const listContainer = document.getElementById('encounter-list-container');
     const nameInput = document.getElementById('enc-name');
     const locSelect = document.getElementById('enc-location');
+    const lootInput = document.getElementById('enc-loot');
+
+    // Toggle Vista (Ocultar Lista, Mostrar Formulario)
+    listContainer.classList.add('hidden');
+    formContainer.classList.remove('hidden');
 
     if (encounterId) {
         window.editingEncounterId = encounterId;
@@ -1630,24 +1647,37 @@ window.showEncounterForm = function (encounterId = null) {
         if (enc) {
             nameInput.value = enc.name || '';
             locSelect.value = enc.location || '';
+            lootInput.value = enc.loot || '';
             window.currentEncounterBuilder = JSON.parse(JSON.stringify(enc.monsters || [])); // clon profundo
         }
     } else {
         window.editingEncounterId = null;
         nameInput.value = '';
         locSelect.value = '';
+        lootInput.value = '';
         window.currentEncounterBuilder = [];
     }
 
     window.renderEncounterBuilderList();
-    formContainer.classList.remove('hidden');
     formContainer.scrollIntoView({ behavior: 'smooth' });
 };
 
 window.hideEncounterForm = function () {
-    document.getElementById('encounter-form-container').classList.add('hidden');
+    const formContainer = document.getElementById('encounter-form-container');
+    const listContainer = document.getElementById('encounter-list-container');
+
+    // Toggle Vista (Ocultar Formulario, Mostrar Lista)
+    formContainer.classList.add('hidden');
+    listContainer.classList.remove('hidden');
+
+    // Limpieza
     window.editingEncounterId = null;
     window.currentEncounterBuilder = [];
+    document.getElementById('enc-name').value = '';
+    document.getElementById('enc-location').value = '';
+    document.getElementById('enc-loot').value = '';
+    document.getElementById('enc-monster-qty').value = 1;
+    document.getElementById('enc-monster-select').value = '';
 };
 
 window.addMonsterToBuilder = function () {
@@ -1705,6 +1735,7 @@ window.renderEncounterBuilderList = function () {
 window.saveEncounter = async function () {
     const nameInput = document.getElementById('enc-name').value.trim();
     const locInput = document.getElementById('enc-location').value;
+    const lootInput = document.getElementById('enc-loot').value.trim();
 
     if (!nameInput) {
         alert("El encuentro necesita un Título de Escena.");
@@ -1717,6 +1748,7 @@ window.saveEncounter = async function () {
     const encounterPayload = {
         name: nameInput,
         location: locInput,
+        loot: lootInput,
         monsters: window.currentEncounterBuilder,
         id: window.editingEncounterId || ("enc_" + Date.now().toString())
     };
@@ -1729,6 +1761,10 @@ window.saveEncounter = async function () {
     }
 
     await state.update({ encuentros: currentEncuentros });
+    await storageAdapter.save();
+
+    // Al notificar el update global, se llamará automáticamente a renderEncuentros
+    // Pero por UX, forzaremos limpiar y esconder el formulario antes del re-render
     window.hideEncounterForm();
 };
 
