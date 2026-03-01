@@ -1,0 +1,40 @@
+# Walkthrough: Estado Actual del Proyecto 🛡️
+
+## Resumen de Implementaciones Completadas
+
+### 1. Estado y Sincronización (`state.js`)
+- **Merge Inteligente**: `state.update()` hace `storageAdapter.load()` antes de guardar. Jugadores solo patchean su propio PJ en la lista remota, protegiendo datos del DM y otros jugadores
+- **Guardado Silencioso**: parámetro `skipNotify` evita re-renders innecesarios (ej: botones HP)
+- **Edit Mode Guard**: `window.isSheetEditMode` bloquea updates remotos durante edición activa
+
+### 2. Sistema de Autenticación (`auth.js`)
+- DM: password fija → `state.update({ session })` → `switchTab('tab-dashboard')`
+- Jugadores: selección de PJ → modal Cerrojo Mágico → `switchTab('tab-ficha')`
+- Logout: reinicia sesión sin eliminar datos
+
+### 3. Motor de UI (`ui.js` — 2448 líneas, 95 funciones)
+- **Ficha de PJ**: stats, HP interactivo, saves, skills, ataques CRUD, inventario, grimorio
+- **NPCs/Mapas**: CRUD via modal unificado (`openEntityModal`), subida de imágenes a Supabase Storage
+- **Bestiario**: Stat Blocks D&D 5e con auto-cálculo de modificadores
+- **Encuentros**: Combat Builder con selector múltiple de monstruos + botín
+- **Biblioteca**: Grid visual de portadas con CRUD
+
+### 4. Diseño Visual (`styles.css` — 1407 líneas)
+- Sistema `.card-horizontal` responsivo: desktop horizontal (100px img) / mobile horizontal reducido (80px img)
+- Biblioteca en grid 3 columnas (desktop) / 2 (mobile)
+- Variables CSS temáticas (pergamino, cuero, oro, tinta roja)
+
+## Métricas del Código
+
+| Fichero | Líneas | Funciones |
+|---|---|---|
+| `ui.js` | 2448 | 95 |
+| `styles.css` | 1407 | — |
+| `index.html` | 204 | — |
+| `state.js` | 138 | 5 |
+| `storageAdapter.js` | 137 | 5 |
+| `auth.js` | 55 | 1 (export) |
+| `main.js` | 31 | 1 (bootstrap) |
+
+> [!TIP]
+> Para probar concurrencia, abre dos pestañas (DM + Jugador) y edita simultáneamente. El merge inteligente protege ambas sesiones.

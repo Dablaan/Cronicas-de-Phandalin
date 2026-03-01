@@ -10,7 +10,8 @@ const defaultState = {
     recursos: [], // Array of { id, nombre, portadaUrl, enlaceUrl }
     bestiario: [],// Array format for monsters and encounters
     grimorio: [], // Array format for spells
-    encuentros: []// Array for combat encounters
+    encuentros: [],// Array for combat encounters
+    combatTracker: null // Active combat tracker: { active, phase, encounterName, turnIndex, entries }
 };
 
 let currentState = { ...defaultState };

@@ -1,0 +1,46 @@
+# Mapa de Experiencia de Usuario (UX): Crónicas de Phandalin
+
+## 1. Login Flow
+
+1. **Landing** → Hero Image + botón "ADENTRARSE"
+2. **Selección de Rol** (grid 2 columnas):
+   - **DM**: Input password → acceso total → fuerza `tab-dashboard`
+   - **Jugador**: Grid de personajes → Modal "Cerrojo Mágico" (passcode) → fuerza `tab-ficha`
+   - Opción "Crear Personaje" disponible
+
+## 2. Vista del Jugador
+
+| Pestaña | Contenido |
+|---|---|
+| **Ficha** | Hoja de PJ inmersiva: avatar, stats, HP (barra +/-), CA, velocidad, habilidades, ataques, inventario, grimorio. Modo Vista/Edición |
+| **Grupo** | Tarjetas resumen de compañeros (clase, HP, avatar) |
+| **NPCs** | Solo los marcados `isVisible`. Tarjetas horizontales (`.card-horizontal`): foto izq + nombre, raza, CA, HP, comportamiento, secretos revelados. Notas privadas del jugador. Grid 2 columnas en PC |
+| **Mapas** | Igual que NPCs: solo visibles, tarjetas horizontales con hechizos/secretos revelados y notas cartográficas privadas |
+| **Biblioteca** | Grid 3 columnas de portadas de libros/recursos con enlaces. Reduce a 2 en móvil |
+| **Notas** | Diario privado en tiempo real |
+
+## 3. Vista del DM (God Mode)
+
+| Pestaña | Contenido |
+|---|---|
+| **Dashboard** | Panel de control rápido del grupo |
+| **Grupo** | Tracker completo: ve todo, puede inspeccionar inventarios |
+| **NPCs** | CRUD completo via Modal. Tarjetas horizontales con ojo de visibilidad, secreto expandible, botones editar/borrar. Grid 2 col |
+| **Mapas** | Igual que NPCs: CRUD Modal, toggle visibilidad, notas DM secretas expandibles |
+| **Bestiario** | Stat Blocks D&D 5e: formulario completo (subtítulo, CA, HP, velocidad, 6 stats con auto-mod, saves, skills, senses, idiomas, desafío, acciones, bonus, reacciones, equipo). Tarjetas horizontales con bloque expandible |
+| **Encuentros** | Combat Builder: seleccionar monstruos del bestiario × cantidad, localización, botín. Tarjetas con lista de hostiles y botín |
+| **Biblioteca** | Igual que jugador + botones crear/editar/borrar recursos |
+| **Notas** | Cuaderno privado del DM |
+
+## 4. Modales Globales
+
+- **Entity Form Modal** (`#entity-form-modal`): formulario dinámico para NPC/Map/Monster/Encuentro. Soporta subida de imágenes a Supabase Storage
+- **Quick Look** (`#quick-look-modal-overlay`): vista ampliada al doble-clic sobre tarjeta
+- **Lightbox** (`#lightbox-modal-overlay`): ampliación de imágenes a pantalla completa
+- **Login Modal** (`#login-modal-overlay`): establecer/verificar Cerrojo Mágico de PJ
+
+## 5. Sistema Visual de Tarjetas
+
+Todas las entidades (NPCs, Mapas, Monstruos) usan `.card.card-horizontal`:
+- **PC (≥768px)**: Imagen a la izquierda (100×100), contenido a la derecha, 2 columnas
+- **Móvil (≤600px)**: Misma estructura horizontal pero con imagen reducida (80×80) y gaps menores

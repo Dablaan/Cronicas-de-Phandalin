@@ -1,0 +1,58 @@
+# Arquitectura y Estructura: Crónicas de Phandalin
+
+SPA Vanilla JS + Supabase BaaS para gestión de campañas D&D en tiempo real.
+
+## Árbol de Directorios
+
+```text
+📦 Cronicas-de-Phandalin
+ ┣ 📂 img/             # Avatares, tokens, fondos
+ ┣ 📂 css/
+ ┃ ┗ 📜 styles.css     # 1407 líneas. Variables, grid, card-horizontal, responsive
+ ┣ 📜 index.html       # Entry-Point (204 líneas). Modales: auth, entity, quick-look, lightbox
+ ┗ 📂 js/
+   ┣ 📜 main.js         # Bootstrap: init Auth → init State → subscribe renderApp (31 líneas)
+   ┣ 📜 auth.js         # Login DM (clave '1234'), selección de PJ, logout (55 líneas)
+   ┣ 📜 storageAdapter.js # Supabase CRUD + Realtime + Storage (avatars, campaign_media) (137 líneas)
+   ┣ 📜 state.js        # Store Redux-like con merge inteligente Player/DM (138 líneas)
+   ┗ 📜 ui.js           # Motor de renderizado DOM masivo. 95 funciones, 2448 líneas
+```
+
+## Flujo de Datos (MVC Simplificado)
+
+1. **View** (`ui.js`): Evento del usuario (clic, input)
+2. **Action** (`window.*`): Función global invocada desde HTML literal
+3. **Reducer** (`state.update(partial)`): Merge local + fetch remoto
+4. **Backend** (`storageAdapter.save()`): Upsert a Supabase `kv_store`
+5. **Re-render**: WebSocket `postgres_changes` → `state.notify()` → `renderApp()`
+
+## Modelo de Datos (`kv_store.value`)
+
+```json
+{
+  "session": { "role": "DM|Player", "playerId": "..." },
+  "players": [{ "id", "name", "hpCurrent", "hpMax", "stats", "skills", "attacks", "spells", "spellSlots", "equipment", "passcode" }],
+  "npcs": [{ "id", "name", "isVisible", "url", "ac", "hp", "raceAlignment", "behavior", "motivation", "secrets", "notes" }],
+  "maps": [{ "id", "name", "url", "isVisible", "environmentType", "dmNotes", "secrets", "notes" }],
+  "bestiario": [{ "id", "name", "subtitle", "ac", "hp", "speed", "init", "str-cha", "saves", "skills", "senses", "langs", "challenge", "immunities", "features", "actions", "bonus", "reactions", "equip", "url" }],
+  "encuentros": [{ "id", "name", "location", "loot", "monsters": [{ "id", "name", "qty" }] }],
+  "recursos": [{ "id", "nombre", "portadaUrl", "enlaceUrl" }],
+  "notes": { "[playerId]": "texto" }
+}
+```
+
+## Sistema CSS Clave
+
+| Clase | Uso |
+|---|---|
+| `.card` | Tarjeta base (pergamino, box-sizing, overflow hidden) |
+| `.card-horizontal` | Flex-row con `.card-horizontal-img` + `.card-horizontal-content`. Se reduce a gap/img menores en ≤600px |
+| `.grid-2` | 1 col mobile → 2 col ≥768px |
+| `.biblioteca-grid` | 3 col desktop → 2 col ≤600px → 4 col landscape |
+
+## Decisiones Técnicas
+
+- **HTML Literal** en `ui.js` (template literals) sin bundler
+- **Merge Optimista**: `state.update` hace pull remoto antes de guardar; jugadores solo patchean su propio objeto
+- **Session aislada**: Nunca se sube a Supabase
+- **Edit Mode Guard** (`window.isSheetEditMode`): Bloquea re-renders remotos mientras el jugador edita

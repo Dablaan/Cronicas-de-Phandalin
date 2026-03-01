@@ -1148,6 +1148,13 @@ function renderPartyInfo(players, isDM) {
     });
 
     html += '</div>';
+
+    // Inject Initiative Tracker if combat is active
+    const combatTracker = state.get().combatTracker;
+    if (combatTracker && combatTracker.active) {
+        html += renderInitiativeTracker(combatTracker, isDM, players);
+    }
+
     container.innerHTML = html;
 }
 
@@ -1641,7 +1648,8 @@ window.renderEncuentros = function (currentState) {
         html += '<p class="text-muted" style="grid-column: 1/-1;">No hay encuentros preparados. Adelante, planea su perdición.</p>';
     } else {
         encuentros.forEach(enc => {
-            const listHtml = (enc.monsters || []).map(m => `<li><strong>${m.qty}x</strong> ${m.name}</li>`).join('');
+            const listHtml = (enc.monsters || []).map(m => `<li><strong>${m.qty}x</strong> ${m.name} <span style="color:var(--gold-dim); font-size:0.85em;">(Init: ${m.initiative || '?'})</span></li>`).join('');
+            const combatActive = currentState.combatTracker && currentState.combatTracker.active;
             html += `
                 <div class="card" style="position: relative; display: flex; flex-direction: column;">
                     <div style="flex: 1;">
@@ -1653,9 +1661,12 @@ window.renderEncuentros = function (currentState) {
                                 ${listHtml || '<li>Ninguno (Escena social o trampa)</li>'}
                             </ul>
                         </div>
-                        ${enc.loot ? `<p style="font-size: 0.85em; margin: 0; color: var(--gold-dark);"><i class="fa-solid fa-sack-dollar"></i> <strong>Botín:</strong> ${enc.loot}</p>` : ''}
+                        ${enc.loot ? `<p style="font-size: 0.85em; margin: 0; color: var(--gold-dim);"><i class="fa-solid fa-sack-dollar"></i> <strong>Botín:</strong> ${enc.loot}</p>` : ''}
                     </div>
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 1rem; margin-top: auto;">
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 1rem; margin-top: auto; flex-wrap: wrap;">
+                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size:0.85rem; background: var(--red-ink); color: #fff; border-color: var(--red-ink); ${combatActive ? 'opacity:0.4; pointer-events:none;' : ''}" onclick="window.startCombatFromEncounter('${enc.id}')" title="Iniciar combate con este encuentro">
+                            <i class="fa-solid fa-khanda"></i> Iniciar Combate
+                        </button>
                         <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.openEntityModal('encuentro', '${enc.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
                         <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.deleteEntity('encuentro', '${enc.id}')" title="Borrar"><i class="fa-solid fa-trash"></i></button>
                     </div>
@@ -1675,10 +1686,17 @@ window.renderEncuentros = function (currentState) {
 window.addMonsterToBuilder = function () {
     const select = document.getElementById('ef-monster-select');
     const qtyInput = document.getElementById('ef-monster-qty');
+    const initInput = document.getElementById('ef-monster-init');
     const monsterId = select.value;
     const qty = parseInt(qtyInput.value, 10);
+    const initiative = parseInt(initInput.value, 10);
 
     if (!monsterId || isNaN(qty) || qty <= 0) return;
+    if (isNaN(initiative) || initiative <= 0) {
+        alert('La Iniciativa es obligatoria para cada pack de monstruos.');
+        initInput.focus();
+        return;
+    }
 
     const monsterData = state.get().bestiario.find(b => b.id === monsterId);
     if (!monsterData) return;
@@ -1687,16 +1705,19 @@ window.addMonsterToBuilder = function () {
     const existingIndex = window.currentEncounterBuilder.findIndex(m => m.id === monsterId);
     if (existingIndex > -1) {
         window.currentEncounterBuilder[existingIndex].qty += qty;
+        window.currentEncounterBuilder[existingIndex].initiative = initiative; // Update initiative
     } else {
         window.currentEncounterBuilder.push({
             id: monsterData.id,
             name: monsterData.name,
-            qty: qty
+            qty: qty,
+            initiative: initiative
         });
     }
 
     // Resetear formcito
     qtyInput.value = 1;
+    initInput.value = '';
     select.value = '';
 
     window.renderEncounterBuilderList();
@@ -1717,8 +1738,8 @@ window.renderEncounterBuilderList = function () {
     }
 
     builderUl.innerHTML = window.currentEncounterBuilder.map(m => `
-        <li style="display:flex; justify-content:space-between; border-bottom:1px dashed var(--parchment-dark); padding:0.2rem 0;">
-            <span><strong>${m.qty}x</strong> ${m.name}</span>
+        <li style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed var(--parchment-dark); padding:0.2rem 0;">
+            <span><strong>${m.qty}x</strong> ${m.name} <span style="color:var(--gold-dim); font-size:0.8em;">(Init: ${m.initiative || '?'})</span></span>
             <button class="btn btn-danger" style="padding:0.1rem 0.3rem; font-size:0.75rem;" onclick="window.removeMonsterFromBuilder('${m.id}')"><i class="fa-solid fa-xmark"></i></button>
         </li>
     `).join('');
@@ -1734,6 +1755,343 @@ window.resetPlayerPassword = function (playerId) {
         alert("Contraseña reseteada con éxito.");
     }
 };
+
+// ----------------------------------------------------
+// INITIATIVE TRACKER (Combat System)
+// ----------------------------------------------------
+
+window.startCombatFromEncounter = function (encounterId) {
+    const currentState = state.get();
+    if (currentState.combatTracker && currentState.combatTracker.active) {
+        if (!confirm('Ya hay un combate activo. ¿Deseas reemplazarlo con un nuevo encuentro?')) return;
+    }
+
+    const encounter = (currentState.encuentros || []).find(e => e.id === encounterId);
+    if (!encounter) { alert('Encuentro no encontrado.'); return; }
+
+    // Create entries for PJs only (preparation phase)
+    const playerEntries = currentState.players.map(p => ({
+        type: 'player',
+        id: p.id,
+        initiative: null,
+        revealed: true
+    }));
+
+    const tracker = {
+        active: true,
+        phase: 'preparation',
+        encounterName: encounter.name,
+        encounterId: encounterId,
+        turnIndex: 0,
+        entries: playerEntries,
+        // Store monster templates for later injection
+        _monsterTemplates: JSON.parse(JSON.stringify(encounter.monsters || []))
+    };
+
+    state.update({ combatTracker: tracker });
+    // Switch to party tab to see the tracker
+    if (window.switchTab) window.switchTab('tab-party');
+};
+
+window.setPlayerInitiative = function (playerId) {
+    const val = prompt('Introduce la Iniciativa de este personaje:');
+    if (val === null) return;
+    const initiative = parseInt(val, 10);
+    if (isNaN(initiative)) { alert('Valor inválido.'); return; }
+
+    const tracker = JSON.parse(JSON.stringify(state.get().combatTracker));
+    if (!tracker) return;
+
+    const entry = tracker.entries.find(e => e.type === 'player' && e.id === playerId);
+    if (entry) entry.initiative = initiative;
+
+    state.update({ combatTracker: tracker });
+};
+
+window.beginCombat = function () {
+    const tracker = JSON.parse(JSON.stringify(state.get().combatTracker));
+    if (!tracker) return;
+
+    // Check all PJs have initiative
+    const unset = tracker.entries.filter(e => e.type === 'player' && (e.initiative === null || e.initiative === undefined));
+    if (unset.length > 0) {
+        alert('Todos los Personajes Jugadores deben tener una iniciativa asignada antes de comenzar.');
+        return;
+    }
+
+    // Expand monster templates into individual instances
+    const bestiario = state.get().bestiario || [];
+    const monsterEntries = [];
+    (tracker._monsterTemplates || []).forEach(template => {
+        const monsterData = bestiario.find(b => b.id === template.id);
+        for (let i = 0; i < template.qty; i++) {
+            const hpMax = parseInt(monsterData?.hp, 10) || 10;
+            monsterEntries.push({
+                type: 'monster',
+                monsterId: template.id,
+                instanceId: 'minst_' + Date.now() + '_' + Math.random().toString(36).substring(7),
+                name: template.qty > 1 ? `${template.name} ${i + 1}` : template.name,
+                url: monsterData?.url || '',
+                hpCurrent: hpMax,
+                hpMax: hpMax,
+                ac: monsterData?.ac || '?',
+                initiative: template.initiative,
+                revealed: false
+            });
+        }
+    });
+
+    // Merge and sort by initiative desc
+    tracker.entries = [...tracker.entries, ...monsterEntries];
+    tracker.entries.sort((a, b) => (b.initiative || 0) - (a.initiative || 0));
+    tracker.phase = 'combat';
+    tracker.turnIndex = 0;
+
+    // Reveal if first turn is a monster
+    const first = tracker.entries[0];
+    if (first && first.type === 'monster' && !first.revealed) {
+        first.revealed = true;
+    }
+
+    delete tracker._monsterTemplates;
+
+    state.update({ combatTracker: tracker });
+};
+
+window.nextTurn = function () {
+    const tracker = JSON.parse(JSON.stringify(state.get().combatTracker));
+    if (!tracker || tracker.phase !== 'combat') return;
+
+    const alive = tracker.entries.filter(e => !(e.type === 'monster' && e.hpCurrent <= 0));
+    if (alive.length === 0) { window.endCombat(); return; }
+
+    let idx = tracker.turnIndex;
+    let attempts = 0;
+    do {
+        idx = (idx + 1) % tracker.entries.length;
+        attempts++;
+    } while (tracker.entries[idx].type === 'monster' && tracker.entries[idx].hpCurrent <= 0 && attempts < tracker.entries.length);
+
+    tracker.turnIndex = idx;
+
+    // Auto-reveal monster on first turn
+    const current = tracker.entries[idx];
+    if (current.type === 'monster' && !current.revealed) {
+        current.revealed = true;
+    }
+
+    state.update({ combatTracker: tracker });
+};
+
+window.prevTurn = function () {
+    const tracker = JSON.parse(JSON.stringify(state.get().combatTracker));
+    if (!tracker || tracker.phase !== 'combat') return;
+
+    let idx = tracker.turnIndex;
+    let attempts = 0;
+    do {
+        idx = (idx - 1 + tracker.entries.length) % tracker.entries.length;
+        attempts++;
+    } while (tracker.entries[idx].type === 'monster' && tracker.entries[idx].hpCurrent <= 0 && attempts < tracker.entries.length);
+
+    tracker.turnIndex = idx;
+    state.update({ combatTracker: tracker });
+};
+
+window.applyTrackerHP = function (instanceId, inputEl) {
+    const expression = inputEl.value.trim();
+    if (!expression) return;
+
+    const tracker = JSON.parse(JSON.stringify(state.get().combatTracker));
+    if (!tracker) return;
+
+    const entry = tracker.entries.find(e =>
+        (e.type === 'monster' && e.instanceId === instanceId) ||
+        (e.type === 'player' && e.id === instanceId)
+    );
+    if (!entry) return;
+
+    let delta = 0;
+    if (expression.startsWith('+') || expression.startsWith('-')) {
+        delta = parseInt(expression, 10);
+    } else {
+        // Absolute value: set HP directly
+        const abs = parseInt(expression, 10);
+        if (!isNaN(abs)) {
+            if (entry.type === 'monster') {
+                entry.hpCurrent = Math.max(0, abs);
+            } else {
+                // For players, update the actual player state too
+                entry.initiative = entry.initiative; // keep
+                const players = state.get().players.map(p =>
+                    p.id === entry.id ? { ...p, hpCurrent: Math.max(0, abs) } : p
+                );
+                state.update({ players });
+            }
+            inputEl.value = '';
+            state.update({ combatTracker: tracker });
+            return;
+        }
+    }
+
+    if (isNaN(delta) || delta === 0) { inputEl.value = ''; return; }
+
+    if (entry.type === 'monster') {
+        entry.hpCurrent = Math.max(0, entry.hpCurrent + delta);
+    } else if (entry.type === 'player') {
+        // Update player's actual HP in the game state
+        const player = state.get().players.find(p => p.id === entry.id);
+        if (player) {
+            const newHP = Math.max(0, (player.hpCurrent || 0) + delta);
+            const players = state.get().players.map(p =>
+                p.id === entry.id ? { ...p, hpCurrent: newHP } : p
+            );
+            state.update({ players });
+        }
+    }
+
+    inputEl.value = '';
+    state.update({ combatTracker: tracker });
+};
+
+window.endCombat = function () {
+    if (confirm('¿Finalizar el combate? El tracker de iniciativa se eliminará.')) {
+        state.update({ combatTracker: null });
+    }
+};
+
+function renderInitiativeTracker(combatTracker, isDM, players) {
+    if (!combatTracker || !combatTracker.active) return '';
+
+    let html = `
+        <div class="initiative-tracker-wrapper" style="margin-top: 1.5rem; border: 2px solid var(--red-ink); border-radius: var(--border-radius-md); padding: 1rem; background: rgba(139,0,0,0.03);">
+            <div class="flex-between mb-1" style="border-bottom: 2px solid var(--red-ink); padding-bottom: 0.5rem;">
+                <h3 style="margin:0; color: var(--red-ink);"><i class="fa-solid fa-khanda"></i> ${combatTracker.encounterName || 'Combate'}</h3>
+                <div style="display:flex; gap:0.5rem;">
+    `;
+
+    if (combatTracker.phase === 'combat' && isDM) {
+        html += `
+            <button class="btn" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="window.prevTurn()" title="Turno anterior"><i class="fa-solid fa-backward-step"></i></button>
+            <button class="btn" style="padding:0.3rem 0.8rem; font-size:0.85rem; background:var(--red-ink); color:#fff; border-color:var(--red-ink);" onclick="window.nextTurn()"><i class="fa-solid fa-forward-step"></i> Siguiente</button>
+        `;
+    }
+    if (isDM) {
+        html += `<button class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="window.endCombat()" title="Finalizar combate"><i class="fa-solid fa-flag-checkered"></i></button>`;
+    }
+
+    html += `</div></div>`;
+
+    if (combatTracker.phase === 'preparation') {
+        // Show PJs with red halo for initiative input
+        html += `<p style="font-size:0.85em; color:var(--text-muted); margin-bottom:0.8rem;"><i class="fa-solid fa-circle-info"></i> Haz clic en cada retrato para asignar su iniciativa. Después pulsa <strong>Comenzar Combate</strong>.</p>`;
+        html += `<div class="initiative-track-row">`;
+
+        combatTracker.entries.forEach(entry => {
+            if (entry.type !== 'player') return;
+            const player = players.find(p => p.id === entry.id);
+            if (!player) return;
+
+            const hasInit = entry.initiative !== null && entry.initiative !== undefined;
+            const haloClass = hasInit ? 'init-token-ready' : 'init-token-preparation';
+
+            html += `
+                <div class="init-token ${haloClass}" onclick="${isDM ? `window.setPlayerInitiative('${entry.id}')` : ''}" style="${isDM ? 'cursor:pointer;' : ''}">
+                    <div class="init-token-portrait">
+                        ${player.avatarUrl
+                    ? `<img src="${player.avatarUrl}" alt="${player.name}">`
+                    : `<i class="fa-solid fa-user fa-2x"></i>`
+                }
+                    </div>
+                    <div class="init-token-name">${player.name}</div>
+                    <div class="init-token-init">${hasInit ? entry.initiative : '?'}</div>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+
+        if (isDM) {
+            const allSet = combatTracker.entries.every(e => e.type !== 'player' || (e.initiative !== null && e.initiative !== undefined));
+            html += `
+                <div style="text-align:center; margin-top:1rem;">
+                    <button class="btn" style="padding:0.5rem 1.5rem; font-size:1rem; background:var(--red-ink); color:#fff; border-color:var(--red-ink); ${allSet ? '' : 'opacity:0.4; pointer-events:none;'}" onclick="window.beginCombat()">
+                        <i class="fa-solid fa-swords"></i> Ordenar y Comenzar Combate
+                    </button>
+                </div>
+            `;
+        }
+    } else if (combatTracker.phase === 'combat') {
+        // Full combat tracker - ordered row
+        html += `<div class="initiative-track-row">`;
+
+        combatTracker.entries.forEach((entry, idx) => {
+            const isActive = idx === combatTracker.turnIndex;
+            const isDead = entry.type === 'monster' && entry.hpCurrent <= 0;
+            const isHidden = entry.type === 'monster' && !entry.revealed && !isDM;
+
+            if (isDead && !isDM) {
+                // Dead monsters are dimmed for players
+                html += `
+                    <div class="init-token init-token-dead">
+                        <div class="init-token-portrait"><i class="fa-solid fa-skull fa-2x" style="color:#666;"></i></div>
+                        <div class="init-token-name" style="text-decoration:line-through;">${entry.name}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (isHidden) {
+                // Hidden monster for players
+                html += `
+                    <div class="init-token init-token-hidden">
+                        <div class="init-token-portrait"><i class="fa-solid fa-question fa-2x" style="color:var(--leather-light);"></i></div>
+                        <div class="init-token-name">???</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Visible entry
+            let portraitHtml = '';
+            let nameHtml = '';
+            let hpHtml = '';
+            const entryId = entry.type === 'player' ? entry.id : entry.instanceId;
+
+            if (entry.type === 'player') {
+                const player = players.find(p => p.id === entry.id);
+                portraitHtml = player?.avatarUrl
+                    ? `<img src="${player.avatarUrl}" alt="${player?.name}">`
+                    : `<i class="fa-solid fa-user fa-2x"></i>`;
+                nameHtml = player?.name || 'PJ';
+                const hp = player?.hpCurrent ?? 0;
+                const hpMax = player?.hpMax ?? 0;
+                hpHtml = `<span class="init-token-hp">${hp}/${hpMax}</span>`;
+            } else {
+                portraitHtml = entry.url
+                    ? `<img src="${entry.url}" alt="${entry.name}">`
+                    : `<i class="fa-solid fa-dragon fa-2x" style="color:var(--red-ink);"></i>`;
+                nameHtml = entry.name;
+                hpHtml = isDM ? `<span class="init-token-hp" style="color:${entry.hpCurrent <= 0 ? '#ff4444' : 'inherit'};">${entry.hpCurrent}/${entry.hpMax}</span>` : '';
+            }
+
+            html += `
+                <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''}">
+                    <div class="init-token-portrait">${portraitHtml}</div>
+                    <div class="init-token-name">${nameHtml}</div>
+                    <div class="init-token-init">${entry.initiative}</div>
+                    ${hpHtml}
+                    ${isDM ? `<input class="init-hp-input" placeholder="-5" onkeydown="if(event.key==='Enter'){window.applyTrackerHP('${entryId}', this);}">` : ''}
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+}
 
 window.renderDMMaps = function (currentState) {
     const { maps } = currentState;
@@ -2030,13 +2388,14 @@ window.openEntityModal = function (type, id = null) {
 
                 <div style="background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 8px; border: 1px solid var(--parchment-dark);">
                     <h5>Añadir Enemigos</h5>
-                    <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom: 0.5rem;">
-                        <select id="ef-monster-select" style="flex:2; padding: 0.5rem;">
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <select id="ef-monster-select" style="flex:3; padding: 0.5rem; min-width: 120px;">
                             <option value="">-- Selecciona Monstruo --</option>
                             ${bestiario.map(b => `<option value="${b.id}">${b.name} (CA ${b.ac}, HP ${b.hp})</option>`).join('')}
                         </select>
-                        <input type="number" id="ef-monster-qty" value="1" min="1" style="flex:1; padding: 0.5rem; text-align:center;">
-                        <button class="btn" onclick="window.addMonsterToBuilder()"><i class="fa-solid fa-plus"></i></button>
+                        <input type="number" id="ef-monster-qty" value="1" min="1" style="flex:1; padding: 0.5rem; text-align:center; min-width: 50px;" placeholder="Cant.">
+                        <input type="number" id="ef-monster-init" value="" min="1" max="30" style="flex:1; padding: 0.5rem; text-align:center; min-width: 50px;" placeholder="Inic.">
+                        <button class="btn" onclick="window.addMonsterToBuilder()" title="Añadir monstruo"><i class="fa-solid fa-plus"></i></button>
                     </div>
                     <ul id="ef-builder-list" style="list-style:none; padding:0; font-size: 0.9em; margin-bottom:0;">
                     </ul>
@@ -2147,6 +2506,14 @@ window.saveEntityForm = async function (event, type, id) {
             entityData.location = document.getElementById('ef-location').value;
             entityData.loot = document.getElementById('ef-loot').value.trim();
             entityData.monsters = window.currentEncounterBuilder || [];
+            // Validar que todos los monstruos tengan iniciativa
+            const missingInit = entityData.monsters.some(m => !m.initiative || isNaN(m.initiative));
+            if (missingInit && entityData.monsters.length > 0) {
+                alert('Todos los packs de monstruos deben tener un valor de Iniciativa.');
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+                return;
+            }
         } else {
             entityData.environmentType = document.getElementById('ef-type').value.trim();
             entityData.dmNotes = document.getElementById('ef-dmnotes').value.trim();

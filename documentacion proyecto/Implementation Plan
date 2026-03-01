@@ -1,0 +1,22 @@
+# Plan de Implementación — Crónicas de Phandalin
+
+## Tareas Completadas ✅
+
+| # | Nombre | Ficheros Modificados |
+|---|---|---|
+| 14 | Reconstrucción CRUD NPCs/Maps con Modal | `ui.js`, `index.html`, `storageAdapter.js`, `state.js` |
+| 15 | Hero Cards Horizontales + Bestiario Tab + Biblioteca CRUD | `ui.js`, `styles.css`, `index.html` |
+| 16 | CRUD Bestiario + Gestor de Encuentros | `ui.js`, `state.js`, `index.html` |
+| 17 | UX Encuentros: Vistas Alternas + Campo Botín | `ui.js` |
+| 18 | Stat Blocks D&D 5e para Bestiario | `ui.js` |
+| 19 | Fix Bestiario getMod + Modal Encuentros + Login Tab Fix | `ui.js`, `auth.js` |
+| 20 | Estandarización visual Player/DM + Biblioteca 3-col + Responsive | `ui.js`, `styles.css` |
+
+## Próximas Tareas (Pendiente Aprobación)
+
+*Esperando instrucciones del usuario para definir nuevas funcionalidades.*
+
+---
+
+> [!NOTE]
+> Este documento se actualizará con cada nueva tarea. Las tareas completadas quedan como registro histórico.

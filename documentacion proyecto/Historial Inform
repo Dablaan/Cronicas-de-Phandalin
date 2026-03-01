@@ -1,0 +1,37 @@
+# Historial de Modificaciones (Crónicas de Phandalin)
+
+## 🎨 v7 — Ajustes Responsivos de Tarjetas (2026-03-01)
+- Creada clase `.card-horizontal` con `card-horizontal-img` y `card-horizontal-content` en CSS
+- Eliminados estilos inline de NPCs/Mapas/Bestiario en `ui.js`, sustituidos por clases
+- Mobile: tarjetas siempre horizontales (imagen 80px a la izquierda), gap reducido
+- Biblioteca: grid de 3 columnas (desktop) / 2 (móvil) / 4 (landscape). Portadas max-width 160px
+- NPCs y Mapas (jugador): restaurado `grid-2` para doble columna en desktop
+- Fixes: `box-sizing: border-box`, `overflow: hidden`, `overflow-x: hidden` en `.tab-content`
+
+## ⚔️ v6 — DM's Toolbox: Bestiario 5e y Combate (2026-03-01)
+- **Bestiario**: Stat Blocks D&D 5e con auto-cálculo de modificadores, 6 stats, acciones, reacciones, equipo
+- **Encuentros**: Modal Builder con selector de monstruos × cantidad + botín (loot)
+- **Login Fix**: DM forzado a `tab-dashboard`, Jugador a `tab-ficha` tras login
+- **Bug Fix**: `getMod()` restaurada en `renderBestiario` para evitar ReferenceError
+
+## 🏗️ v5 — Hero Cards y Tarjetas Horizontales (previo)
+- NPCs y Mapas del DM: layout flex horizontal (foto 100px izq + contenido derecho)
+- Toggle de visibilidad (ojo) y secreto expandible directamente en tarjeta
+- Biblioteca: sistema CRUD con editar/borrar en tarjetas de recursos
+
+## 📝 v4 — Estabilidad y Tiempo Real (previo)
+- `state.js`: Merge inteligente (pull-then-patch). Jugadores solo patchean su propio PJ
+- `modifyHP`: guardado silencioso con `skipNotify` para evitar re-render
+- Sesión (`session`) excluida de uploads a Supabase
+
+## 🔒 v3 — Seguridad Modal (previo)
+- Passcodes de personaje ("Cerrojos Mágicos") con modal de verificación
+- Retoques estéticos en centralización y sombras del modal de password
+
+## 🎨 v2 — Auditoría Visual y UI/UX (previo)
+- Estética "Fantasía/Rol" con variables CSS, tipografía Cinzel/Lora
+- Botones de login arreglados, accesibilidad mejorada
+
+## 🚀 v1 — Lanzamiento Inicial (previo)
+- SPA con Supabase (kv_store JSONB), GitHub Pages
+- PWA básica (meta tags iOS), `storageAdapter.js` conectado
