@@ -1156,61 +1156,62 @@ window.updateDmNote = function (field, value) {
 
 function renderPublicScreen(currentState) {
     const { players, publicDisplay, combatTracker } = currentState;
-    // Use tab-sheet as the container since tabs are hidden
     const container = document.getElementById('tab-sheet');
     container.classList.add('active');
-    // Deactivate other tabs
     document.querySelectorAll('.tab-content').forEach(c => { if (c.id !== 'tab-sheet') c.classList.remove('active'); });
 
     const imageUrl = publicDisplay?.imageUrl || null;
 
+    // BASE CONTENT (Always visible background)
+    let html = '<div class="public-screen public-screen-party">';
+
+    // Proyected Image Overlay
     if (imageUrl) {
-        // PROJECTING MODE: fullscreen image
-        container.innerHTML = `
-            <div class="public-screen public-screen-projecting">
-                <img src="${imageUrl}" class="public-screen-image" alt="Proyección del Master">
+        html += `
+            <div class="public-screen-projection-overlay" onclick="window.stopProjection()">
+                <div class="public-screen-image-wrapper">
+                    <img src="${imageUrl}" class="public-screen-image" alt="Proyección">
+                    <div class="public-screen-image-frame"></div>
+                </div>
             </div>
         `;
-    } else {
-        // DEFAULT MODE: party + initiative tracker (player perspective)
-        let html = '<div class="public-screen public-screen-party">';
-        html += '<h2 style="text-align:center; margin-bottom:1rem; color:var(--gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"><i class="fa-solid fa-users"></i> El Grupo de Aventureros</h2>';
-        html += '<div class="grid-2" style="max-width: 1200px; margin: 0 auto;">';
+    }
 
-        players.forEach(p => {
-            let hpPercent = Math.max(0, Math.min(100, (p.hpCurrent / p.hpMax) * 100));
-            let hpColor = hpPercent > 50 ? 'darkolivegreen' : (hpPercent > 20 ? 'darkgoldenrod' : 'darkred');
+    html += '<h2 style="text-align:center; margin-bottom:1rem; color:var(--gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.5); font-size: 2.5rem;"><i class="fa-solid fa-users"></i> El Grupo de Aventureros</h2>';
+    html += '<div class="grid-2" style="max-width: 1200px; margin: 0 auto; gap: 2rem;">';
 
-            html += `
-                <div class="card" style="background: rgba(30,20,10,0.7); border: 1px solid var(--gold-dim); color: #e6d4b8;">
-                    <div class="flex-between" style="border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                        <h3 style="margin:0; color:var(--gold);">${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:#aaa">Lvl ${p.level} ${p.class}</span></h3>
-                    </div>
-                    <div class="party-hp-bar-container">
-                        <div class="party-hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor};"></div>
-                        <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1rem; font-weight: 900; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
-                            ${p.hpCurrent} / ${p.hpMax} HP
-                        </div>
-                    </div>
-                    <div class="flex-between" style="font-size: 0.95rem; padding-top: 0.5rem;">
-                        <span><i class="fa-solid fa-shield" style="color:var(--gold-dim)"></i> CA: <strong>${p.ac || 10}</strong></span>
-                        <span><i class="fa-solid fa-bolt" style="color:var(--gold-dim)"></i> Inic: <strong>${p.initiative || 0}</strong></span>
-                        <span><i class="fa-solid fa-eye" style="color:var(--gold-dim)"></i> Pasiva: <strong>${p.passivePerception || 10}</strong></span>
+    players.forEach(p => {
+        let hpPercent = Math.max(0, Math.min(100, (p.hpCurrent / p.hpMax) * 100));
+        let hpColor = hpPercent > 50 ? 'darkolivegreen' : (hpPercent > 20 ? 'darkgoldenrod' : 'darkred');
+
+        html += `
+            <div class="card" style="background: rgba(30,20,10,0.85); border: 2px solid var(--gold-dim); color: #e6d4b8; padding: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
+                <div class="flex-between" style="border-bottom: 1px solid rgba(212,175,55,0.4); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
+                    <h3 style="margin:0; color:var(--gold); font-size: 1.8rem; font-family: 'Times New Roman', serif;">${p.name || 'Desconocido'} <span style="font-size:1rem; color:#aaa; font-family: var(--font-body);">Lvl ${p.level} ${p.class}</span></h3>
+                </div>
+                <div class="party-hp-bar-container" style="height: 35px; border-radius: 6px; overflow: hidden; border: 1px solid #000;">
+                    <div class="party-hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor}; transition: width 0.5s ease;"></div>
+                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.2rem; font-weight: 900; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
+                        ${p.hpCurrent} / ${p.hpMax} HP
                     </div>
                 </div>
-            `;
-        });
+                <div class="flex-between" style="font-size: 1.1rem; padding-top: 1rem;">
+                    <span><i class="fa-solid fa-shield" style="color:var(--gold-dim)"></i> CA: <strong>${p.ac || 10}</strong></span>
+                    <span><i class="fa-solid fa-bolt" style="color:var(--gold-dim)"></i> Inic: <strong>${p.initiative || 0}</strong></span>
+                    <span><i class="fa-solid fa-eye" style="color:var(--gold-dim)"></i> Pasiva: <strong>${p.passivePerception || 10}</strong></span>
+                </div>
+            </div>
+        `;
+    });
 
-        html += '</div>';
+    html += '</div>';
 
-        // Inject Initiative Tracker (player perspective = fog of war active, isDM = false)
-        if (combatTracker && combatTracker.active) {
-            html += renderInitiativeTracker(combatTracker, false, players);
-        }
-
-        html += '</div>';
-        container.innerHTML = html;
+    if (combatTracker && combatTracker.active) {
+        html += renderInitiativeTracker(combatTracker, false, players);
     }
+
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 window.projectToScreen = function (imageUrl) {
@@ -2107,9 +2108,10 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
     };
 
     let html = `
-        <div class="initiative-tracker-wrapper" style="margin-top: 1.5rem; border: 2px solid var(--red-ink); border-radius: var(--border-radius-md); padding: 1rem; background: rgba(139,0,0,0.03);">
-            <div class="flex-between mb-1" style="border-bottom: 2px solid var(--red-ink); padding-bottom: 0.5rem;">
-                <h3 style="margin:0; color: var(--red-ink);"><i class="fa-solid fa-khanda"></i> Orden de Iniciativa</h3>
+        <div class="initiative-tracker-container">
+            <div class="initiative-tracker-wrapper" style="border: 3px solid var(--red-ink); border-radius: var(--border-radius-md); padding: 1.5rem; background: rgba(139,0,0,0.05); box-shadow: 0 0 30px rgba(0,0,0,0.3);">
+                <div class="flex-between mb-1" style="border-bottom: 3px solid var(--red-ink); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                    <h3 style="margin:0; color: var(--red-ink); font-size: 2rem; font-family: 'Times New Roman', serif; text-transform: uppercase; letter-spacing: 2px;"><i class="fa-solid fa-swords"></i> Orden de Iniciativa</h3>
                 <div style="display:flex; gap:0.5rem;">
     `;
 

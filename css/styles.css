@@ -1678,27 +1678,100 @@ textarea {
 /* Public Screen (Player Facing Display) */
 .public-screen {
     min-height: 100vh;
-    padding: 1rem;
+    padding: 0;
+    overflow-x: hidden;
 }
 
-.public-screen-projecting {
+.public-screen-party {
+    background:
+        linear-gradient(rgba(42, 26, 14, 0.4), rgba(42, 26, 14, 0.4)),
+        url('https://www.transparenttextures.com/patterns/parchment.png'),
+        linear-gradient(135deg, #2a1a0e 0%, #3d2b1f 50%, #2a1a0e 100%);
+    background-attachment: fixed;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+}
+
+/* Projection Overlay */
+.public-screen-projection-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #0a0a0a;
-    padding: 0;
+    background: rgba(0, 0, 0, 0.4);
+    /* Subtle dimming to focus on image */
+    backdrop-filter: blur(5px);
+    cursor: pointer;
+    animation: fadeIn 0.4s ease;
+}
+
+.public-screen-image-wrapper {
+    position: relative;
+    max-width: 85%;
+    max-height: 85%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
 }
 
 .public-screen-image {
     max-width: 100%;
-    max-height: 100vh;
+    max-height: 85vh;
     object-fit: contain;
+    border: 5px solid #d4af37;
+    border-radius: 4px;
+    background: #000;
     display: block;
 }
 
-.public-screen-party {
-    background: linear-gradient(135deg, #1a1008 0%, #2a1a0e 50%, #1a1008 100%);
-    padding: 2rem 1rem;
+.public-screen-image-frame {
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
+    border: 20px solid transparent;
+    border-image: url('https://www.transparenttextures.com/patterns/ornamental-fan.png') 30 stretch;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+/* Initiative Tracker Improvements */
+.initiative-tracker-container {
+    max-width: 1400px;
+    margin: 3rem auto 0;
+    padding: 0 1rem;
+}
+
+.initiative-track-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2.5rem 1.5rem;
+    /* More vertical gap for halos */
+    padding: 1rem 0;
+}
+
+/* Token sizing adjustment to ensure halos aren't cut */
+.init-token {
+    margin: 0.5rem;
+    z-index: 1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 /* Projection Button */
