@@ -9,7 +9,8 @@ const defaultState = {
     maps: [],    // Array of: { id, name, url, isVisible, secrets: [{ id, text, isVisible }], notes: [{ playerId, text }] }
     recursos: [], // Array of { id, nombre, portadaUrl, enlaceUrl }
     bestiario: [],// Array format for monsters and encounters
-    grimorio: []  // Array format for spells
+    grimorio: [], // Array format for spells
+    encuentros: []// Array for combat encounters
 };
 
 let currentState = { ...defaultState };

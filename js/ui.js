@@ -242,13 +242,16 @@ function setupMainScreenForRole(session) {
 
     const tabSheetBtn = document.getElementById('tab-btn-sheet');
     const tabBestiarioBtn = document.getElementById('tab-btn-bestiario');
+    const tabEncuentrosBtn = document.getElementById('tab-btn-encuentros');
 
     if (isDM) {
         tabSheetBtn.innerHTML = '<i class="fa-solid fa-dragon"></i> Dashboard';
         if (tabBestiarioBtn) tabBestiarioBtn.style.display = 'inline-block';
+        if (tabEncuentrosBtn) tabEncuentrosBtn.style.display = 'inline-block';
     } else {
         tabSheetBtn.innerHTML = '<i class="fa-solid fa-scroll"></i> Ficha';
         if (tabBestiarioBtn) tabBestiarioBtn.style.display = 'none';
+        if (tabEncuentrosBtn) tabEncuentrosBtn.style.display = 'none';
     }
 }
 
@@ -280,6 +283,10 @@ function renderTabContent(tabId, currentState) {
         renderLibrary(currentState);
     } else if (tabId === 'tab-notes') {
         renderNotes(currentState);
+    } else if (tabId === 'tab-bestiario') {
+        renderBestiario(currentState);
+    } else if (tabId === 'tab-encuentros') {
+        renderEncuentros(currentState);
     }
 }
 
@@ -1448,6 +1455,284 @@ window.renderDMNpcs = function (currentState) {
     container.innerHTML = html;
 }
 
+window.renderBestiario = function (currentState) {
+    const { bestiario } = currentState;
+    const container = document.getElementById('tab-bestiario');
+
+    let html = `
+        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            <h3>Bestiario Monstruoso</h3>
+            <button class="btn" onclick="window.openEntityModal('monster')"><i class="fa-solid fa-dragon"></i> Nuevo Monstruo</button>
+        </div>
+        <div class="grid-2">
+    `;
+
+    if (!bestiario || bestiario.length === 0) html += '<p class="text-muted">No hay monstruos en el tomo central.</p>';
+    else {
+        bestiario.forEach(m => {
+            const isSecretVisible = m._uiSecretVisible || false;
+
+            html += `
+                <div class="card" ondblclick="window.openQuickLook('${m.id}', 'monster')" style="cursor: pointer; position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
+                    
+                    <!-- Image (Left fixed) -->
+                    ${m.url
+                    ? `<img src="${m.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
+                    : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-dragon fa-2x text-muted"></i></div>`
+                }
+                    
+                    <!-- Content (Right flexible) -->
+                    <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                        <div class="flex-between mb-1" style="flex-wrap: nowrap;">
+                            <h4 style="margin: 0; font-size: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${m.name}">${m.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${m.typeAlignment || 'Desconocido'})</span></h4>
+                            <button class="btn ${m.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-left: 10px;" onclick="event.stopPropagation(); window.toggleEntityVisibility('monster', '${m.id}')" title="${m.isVisible ? 'Visible por Jugadores' : 'Oculto a Jugadores'}">
+                                <i class="fa-solid ${m.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                            </button>
+                        </div>
+                        
+                        <div style="display:flex; gap:15px; font-size: 0.85em; margin-bottom: 0.8rem; color: var(--leather-dark); font-weight: bold; flex-wrap: wrap;">
+                            <span title="Clase de Armadura"><i class="fa-solid fa-shield"></i> CA: ${m.ac || '-'}</span>
+                            <span title="Puntos de Golpe"><i class="fa-solid fa-heart" style="color: var(--red-ink);"></i> HP: ${m.hp || '-'}</span>
+                            <span title="Velocidad"><i class="fa-solid fa-shoe-prints"></i> Vel: ${m.speed || '30ft'}</span>
+                        </div>
+
+                         <div style="display:flex; gap:8px; font-size: 0.7em; margin-bottom: 0.8rem; justify-content: space-between; text-align: center; border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+                             <div><strong>FUE</strong><br>${m.str || 10}</div>
+                             <div><strong>DES</strong><br>${m.dex || 10}</div>
+                             <div><strong>CON</strong><br>${m.con || 10}</div>
+                             <div><strong>INT</strong><br>${m.int || 10}</div>
+                             <div><strong>SAB</strong><br>${m.wis || 10}</div>
+                             <div><strong>CAR</strong><br>${m.cha || 10}</div>
+                         </div>
+                        
+                        <!-- Contenedor Secreto Expandible (Rasgos) -->
+                        <div style="background: rgba(0,0,0,0.03); border-left: 3px solid var(--red-ink); padding: 0.5rem; margin-bottom: 1rem; border-radius: 0 4px 4px 0;">
+                            <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('monster', '${m.id}')">
+                                <strong style="color: var(--red-ink); font-size: 0.85em;"><i class="fa-solid fa-book-skull"></i> Rasgos y Ataques</strong>
+                                <i class="fa-solid ${isSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
+                            </div>
+                            ${isSecretVisible ? `<div style="font-size: 0.85em; white-space: pre-wrap; margin-top: 0.5em; margin-bottom: 0;">${m.features || 'Sin acciones.'}</div>` : ''}
+                        </div>
+
+                        <!-- Acciones -->
+                        <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
+                            <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('monster', '${m.id}')" title="Editar este Monstruo"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('monster', '${m.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// ----------------------------------------------------
+// GESTOR DE ENCUENTROS (COMBAT BUILDER)
+// ----------------------------------------------------
+
+window.editingEncounterId = null;
+window.currentEncounterBuilder = [];
+
+window.renderEncuentros = function (currentState) {
+    const { encuentros, bestiario, maps } = currentState;
+    const container = document.getElementById('tab-encuentros');
+
+    let html = `
+        <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+            <h3>Gestor de Escenas de Combate</h3>
+            <button class="btn" onclick="window.showEncounterForm()"><i class="fa-solid fa-swords"></i> Crear Encuentro</button>
+        </div>
+        
+        <!-- Formulario (Oculto por defecto) -->
+        <div id="encounter-form-container" class="form-container hidden">
+            <h4><i class="fa-solid fa-hammer"></i> Constructor de Encuentro</h4>
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <input type="text" id="enc-name" placeholder="Nombre de la Escena (Ej: Emboscada en el camino)">
+                
+                <div style="display: flex; gap: 1rem;">
+                    <select id="enc-location" style="flex: 1; padding: 0.5rem;">
+                        <option value="">-- Sin localización específica --</option>
+                        ${maps.map(m => `<option value="${m.name}">${m.name}</option>`).join('')}
+                    </select>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 8px; border: 1px solid var(--parchment-dark);">
+                    <h5>Añadir Enemigos</h5>
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom: 0.5rem;">
+                        <select id="enc-monster-select" style="flex:2; padding: 0.5rem;">
+                            <option value="">-- Selecciona Monstruo --</option>
+                            ${bestiario.map(b => `<option value="${b.id}">${b.name} (CA ${b.ac}, HP ${b.hp})</option>`).join('')}
+                        </select>
+                        <input type="number" id="enc-monster-qty" value="1" min="1" style="flex:1; padding: 0.5rem; text-align:center;">
+                        <button class="btn" onclick="window.addMonsterToBuilder()"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <ul id="enc-builder-list" style="list-style:none; padding:0; font-size: 0.9em; margin-bottom:0;">
+                        <!-- Se llena dinámicamente -->
+                    </ul>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+                    <button class="btn btn-danger" onclick="window.hideEncounterForm()">Cancelar</button>
+                    <button class="btn" onclick="window.saveEncounter()"><i class="fa-solid fa-floppy-disk"></i> Guardar Encuentro</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Encuentros Creados -->
+        <div class="grid-2 mt-2" id="encounter-list-container">
+    `;
+
+    if (!encuentros || encuentros.length === 0) {
+        html += '<p class="text-muted" style="grid-column: 1/-1;">No hay encuentros preparados. Adelante, planea su perdición.</p>';
+    } else {
+        encuentros.forEach(enc => {
+            const listHtml = (enc.monsters || []).map(m => `<li><strong>${m.qty}x</strong> ${m.name}</li>`).join('');
+            html += `
+                <div class="card" style="position: relative; display: flex; flex-direction: column;">
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 0.5rem 0; color:var(--red-ink);"><i class="fa-solid fa-swords"></i> ${enc.name}</h4>
+                        <p style="font-size: 0.85em; margin-bottom: 0.8rem;"><i class="fa-solid fa-location-dot"></i> ${enc.location || 'Desconocida'}</p>
+                        <div style="background: rgba(0,0,0,0.03); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark);">
+                            <h5 style="margin:0 0 0.3rem 0; font-size: 0.8em; text-transform:uppercase;">Hostiles:</h5>
+                            <ul style="margin:0; padding-left: 1rem; font-size: 0.85em;">
+                                ${listHtml || '<li>Ninguno (Escena social o trampa)</li>'}
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 1rem; margin-top: auto;">
+                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.showEncounterForm('${enc.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.deleteEntity('encuentro', '${enc.id}')" title="Borrar"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    html += `
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+window.showEncounterForm = function (encounterId = null) {
+    const currentState = state.get();
+    const formContainer = document.getElementById('encounter-form-container');
+    const nameInput = document.getElementById('enc-name');
+    const locSelect = document.getElementById('enc-location');
+
+    if (encounterId) {
+        window.editingEncounterId = encounterId;
+        const enc = currentState.encuentros.find(e => e.id === encounterId);
+        if (enc) {
+            nameInput.value = enc.name || '';
+            locSelect.value = enc.location || '';
+            window.currentEncounterBuilder = JSON.parse(JSON.stringify(enc.monsters || [])); // clon profundo
+        }
+    } else {
+        window.editingEncounterId = null;
+        nameInput.value = '';
+        locSelect.value = '';
+        window.currentEncounterBuilder = [];
+    }
+
+    window.renderEncounterBuilderList();
+    formContainer.classList.remove('hidden');
+    formContainer.scrollIntoView({ behavior: 'smooth' });
+};
+
+window.hideEncounterForm = function () {
+    document.getElementById('encounter-form-container').classList.add('hidden');
+    window.editingEncounterId = null;
+    window.currentEncounterBuilder = [];
+};
+
+window.addMonsterToBuilder = function () {
+    const select = document.getElementById('enc-monster-select');
+    const qtyInput = document.getElementById('enc-monster-qty');
+    const monsterId = select.value;
+    const qty = parseInt(qtyInput.value, 10);
+
+    if (!monsterId || isNaN(qty) || qty <= 0) return;
+
+    const monsterData = state.get().bestiario.find(b => b.id === monsterId);
+    if (!monsterData) return;
+
+    // Verificar si ya está en la lista para sumar cantidades
+    const existingIndex = window.currentEncounterBuilder.findIndex(m => m.id === monsterId);
+    if (existingIndex > -1) {
+        window.currentEncounterBuilder[existingIndex].qty += qty;
+    } else {
+        window.currentEncounterBuilder.push({
+            id: monsterData.id,
+            name: monsterData.name,
+            qty: qty
+        });
+    }
+
+    // Resetear formcito
+    qtyInput.value = 1;
+    select.value = '';
+
+    window.renderEncounterBuilderList();
+};
+
+window.removeMonsterFromBuilder = function (monsterId) {
+    window.currentEncounterBuilder = window.currentEncounterBuilder.filter(m => m.id !== monsterId);
+    window.renderEncounterBuilderList();
+};
+
+window.renderEncounterBuilderList = function () {
+    const builderUl = document.getElementById('enc-builder-list');
+    if (!builderUl) return;
+
+    if (window.currentEncounterBuilder.length === 0) {
+        builderUl.innerHTML = '<li class="text-muted">No hay monstruos añadidos aún.</li>';
+        return;
+    }
+
+    builderUl.innerHTML = window.currentEncounterBuilder.map(m => `
+        <li style="display:flex; justify-content:space-between; border-bottom:1px dashed var(--parchment-dark); padding:0.2rem 0;">
+            <span><strong>${m.qty}x</strong> ${m.name}</span>
+            <button class="btn btn-danger" style="padding:0.1rem 0.3rem; font-size:0.75rem;" onclick="window.removeMonsterFromBuilder('${m.id}')"><i class="fa-solid fa-xmark"></i></button>
+        </li>
+    `).join('');
+};
+
+window.saveEncounter = async function () {
+    const nameInput = document.getElementById('enc-name').value.trim();
+    const locInput = document.getElementById('enc-location').value;
+
+    if (!nameInput) {
+        alert("El encuentro necesita un Título de Escena.");
+        return;
+    }
+
+    const currentState = state.get();
+    const currentEncuentros = [...currentState.encuentros];
+
+    const encounterPayload = {
+        name: nameInput,
+        location: locInput,
+        monsters: window.currentEncounterBuilder,
+        id: window.editingEncounterId || ("enc_" + Date.now().toString())
+    };
+
+    if (window.editingEncounterId) {
+        const index = currentEncuentros.findIndex(e => e.id === window.editingEncounterId);
+        if (index !== -1) currentEncuentros[index] = encounterPayload;
+    } else {
+        currentEncuentros.push(encounterPayload);
+    }
+
+    await state.update({ encuentros: currentEncuentros });
+    window.hideEncounterForm();
+};
+
+
 window.resetPlayerPassword = function (playerId) {
     if (confirm("¿Seguro que deseas romper el Cerrojo Mágico de este jugador? Tendrá que configurar uno nuevo al entrar.")) {
         const currentPlayers = state.get().players.map(p =>
@@ -1524,7 +1809,8 @@ window.renderDMMaps = function (currentState) {
 // ----------------------------------------------------
 
 window.toggleEntityVisibility = async function (type, id) {
-    const listKey = type + 's';
+    const listKeyDict = { 'npc': 'npcs', 'map': 'maps', 'monster': 'bestiario', 'encuentro': 'encuentros' };
+    const listKey = listKeyDict[type] || type + 's';
     const list = state.get()[listKey];
     const item = list.find(e => e.id === id);
     if (!item) return;
@@ -1537,7 +1823,8 @@ window.toggleEntityVisibility = async function (type, id) {
 };
 
 window.toggleDmSecretVisibility = function (type, id) {
-    const listKey = type + 's';
+    const listKeyDict = { 'npc': 'npcs', 'map': 'maps', 'monster': 'bestiario', 'encuentro': 'encuentros' };
+    const listKey = listKeyDict[type] || type + 's';
     const list = state.get()[listKey];
     const item = list.find(e => e.id === id);
     if (!item) return;
@@ -1621,6 +1908,62 @@ window.openEntityModal = function (type, id = null) {
                 </div>
             </div>
         `;
+    } else if (type === 'monster') {
+        // MONSTER FORM
+        html += `
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="flex: 1;">
+                        <label style="font-size:0.8rem; font-weight:bold;">Nombre del Monstruo <span style="color:red;">*</span></label>
+                        <input type="text" id="ef-name" value="${entity.name || ''}" placeholder="Ej: Goblin">
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px;">
+                        <label style="font-size:0.7rem; font-weight:bold;">¿Visible a Jugadores?</label>
+                        <input type="checkbox" id="ef-visible" ${entity.isVisible ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--leather-dark);">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">Tipo y Alineamiento</label>
+                        <input type="text" id="ef-type-align" value="${entity.typeAlignment || ''}" placeholder="Humanoide Pequeño, Neutral Malvado">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">CA</label>
+                        <input type="number" id="ef-ac" value="${entity.ac || ''}" placeholder="15">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">HP</label>
+                        <input type="number" id="ef-hp" value="${entity.hp || ''}" placeholder="7">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">Velocidad</label>
+                        <input type="text" id="ef-speed" value="${entity.speed || '30ft'}" placeholder="30ft">
+                    </div>
+                </div>
+
+                <!-- Stats Array -->
+                <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; text-align: center;">
+                    <div><label style="font-size:0.7rem; font-weight:bold;">FUE</label><input type="number" id="ef-str" value="${entity.str || 10}" style="padding: 0.2rem; text-align:center;"></div>
+                    <div><label style="font-size:0.7rem; font-weight:bold;">DES</label><input type="number" id="ef-dex" value="${entity.dex || 10}" style="padding: 0.2rem; text-align:center;"></div>
+                    <div><label style="font-size:0.7rem; font-weight:bold;">CON</label><input type="number" id="ef-con" value="${entity.con || 10}" style="padding: 0.2rem; text-align:center;"></div>
+                    <div><label style="font-size:0.7rem; font-weight:bold;">INT</label><input type="number" id="ef-int" value="${entity.int || 10}" style="padding: 0.2rem; text-align:center;"></div>
+                    <div><label style="font-size:0.7rem; font-weight:bold;">SAB</label><input type="number" id="ef-wis" value="${entity.wis || 10}" style="padding: 0.2rem; text-align:center;"></div>
+                    <div><label style="font-size:0.7rem; font-weight:bold;">CAR</label><input type="number" id="ef-cha" value="${entity.cha || 10}" style="padding: 0.2rem; text-align:center;"></div>
+                </div>
+
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-image"></i> Fotografía del Monstruo</label>
+                    <input type="file" id="ef-image" accept="image/*" style="font-size:0.8rem; padding: 0.2rem;">
+                    ${entity.url ? `<p style="font-size: 0.75rem; color: var(--gold-dim); margin-top:-0.5rem;">* Ya tiene foto.</p>` : ''}
+                </div>
+
+                <div>
+                     <label style="font-size:0.8rem; font-weight:bold;">Rasgos, Acciones y Notas del Combate</label>
+                     <textarea id="ef-features" placeholder="Ataque: Cimitarra (+4 al ataque) 1d6+2 cortante. Acción Bonus: Escabullirse..." style="min-height: 100px;">${entity.features || ''}</textarea>
+                </div>
+            </div>
+        `;
     } else {
         // MAP FORM
         html += `
@@ -1691,7 +2034,10 @@ window.saveEntityForm = async function (event, type, id) {
     btn.disabled = true;
 
     try {
-        let imageUrl = id ? state.get()[type + 's'].find(e => e.id === id).url : ''; // Conservar vieja si existe
+        let listKeyDict = { 'npc': 'npcs', 'map': 'maps', 'monster': 'bestiario' };
+        let listKey = listKeyDict[type] || type + 's';
+
+        let imageUrl = id ? state.get()[listKey].find(e => e.id === id).url : ''; // Conservar vieja si existe
 
         // Comprobar Si se Adjuntó un Fichero
         const fileInput = document.getElementById('ef-image');
@@ -1715,14 +2061,26 @@ window.saveEntityForm = async function (event, type, id) {
             entityData.motivation = document.getElementById('ef-motivation').value.trim();
             // Migrar `description` al form o abandonarlo. Como abandonamos description, dejamos lo vital nuevo.
             entityData.description = "";
+        } else if (type === 'monster') {
+            entityData.typeAlignment = document.getElementById('ef-type-align').value.trim();
+            entityData.ac = document.getElementById('ef-ac').value.trim();
+            entityData.hp = document.getElementById('ef-hp').value.trim();
+            entityData.speed = document.getElementById('ef-speed').value.trim();
+            entityData.str = document.getElementById('ef-str').value.trim();
+            entityData.dex = document.getElementById('ef-dex').value.trim();
+            entityData.con = document.getElementById('ef-con').value.trim();
+            entityData.int = document.getElementById('ef-int').value.trim();
+            entityData.wis = document.getElementById('ef-wis').value.trim();
+            entityData.cha = document.getElementById('ef-cha').value.trim();
+            entityData.features = document.getElementById('ef-features').value.trim();
         } else {
             entityData.environmentType = document.getElementById('ef-type').value.trim();
             entityData.dmNotes = document.getElementById('ef-dmnotes').value.trim();
         }
 
         // Fusionar al State
-        const listKey = type + 's';
-        const list = state.get()[listKey] || [];
+        const currentState = state.get();
+        const list = currentState[listKey] || [];
 
         if (id) {
             // Edit
@@ -1750,7 +2108,8 @@ window.saveEntityForm = async function (event, type, id) {
 
 window.deleteEntity = async function (type, id) {
     if (confirm(`¿Estás completamente seguro de borrar esta entidad para siempre? Los jugadores también perderán los apuntes que hayan hecho sobre ella.`)) {
-        const listKey = type + 's';
+        const listKeyDict = { 'npc': 'npcs', 'map': 'maps', 'monster': 'bestiario', 'encuentro': 'encuentros' };
+        const listKey = listKeyDict[type] || type + 's';
         const list = state.get()[listKey] || [];
         const updatedList = list.filter(e => e.id !== id);
 
