@@ -485,7 +485,7 @@ function renderDefenseComp(player) {
              <div class="defense-box">
                 <label>Insp.</label>
                 <div style="display:flex; justify-content:center; align-items:center; height: 100%;">
-                    <input type="checkbox" class="inspiration-input" name="inspiration" ${player.inspiration ? 'checked' : ''} style="width:18px; height:18px; accent-color: var(--gold-dim); cursor:pointer;" onchange="window.updateSheet('${playerId}', 'inspiration', this.checked)">
+                    <input type="checkbox" class="inspiration-input" name="inspiration" ${player.inspiration ? 'checked' : ''} style="width:18px; height:18px; accent-color: var(--gold-dim); cursor:pointer;" onchange="window.updateSheet('${player.id}', 'inspiration', this.checked)">
                 </div>
             </div>
         </div>
