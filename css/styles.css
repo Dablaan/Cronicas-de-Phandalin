@@ -1271,3 +1271,95 @@ textarea {
         right: -20px;
     }
 }
+
+/* ------------------------------------- */
+/* MOBILE OPTIMIZATIONS (PORTRAIT & LANDSCAPE) */
+/* ------------------------------------- */
+
+/* Táctil General (44px min-height targets) */
+.btn,
+.tab-btn {
+    min-height: 44px;
+}
+
+.skill-row {
+    min-height: 44px;
+}
+
+/* Portrait Mobile <= 768px */
+@media (max-width: 768px) {
+
+    /* Entity form full screen */
+    #entity-form-modal .auth-modal {
+        width: 100% !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        padding-top: max(env(safe-area-inset-top), 1rem) !important;
+        padding-bottom: max(env(safe-area-inset-bottom), 1rem) !important;
+    }
+
+    #entity-form-content {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    #entity-form-modal .flex-between.mb-1 {
+        position: sticky;
+        top: 0;
+        background: var(--parchment-bg);
+        z-index: 10;
+        margin-top: -1rem;
+        padding-top: 1rem;
+    }
+
+    /* Reduce Header to save vertical space */
+    .header {
+        padding: 0.5rem 0 1rem 0;
+    }
+
+    .header h1 {
+        font-size: 2rem !important;
+        /* Overriding desktop values if any */
+    }
+}
+
+/* Landscape Mobile (max-height: 500px) */
+@media (max-height: 500px) and (orientation: landscape) {
+
+    /* Minimize headers in layout */
+    .header {
+        padding: 0.2rem 0 0.5rem 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .header h1 {
+        font-size: 1.5rem !important;
+    }
+
+    .header p {
+        display: none;
+    }
+
+    /* Entity form modal constraint */
+    #entity-form-modal .auth-modal {
+        max-height: 90vh !important;
+        overflow-y: auto;
+    }
+
+    /* Lightbox full height */
+    .lightbox-container img {
+        max-height: 95vh;
+        max-width: 95vw;
+        border: none;
+    }
+
+    .lightbox-close {
+        top: 10px;
+        right: 10px;
+        background: var(--red-ink);
+        border: 2px solid #fff;
+    }
+}
