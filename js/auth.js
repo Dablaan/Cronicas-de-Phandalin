@@ -31,7 +31,9 @@ export function initAuth() {
         const password = dmPasswordInput.value;
         if (password === DM_PASSWORD) {
             document.getElementById('dm-error').style.display = 'none';
-            state.update({ session: { role: 'DM', playerId: null } });
+            state.update({ session: { role: 'DM', playerId: null } }).then(() => {
+                if (window.switchTab) window.switchTab('tab-dashboard');
+            });
             dmPasswordInput.value = '';
         } else {
             document.getElementById('dm-error').style.display = 'block';

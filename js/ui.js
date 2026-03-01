@@ -212,11 +212,15 @@ window.submitLoginModal = function () {
         const currentPlayers = state.get().players.map(p =>
             p.id === playerId ? { ...p, passcode: pass1 } : p
         );
-        state.update({ players: currentPlayers, session: { role: 'Player', playerId } });
+        state.update({ players: currentPlayers, session: { role: 'Player', playerId } }).then(() => {
+            if (window.switchTab) window.switchTab('tab-ficha');
+        });
         window.closeLoginModal();
     } else if (mode === 'login') {
         if (pass1 === player.passcode) {
-            state.update({ session: { role: 'Player', playerId } });
+            state.update({ session: { role: 'Player', playerId } }).then(() => {
+                if (window.switchTab) window.switchTab('tab-ficha');
+            });
             window.closeLoginModal();
         } else {
             // Keep modal open, show specific error
@@ -1469,6 +1473,12 @@ window.renderBestiario = function (currentState) {
 
     if (!bestiario || bestiario.length === 0) html += '<p class="text-muted">No hay monstruos en el tomo central.</p>';
     else {
+        const getMod = (val) => {
+            const v = parseInt(val, 10) || 10;
+            const mod = Math.floor((v - 10) / 2);
+            return mod >= 0 ? '+' + mod : mod;
+        };
+
         bestiario.forEach(m => {
             const isSecretVisible = m._uiSecretVisible || false;
 
@@ -1586,54 +1596,11 @@ window.renderEncuentros = function (currentState) {
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3>Gestor de Escenas de Combate</h3>
+            <button class="btn" onclick="window.openEntityModal('encuentro')"><i class="fa-solid fa-swords"></i> Añadir Encuentro</button>
         </div>
         
-        <!-- Formulario (Oculto por defecto) -->
-        <div id="encounter-form-container" class="form-container hidden">
-            <h4><i class="fa-solid fa-hammer"></i> Constructor de Encuentro</h4>
-            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-                <input type="text" id="enc-name" placeholder="Nombre de la Escena (Ej: Emboscada en el camino)">
-                
-                <div style="display: flex; gap: 1rem;">
-                    <select id="enc-location" style="flex: 1; padding: 0.5rem;">
-                        <option value="">-- Sin localización específica --</option>
-                        ${maps.map(m => `<option value="${m.name}">${m.name}</option>`).join('')}
-                    </select>
-                </div>
-
-                <div style="background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 8px; border: 1px solid var(--parchment-dark);">
-                    <h5>Añadir Enemigos</h5>
-                    <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom: 0.5rem;">
-                        <select id="enc-monster-select" style="flex:2; padding: 0.5rem;">
-                            <option value="">-- Selecciona Monstruo --</option>
-                            ${bestiario.map(b => `<option value="${b.id}">${b.name} (CA ${b.ac}, HP ${b.hp})</option>`).join('')}
-                        </select>
-                        <input type="number" id="enc-monster-qty" value="1" min="1" style="flex:1; padding: 0.5rem; text-align:center;">
-                        <button class="btn" onclick="window.addMonsterToBuilder()"><i class="fa-solid fa-plus"></i></button>
-                    </div>
-                    <ul id="enc-builder-list" style="list-style:none; padding:0; font-size: 0.9em; margin-bottom:0;">
-                        <!-- Se llena dinámicamente -->
-                    </ul>
-                </div>
-
-                <!-- Campo Nuevo: Botín (Loot) -->
-                <div>
-                    <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-sack-dollar"></i> Botín del Encuentro</label>
-                    <input type="text" id="enc-loot" placeholder="Ej: 50 po, 2 Pociones de Curación y Espada Larga" style="padding: 0.5rem;">
-                </div>
-
-                <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
-                    <button class="btn btn-danger" onclick="window.hideEncounterForm()">Cancelar / Volver</button>
-                    <button class="btn" onclick="window.saveEncounter()"><i class="fa-solid fa-floppy-disk"></i> Guardar Encuentro</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Lista de Encuentros Creados -->
         <div id="encounter-list-container">
-            <div style="display:flex; justify-content: flex-end; margin-bottom: 1rem;">
-                <button class="btn" onclick="window.showEncounterForm()"><i class="fa-solid fa-swords"></i> Añadir Encuentro</button>
-            </div>
             <div class="grid-2">
     `;
 
@@ -1656,7 +1623,7 @@ window.renderEncuentros = function (currentState) {
                         ${enc.loot ? `<p style="font-size: 0.85em; margin: 0; color: var(--gold-dark);"><i class="fa-solid fa-sack-dollar"></i> <strong>Botín:</strong> ${enc.loot}</p>` : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 1rem; margin-top: auto;">
-                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.showEncounterForm('${enc.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.openEntityModal('encuentro', '${enc.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
                         <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.deleteEntity('encuentro', '${enc.id}')" title="Borrar"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
@@ -1672,60 +1639,9 @@ window.renderEncuentros = function (currentState) {
     container.innerHTML = html;
 }
 
-window.showEncounterForm = function (encounterId = null) {
-    const currentState = state.get();
-    const formContainer = document.getElementById('encounter-form-container');
-    const listContainer = document.getElementById('encounter-list-container');
-    const nameInput = document.getElementById('enc-name');
-    const locSelect = document.getElementById('enc-location');
-    const lootInput = document.getElementById('enc-loot');
-
-    // Toggle Vista (Ocultar Lista, Mostrar Formulario)
-    listContainer.classList.add('hidden');
-    formContainer.classList.remove('hidden');
-
-    if (encounterId) {
-        window.editingEncounterId = encounterId;
-        const enc = currentState.encuentros.find(e => e.id === encounterId);
-        if (enc) {
-            nameInput.value = enc.name || '';
-            locSelect.value = enc.location || '';
-            lootInput.value = enc.loot || '';
-            window.currentEncounterBuilder = JSON.parse(JSON.stringify(enc.monsters || [])); // clon profundo
-        }
-    } else {
-        window.editingEncounterId = null;
-        nameInput.value = '';
-        locSelect.value = '';
-        lootInput.value = '';
-        window.currentEncounterBuilder = [];
-    }
-
-    window.renderEncounterBuilderList();
-    formContainer.scrollIntoView({ behavior: 'smooth' });
-};
-
-window.hideEncounterForm = function () {
-    const formContainer = document.getElementById('encounter-form-container');
-    const listContainer = document.getElementById('encounter-list-container');
-
-    // Toggle Vista (Ocultar Formulario, Mostrar Lista)
-    formContainer.classList.add('hidden');
-    listContainer.classList.remove('hidden');
-
-    // Limpieza
-    window.editingEncounterId = null;
-    window.currentEncounterBuilder = [];
-    document.getElementById('enc-name').value = '';
-    document.getElementById('enc-location').value = '';
-    document.getElementById('enc-loot').value = '';
-    document.getElementById('enc-monster-qty').value = 1;
-    document.getElementById('enc-monster-select').value = '';
-};
-
 window.addMonsterToBuilder = function () {
-    const select = document.getElementById('enc-monster-select');
-    const qtyInput = document.getElementById('enc-monster-qty');
+    const select = document.getElementById('ef-monster-select');
+    const qtyInput = document.getElementById('ef-monster-qty');
     const monsterId = select.value;
     const qty = parseInt(qtyInput.value, 10);
 
@@ -1759,7 +1675,7 @@ window.removeMonsterFromBuilder = function (monsterId) {
 };
 
 window.renderEncounterBuilderList = function () {
-    const builderUl = document.getElementById('enc-builder-list');
+    const builderUl = document.getElementById('ef-builder-list');
     if (!builderUl) return;
 
     if (window.currentEncounterBuilder.length === 0) {
@@ -1773,42 +1689,6 @@ window.renderEncounterBuilderList = function () {
             <button class="btn btn-danger" style="padding:0.1rem 0.3rem; font-size:0.75rem;" onclick="window.removeMonsterFromBuilder('${m.id}')"><i class="fa-solid fa-xmark"></i></button>
         </li>
     `).join('');
-};
-
-window.saveEncounter = async function () {
-    const nameInput = document.getElementById('enc-name').value.trim();
-    const locInput = document.getElementById('enc-location').value;
-    const lootInput = document.getElementById('enc-loot').value.trim();
-
-    if (!nameInput) {
-        alert("El encuentro necesita un Título de Escena.");
-        return;
-    }
-
-    const currentState = state.get();
-    const currentEncuentros = [...currentState.encuentros];
-
-    const encounterPayload = {
-        name: nameInput,
-        location: locInput,
-        loot: lootInput,
-        monsters: window.currentEncounterBuilder,
-        id: window.editingEncounterId || ("enc_" + Date.now().toString())
-    };
-
-    if (window.editingEncounterId) {
-        const index = currentEncuentros.findIndex(e => e.id === window.editingEncounterId);
-        if (index !== -1) currentEncuentros[index] = encounterPayload;
-    } else {
-        currentEncuentros.push(encounterPayload);
-    }
-
-    await state.update({ encuentros: currentEncuentros });
-    await storageAdapter.save();
-
-    // Al notificar el update global, se llamará automáticamente a renderEncuentros
-    // Pero por UX, forzaremos limpiar y esconder el formulario antes del re-render
-    window.hideEncounterForm();
 };
 
 
@@ -1926,7 +1806,9 @@ window.toggleDmSecretVisibility = function (type, id) {
 window.openEntityModal = function (type, id = null) {
     const isEdit = id !== null;
     const currentState = state.get();
-    const list = currentState[type + 's'] || [];
+    const listKeyDict = { 'npc': 'npcs', 'map': 'maps', 'monster': 'bestiario', 'encuentro': 'encuentros' };
+    const listKey = listKeyDict[type] || type + 's';
+    const list = currentState[listKey] || [];
 
     let entity = isEdit ? list.find(e => e.id === id) : {};
 
@@ -2064,7 +1946,7 @@ window.openEntityModal = function (type, id = null) {
                 </div>
             </div>
         `;
-    } else {
+    } else if (type === 'map') {
         // MAP FORM
         html += `
             <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
@@ -2097,6 +1979,42 @@ window.openEntityModal = function (type, id = null) {
                 </div>
             </div>
         `;
+    } else if (type === 'encuentro') {
+        // ENCUENTRO FORM
+        const { bestiario, maps } = currentState;
+        window.currentEncounterBuilder = isEdit ? JSON.parse(JSON.stringify(entity.monsters || [])) : [];
+
+        html += `
+            <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+                <input type="text" id="ef-name" value="${entity.name || ''}" placeholder="Nombre de la Escena (Ej: Emboscada en el camino)">
+                
+                <div style="display: flex; gap: 1rem;">
+                    <select id="ef-location" style="flex: 1; padding: 0.5rem;">
+                        <option value="">-- Sin localización específica --</option>
+                        ${maps.map(m => `<option value="${m.name}" ${entity.location === m.name ? 'selected' : ''}>${m.name}</option>`).join('')}
+                    </select>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 8px; border: 1px solid var(--parchment-dark);">
+                    <h5>Añadir Enemigos</h5>
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom: 0.5rem;">
+                        <select id="ef-monster-select" style="flex:2; padding: 0.5rem;">
+                            <option value="">-- Selecciona Monstruo --</option>
+                            ${bestiario.map(b => `<option value="${b.id}">${b.name} (CA ${b.ac}, HP ${b.hp})</option>`).join('')}
+                        </select>
+                        <input type="number" id="ef-monster-qty" value="1" min="1" style="flex:1; padding: 0.5rem; text-align:center;">
+                        <button class="btn" onclick="window.addMonsterToBuilder()"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <ul id="ef-builder-list" style="list-style:none; padding:0; font-size: 0.9em; margin-bottom:0;">
+                    </ul>
+                </div>
+
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-sack-dollar"></i> Botín del Encuentro</label>
+                    <input type="text" id="ef-loot" value="${entity.loot || ''}" placeholder="Ej: 50 po, 2 Pociones de Curación y Espada Larga" style="padding: 0.5rem;">
+                </div>
+            </div>
+        `;
     }
 
     // Modal Action Buttons
@@ -2111,6 +2029,8 @@ window.openEntityModal = function (type, id = null) {
 
     contentEl.innerHTML = html;
     overlay.classList.remove('hidden');
+
+    if (type === 'encuentro') window.renderEncounterBuilderList();
 };
 
 window.closeEntityModal = function () {
@@ -2149,7 +2069,7 @@ window.saveEntityForm = async function (event, type, id) {
         // Recuperar y Empaquetar Datos
         let entityData = {
             name: nameInput,
-            isVisible: document.getElementById('ef-visible').checked,
+            isVisible: document.getElementById('ef-visible') ? document.getElementById('ef-visible').checked : false,
             url: imageUrl
         };
 
@@ -2190,6 +2110,10 @@ window.saveEntityForm = async function (event, type, id) {
             entityData.bonus = document.getElementById('ef-bonus').value.trim();
             entityData.reactions = document.getElementById('ef-reactions').value.trim();
             entityData.equip = document.getElementById('ef-equip').value.trim();
+        } else if (type === 'encuentro') {
+            entityData.location = document.getElementById('ef-location').value;
+            entityData.loot = document.getElementById('ef-loot').value.trim();
+            entityData.monsters = window.currentEncounterBuilder || [];
         } else {
             entityData.environmentType = document.getElementById('ef-type').value.trim();
             entityData.dmNotes = document.getElementById('ef-dmnotes').value.trim();
