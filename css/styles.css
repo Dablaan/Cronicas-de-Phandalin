@@ -967,3 +967,108 @@ textarea {
         padding-top: 15vh;
     }
 }
+
+/* ------------------------------------- */
+/* LANDSCAPE OPTIMIZATION (Mobile/Tablet)*/
+/* ------------------------------------- */
+@media (max-width: 1023px) and (orientation: landscape) {
+    body {
+        overflow-x: hidden;
+    }
+
+    /* Ajuste general marco principal */
+    .screen {
+        padding: 1rem 2rem;
+    }
+
+    /* Modal de Login (Evitar que se corte en alturas pequeñas) */
+    .auth-modal-overlay {
+        align-items: center;
+        padding-top: 0;
+        overflow-y: auto;
+    }
+
+    .auth-modal {
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 1rem !important;
+    }
+
+    .auth-modal h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.2rem !important;
+    }
+
+    /* Landing Screen: encoger imagen para que quepa bien el botón */
+    .landing-image-wrapper {
+        max-width: 400px;
+    }
+
+    .landing-container {
+        min-height: auto;
+        padding: 1rem 0;
+    }
+
+    .btn-adentrarse {
+        padding: 0.5rem 2rem;
+        font-size: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    /* Grid Auth y Contenedores divididos */
+    #selection-screen .grid-2 {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    /* Tabs Layout */
+    .tabs {
+        justify-content: center;
+    }
+
+    .tab-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 1rem;
+    }
+
+    /* Layout Ficha de PJ (Sheet) en Landscape */
+    .sheet-layout {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: none;
+        /* Resetear areas para flow natural horizontal */
+        gap: 1rem;
+    }
+
+    .area-center-col,
+    .area-right-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .area-stats {
+        grid-column: 1 / -1;
+        /* Enseñar stats en línea en lugar de columna única */
+    }
+
+    .area-stats .card>div {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.5rem;
+    }
+
+    .stat-box {
+        margin-bottom: 5px;
+    }
+
+    /* Grimorio Slots */
+    .sheet-grimorio-container .mb-1>div {
+        justify-content: space-around;
+        gap: 0.2rem;
+    }
+
+    /* Biblioteca responsive landscape */
+    .biblioteca-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
