@@ -1473,48 +1473,91 @@ window.renderBestiario = function (currentState) {
             const isSecretVisible = m._uiSecretVisible || false;
 
             html += `
-                <div class="card" ondblclick="window.openQuickLook('${m.id}', 'monster')" style="cursor: pointer; position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
+                <div class="card" ondblclick="window.openQuickLook('${m.id}', 'monster')" style="cursor: pointer; position: relative; display: flex; flex-direction: row; width: 100%; align-items: flex-start; gap: 16px; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'} padding: 1rem;">
                     
                     <!-- Image (Left fixed) -->
                     ${m.url
-                    ? `<img src="${m.url}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
-                    : `<div style="width: 100px; height: 100px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark);"><i class="fa-solid fa-dragon fa-2x text-muted"></i></div>`
+                    ? `<img src="${m.url}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; flex-shrink: 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
+                    : `<div style="width: 120px; height: 120px; border-radius: 8px; flex-shrink: 0; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark); box-shadow: 0 4px 6px rgba(0,0,0,0.3);"><i class="fa-solid fa-dragon fa-3x text-muted"></i></div>`
                 }
                     
-                    <!-- Content (Right flexible) -->
-                    <div style="display: flex; flex-direction: column; flex: 1; min-width: 0;">
+                    <!-- Content (Right flexible - STAT BLOCK 5e) -->
+                    <div style="display: flex; flex-direction: column; flex: 1; min-width: 0; color: var(--leather-dark);">
+                        
+                        <!-- Header -->
                         <div class="flex-between mb-1" style="flex-wrap: nowrap;">
-                            <h4 style="margin: 0; font-size: 1.2em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${m.name}">${m.name} <span style="font-size:0.6em; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">(${m.typeAlignment || 'Desconocido'})</span></h4>
+                            <h4 style="margin: 0; font-size: 1.6em; font-family: 'Times New Roman', serif; font-weight: bold; color: var(--red-ink); text-transform: uppercase;">${m.name}</h4>
                             <button class="btn ${m.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-left: 10px;" onclick="event.stopPropagation(); window.toggleEntityVisibility('monster', '${m.id}')" title="${m.isVisible ? 'Visible por Jugadores' : 'Oculto a Jugadores'}">
                                 <i class="fa-solid ${m.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
                             </button>
                         </div>
+                        <div style="font-size: 0.85em; font-style: italic; color: #555; margin-top: -8px;">${m.subtitle || 'Tipo desconocido'}</div>
                         
-                        <div style="display:flex; gap:15px; font-size: 0.85em; margin-bottom: 0.8rem; color: var(--leather-dark); font-weight: bold; flex-wrap: wrap;">
-                            <span title="Clase de Armadura"><i class="fa-solid fa-shield"></i> CA: ${m.ac || '-'}</span>
-                            <span title="Puntos de Golpe"><i class="fa-solid fa-heart" style="color: var(--red-ink);"></i> HP: ${m.hp || '-'}</span>
-                            <span title="Velocidad"><i class="fa-solid fa-shoe-prints"></i> Vel: ${m.speed || '30ft'}</span>
+                        <div style="border-bottom: 3px solid var(--red-ink); margin: 0.5rem 0;"></div>
+
+                        <!-- Combat Stats -->
+                        <div style="font-size: 0.9em; line-height: 1.4;">
+                            <div><strong style="color: var(--red-ink);">Clase de Armadura</strong> ${m.ac || '-'}</div>
+                            <div><strong style="color: var(--red-ink);">Puntos de Golpe</strong> ${m.hp || '-'}</div>
+                            <div><strong style="color: var(--red-ink);">Velocidad</strong> ${m.speed || '30 pies'}</div>
+                            ${m.init ? `<div><strong style="color: var(--red-ink);">Iniciativa</strong> ${m.init}</div>` : ''}
                         </div>
 
-                         <div style="display:flex; gap:8px; font-size: 0.7em; margin-bottom: 0.8rem; justify-content: space-between; text-align: center; border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
-                             <div><strong>FUE</strong><br>${m.str || 10}</div>
-                             <div><strong>DES</strong><br>${m.dex || 10}</div>
-                             <div><strong>CON</strong><br>${m.con || 10}</div>
-                             <div><strong>INT</strong><br>${m.int || 10}</div>
-                             <div><strong>SAB</strong><br>${m.wis || 10}</div>
-                             <div><strong>CAR</strong><br>${m.cha || 10}</div>
+                        <div style="border-bottom: 2px solid var(--red-ink); margin: 0.5rem 0;"></div>
+
+                        <!-- Attributes Grid -->
+                         <div style="display:flex; gap:10px; font-size: 0.8em; justify-content: space-between; text-align: center; color: var(--red-ink);">
+                             <div><strong>FUE</strong><br><span style="color:black;">${m.str || 10} (${getMod(m.str)})</span></div>
+                             <div><strong>DES</strong><br><span style="color:black;">${m.dex || 10} (${getMod(m.dex)})</span></div>
+                             <div><strong>CON</strong><br><span style="color:black;">${m.con || 10} (${getMod(m.con)})</span></div>
+                             <div><strong>INT</strong><br><span style="color:black;">${m.int || 10} (${getMod(m.int)})</span></div>
+                             <div><strong>SAB</strong><br><span style="color:black;">${m.wis || 10} (${getMod(m.wis)})</span></div>
+                             <div><strong>CAR</strong><br><span style="color:black;">${m.cha || 10} (${getMod(m.cha)})</span></div>
                          </div>
-                        
-                        <!-- Contenedor Secreto Expandible (Rasgos) -->
-                        <div style="background: rgba(0,0,0,0.03); border-left: 3px solid var(--red-ink); padding: 0.5rem; margin-bottom: 1rem; border-radius: 0 4px 4px 0;">
+
+                        <div style="border-bottom: 2px solid var(--red-ink); margin: 0.5rem 0;"></div>
+
+                        <!-- Additional Details -->
+                        <div style="font-size: 0.85em; line-height: 1.4;">
+                            ${m.saves ? `<div><strong style="color: var(--red-ink);">Tiradas de Salvación</strong> ${m.saves}</div>` : ''}
+                            ${m.skills ? `<div><strong style="color: var(--red-ink);">Habilidades</strong> ${m.skills}</div>` : ''}
+                            ${m.immunities ? `<div><strong style="color: var(--red-ink);">Vulnerabilidades / Inmunidades</strong> ${m.immunities}</div>` : ''}
+                            ${m.senses ? `<div><strong style="color: var(--red-ink);">Sentidos</strong> ${m.senses}</div>` : ''}
+                            ${m.langs ? `<div><strong style="color: var(--red-ink);">Idiomas</strong> ${m.langs}</div>` : ''}
+                            ${m.challenge ? `<div><strong style="color: var(--red-ink);">Desafío</strong> ${m.challenge}</div>` : ''}
+                        </div>
+
+                        <div style="border-bottom: 2px solid var(--red-ink); margin: 0.5rem 0;"></div>
+
+                        <!-- Text Blocks (Collapsible) -->
+                        <div style="background: rgba(0,0,0,0.02); padding: 0.5rem; margin-bottom: 1rem; border-radius: 4px;">
                             <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('monster', '${m.id}')">
-                                <strong style="color: var(--red-ink); font-size: 0.85em;"><i class="fa-solid fa-book-skull"></i> Rasgos y Ataques</strong>
+                                <strong style="color: var(--red-ink); font-size: 0.9em;"><i class="fa-solid fa-book-skull"></i> Bloque de Combate y Rasgos</strong>
                                 <i class="fa-solid ${isSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
                             </div>
-                            ${isSecretVisible ? `<div style="font-size: 0.85em; white-space: pre-wrap; margin-top: 0.5em; margin-bottom: 0;">${m.features || 'Sin acciones.'}</div>` : ''}
+                            
+                            ${isSecretVisible ? `
+                                <div style="font-size: 0.85em; margin-top: 1rem;">
+                                    ${m.features ? `<div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.features}</div>` : ''}
+                                    
+                                    ${m.actions ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Acciones</h5>
+                                    <div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.actions}</div>` : ''}
+                                    
+                                    ${m.bonus ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Acciones Adicionales</h5>
+                                    <div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.bonus}</div>` : ''}
+                                    
+                                    ${m.reactions ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Reacciones</h5>
+                                    <div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.reactions}</div>` : ''}
+                                    
+                                    ${m.equip ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Equipo</h5>
+                                    <div style="white-space: pre-wrap; margin-bottom: 0.5rem; line-height: 1.4;">${m.equip}</div>` : ''}
+                                    
+                                    ${(!m.features && !m.actions && !m.bonus && !m.reactions && !m.equip) ? '<p class="text-muted">El bloque de combate está vacío.</p>' : ''}
+                                </div>
+                            ` : ''}
                         </div>
 
-                        <!-- Acciones -->
+                        <!-- Acciones CRUD -->
                         <div style="display: flex; gap: 0.5rem; margin-top: auto; justify-content: flex-end; padding-top: 0.5rem; border-top: 1px solid var(--parchment-dark);">
                             <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.openEntityModal('monster', '${m.id}')" title="Editar este Monstruo"><i class="fa-solid fa-pen"></i></button>
                             <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="event.stopPropagation(); window.deleteEntity('monster', '${m.id}')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
@@ -1948,37 +1991,31 @@ window.openEntityModal = function (type, id = null) {
         // MONSTER FORM
         html += `
             <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <div style="flex: 1;">
+                <h4 style="margin-bottom:0px; color:var(--red-ink);border-bottom:2px solid var(--red-ink);">Datos Principales</h4>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                    <div>
                         <label style="font-size:0.8rem; font-weight:bold;">Nombre del Monstruo <span style="color:red;">*</span></label>
                         <input type="text" id="ef-name" value="${entity.name || ''}" placeholder="Ej: Goblin">
                     </div>
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px;">
-                        <label style="font-size:0.7rem; font-weight:bold;">¿Visible a Jugadores?</label>
-                        <input type="checkbox" id="ef-visible" ${entity.isVisible ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--leather-dark);">
+                    <div>
+                        <label style="font-size:0.8rem; font-weight:bold;">¿Visible a Jugadores?</label>
+                        <input type="checkbox" id="ef-visible" ${entity.isVisible ? 'checked' : ''} style="width: 20px; height: 20px; accent-color: var(--leather-dark); display:block; margin: 0 auto;">
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 1rem;">
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold;">Tipo y Alineamiento</label>
-                        <input type="text" id="ef-type-align" value="${entity.typeAlignment || ''}" placeholder="Humanoide Pequeño, Neutral Malvado">
-                    </div>
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold;">CA</label>
-                        <input type="number" id="ef-ac" value="${entity.ac || ''}" placeholder="15">
-                    </div>
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold;">HP</label>
-                        <input type="number" id="ef-hp" value="${entity.hp || ''}" placeholder="7">
-                    </div>
-                    <div>
-                        <label style="font-size:0.8rem; font-weight:bold;">Velocidad</label>
-                        <input type="text" id="ef-speed" value="${entity.speed || '30ft'}" placeholder="30ft">
-                    </div>
+                <div>
+                    <label style="font-size:0.8rem; font-weight:bold;">Subtítulo (Tipo, Tamaño y Alineamiento)</label>
+                    <input type="text" id="ef-subtitle" value="${entity.subtitle || ''}" placeholder="Ej: Humanoide Pequeño (Goblinoide), Neutral Malvado">
                 </div>
 
-                <!-- Stats Array -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Clase Armadura</label><input type="text" id="ef-ac" value="${entity.ac || ''}" placeholder="15 (armadura de cuero)"></div>
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Puntos de Golpe</label><input type="text" id="ef-hp" value="${entity.hp || ''}" placeholder="7 (2d6)"></div>
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Velocidad</label><input type="text" id="ef-speed" value="${entity.speed || '30ft'}" placeholder="30 pies"></div>
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Iniciativa</label><input type="text" id="ef-init" value="${entity.init || ''}" placeholder="+2"></div>
+                </div>
+
+                <h4 style="margin-top:10px; margin-bottom:0px; color:var(--red-ink);border-bottom:2px solid var(--red-ink);">Características</h4>
                 <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; text-align: center;">
                     <div><label style="font-size:0.7rem; font-weight:bold;">FUE</label><input type="number" id="ef-str" value="${entity.str || 10}" style="padding: 0.2rem; text-align:center;"></div>
                     <div><label style="font-size:0.7rem; font-weight:bold;">DES</label><input type="number" id="ef-dex" value="${entity.dex || 10}" style="padding: 0.2rem; text-align:center;"></div>
@@ -1988,15 +2025,42 @@ window.openEntityModal = function (type, id = null) {
                     <div><label style="font-size:0.7rem; font-weight:bold;">CAR</label><input type="number" id="ef-cha" value="${entity.cha || 10}" style="padding: 0.2rem; text-align:center;"></div>
                 </div>
 
+                <h4 style="margin-top:10px; margin-bottom:0px; color:var(--red-ink);border-bottom:2px solid var(--red-ink);">Detalles Adicionales</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Tiradas de Salvación</label><input type="text" id="ef-saves" value="${entity.saves || ''}" placeholder="Ej: Des +4, Sab +1"></div>
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Habilidades</label><input type="text" id="ef-skills" value="${entity.skills || ''}" placeholder="Ej: Sigilo +6"></div>
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Sentidos</label><input type="text" id="ef-senses" value="${entity.senses || ''}" placeholder="Visión en la oscuridad 60', Percepción pasiva 9"></div>
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Idiomas</label><input type="text" id="ef-langs" value="${entity.langs || ''}" placeholder="Común, Goblin"></div>
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Desafío (VD/PX)</label><input type="text" id="ef-challenge" value="${entity.challenge || ''}" placeholder="1/4 (50 PX)"></div>
+                    <div><label style="font-size:0.75rem; font-weight:bold;">Vulnerabilidades/Inmuni.</label><input type="text" id="ef-immunities" value="${entity.immunities || ''}" placeholder="Ej: Fuego"></div>
+                </div>
+
+                <h4 style="margin-top:10px; margin-bottom:0px; color:var(--red-ink);border-bottom:2px solid var(--red-ink);">Bloques de Texto</h4>
+                 <div>
+                     <label style="font-size:0.8rem; font-weight:bold;">Rasgos (Features)</label>
+                     <textarea id="ef-features" placeholder="Ej: Huida Ágil: el goblin puede destrabarse o esconderse..." style="min-height: 60px;">${entity.features || ''}</textarea>
+                 </div>
+                 <div>
+                     <label style="font-size:0.8rem; font-weight:bold;">Acciones Principales</label>
+                     <textarea id="ef-actions" placeholder="Ej: Cimitarra: Ataque cuerpo a cuerpo..." style="min-height: 80px;">${entity.actions || ''}</textarea>
+                 </div>
+                  <div>
+                     <label style="font-size:0.8rem; font-weight:bold;">Acciones Adicionales (Opcional)</label>
+                     <textarea id="ef-bonus" placeholder="" style="min-height: 60px;">${entity.bonus || ''}</textarea>
+                 </div>
+                 <div>
+                     <label style="font-size:0.8rem; font-weight:bold;">Reacciones (Opcional)</label>
+                     <textarea id="ef-reactions" placeholder="" style="min-height: 60px;">${entity.reactions || ''}</textarea>
+                 </div>
+                 <div>
+                     <label style="font-size:0.8rem; font-weight:bold;">Equipo (Opcional)</label>
+                     <textarea id="ef-equip" placeholder="" style="min-height: 40px;">${entity.equip || ''}</textarea>
+                 </div>
+
                 <div>
                     <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-image"></i> Fotografía del Monstruo</label>
                     <input type="file" id="ef-image" accept="image/*" style="font-size:0.8rem; padding: 0.2rem;">
-                    ${entity.url ? `<p style="font-size: 0.75rem; color: var(--gold-dim); margin-top:-0.5rem;">* Ya tiene foto.</p>` : ''}
-                </div>
-
-                <div>
-                     <label style="font-size:0.8rem; font-weight:bold;">Rasgos, Acciones y Notas del Combate</label>
-                     <textarea id="ef-features" placeholder="Ataque: Cimitarra (+4 al ataque) 1d6+2 cortante. Acción Bonus: Escabullirse..." style="min-height: 100px;">${entity.features || ''}</textarea>
+                    ${entity.url ? `<p style="font-size: 0.75rem; color: var(--gold-dim); margin-top:-0.5rem;">* Ya tiene foto. Selecciona solo si deseas sustituirla.</p>` : ''}
                 </div>
             </div>
         `;
@@ -2098,17 +2162,34 @@ window.saveEntityForm = async function (event, type, id) {
             // Migrar `description` al form o abandonarlo. Como abandonamos description, dejamos lo vital nuevo.
             entityData.description = "";
         } else if (type === 'monster') {
-            entityData.typeAlignment = document.getElementById('ef-type-align').value.trim();
+            entityData.subtitle = document.getElementById('ef-subtitle').value.trim();
             entityData.ac = document.getElementById('ef-ac').value.trim();
             entityData.hp = document.getElementById('ef-hp').value.trim();
             entityData.speed = document.getElementById('ef-speed').value.trim();
+            entityData.init = document.getElementById('ef-init').value.trim();
+
+            // Características
             entityData.str = document.getElementById('ef-str').value.trim();
             entityData.dex = document.getElementById('ef-dex').value.trim();
             entityData.con = document.getElementById('ef-con').value.trim();
             entityData.int = document.getElementById('ef-int').value.trim();
             entityData.wis = document.getElementById('ef-wis').value.trim();
             entityData.cha = document.getElementById('ef-cha').value.trim();
+
+            // Detalles Adicionales
+            entityData.saves = document.getElementById('ef-saves').value.trim();
+            entityData.skills = document.getElementById('ef-skills').value.trim();
+            entityData.senses = document.getElementById('ef-senses').value.trim();
+            entityData.langs = document.getElementById('ef-langs').value.trim();
+            entityData.challenge = document.getElementById('ef-challenge').value.trim();
+            entityData.immunities = document.getElementById('ef-immunities').value.trim();
+
+            // Bloques de Texto
             entityData.features = document.getElementById('ef-features').value.trim();
+            entityData.actions = document.getElementById('ef-actions').value.trim();
+            entityData.bonus = document.getElementById('ef-bonus').value.trim();
+            entityData.reactions = document.getElementById('ef-reactions').value.trim();
+            entityData.equip = document.getElementById('ef-equip').value.trim();
         } else {
             entityData.environmentType = document.getElementById('ef-type').value.trim();
             entityData.dmNotes = document.getElementById('ef-dmnotes').value.trim();
