@@ -162,6 +162,15 @@
             </div>
         </div>
 
+        <!-- Lightbox Modal Overlay -->
+        <div id="lightbox-modal-overlay" class="lightbox-overlay hidden" onclick="window.closeLightbox()">
+            <div class="lightbox-container" onclick="event.stopPropagation()">
+                <button class="btn btn-danger lightbox-close" onclick="window.closeLightbox()"><i
+                        class="fa-solid fa-xmark"></i></button>
+                <img id="lightbox-image" src="" alt="Ampliación">
+            </div>
+        </div>
+
     </div>
 
     <!-- Main Module Script -->

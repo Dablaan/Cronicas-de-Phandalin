@@ -1200,6 +1200,7 @@ function renderNpcs(currentState) {
         html += `
             <div class="card" ondblclick="window.openQuickLook('${n.id}', 'npc')" style="cursor: pointer;" title="Doble toque para Visión Rápida">
                  <h4>${n.name}</h4>
+                 ${n.url ? `<img src="${n.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">` : ''}
                  <p style="white-space: pre-wrap;">${n.description}</p>
                  ${n.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Secreto Descubierto:</strong> ${s.text}</p>`).join('')}
         <div class="mt-1">
@@ -1240,7 +1241,7 @@ function renderMaps(currentState) {
         html += `
             <div class="card">
                 <h4>${m.name}</h4>
-                 ${m.url ? `<p><a href="${m.url}" target="_blank" style="color: var(--leather-dark); font-weight: bold;">[Ver Mapa Original]</a></p>` : ''}
+                 ${m.url ? `<img src="${m.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem; cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">` : ''}
                  ${m.secrets.filter(s => s.isVisible).map(s => `<p style="color: var(--red-ink); font-style: italic; white-space: pre-wrap;"><strong>Descubrimiento:</strong> ${s.text}</p>`).join('')}
         <div class="mt-1">
             <label style="font-size: 0.9em; color: var(--text-muted);"><i class="fa-solid fa-feather"></i> Tus apuntes:</label>
@@ -1400,6 +1401,8 @@ window.renderDMNpcs = function (currentState) {
                         <i class="fa-solid ${n.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i> ${n.isVisible ? 'Visible' : 'Oculto'}
                     </button>
                 </div>
+                ${n.url ? `<img src="${n.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem;" onclick="event.stopPropagation(); window.openLightbox('${n.url}')" title="Clic para ampliar">` : ''}
+                <input type="text" placeholder="URL del Retrato..." value="${n.url || ''}" onchange="window.updateEntity('npc', '${n.id}', 'url', this.value)">
                 <textarea style="min-height: 60px;" placeholder="Descripción..." onchange="window.updateEntity('npc', '${n.id}', 'description', this.value)">${n.description}</textarea>
                 
                 <div class="mt-1">
@@ -1456,6 +1459,7 @@ window.renderDMMaps = function (currentState) {
                         <i class="fa-solid ${m.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i> ${m.isVisible ? 'Visible' : 'Oculto'}
                     </button>
                 </div>
+                ${m.url ? `<img src="${m.url}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--leather-dark); margin-bottom: 0.5rem; cursor: pointer;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">` : ''}
                 <input type="text" placeholder="URL del mapa..." value="${m.url || ''}" onchange="window.updateEntity('map', '${m.id}', 'url', this.value)">
                 
                 <div class="mt-1">
@@ -1739,5 +1743,27 @@ window.closeQuickLook = function () {
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         window.closeQuickLook();
+        window.closeLightbox();
     }
 });
+
+// ----------------------------------------------------
+// LIGHTBOX MODAL (Image Gallery for NPCs and Maps)
+// ----------------------------------------------------
+window.openLightbox = function (url) {
+    if (!url) return;
+    const overlay = document.getElementById('lightbox-modal-overlay');
+    const image = document.getElementById('lightbox-image');
+
+    // Asignar url y mostrar
+    image.src = url;
+    overlay.classList.remove('hidden');
+};
+
+window.closeLightbox = function () {
+    const overlay = document.getElementById('lightbox-modal-overlay');
+    if (overlay && !overlay.classList.contains('hidden')) {
+        overlay.classList.add('hidden');
+        document.getElementById('lightbox-image').src = ""; // Liberar memoria
+    }
+};
