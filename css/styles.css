@@ -1473,10 +1473,10 @@ textarea {
     color: var(--leather-dark);
 }
 
-/* Preparation phase: red pulse halo */
+/* Preparation phase: blue pulse halo */
 .init-token-preparation .init-token-portrait {
-    border-color: var(--red-ink);
-    box-shadow: 0 0 12px rgba(139, 0, 0, 0.6), 0 0 25px rgba(139, 0, 0, 0.3);
+    border-color: #1a73e8;
+    box-shadow: 0 0 12px rgba(26, 115, 232, 0.6), 0 0 25px rgba(26, 115, 232, 0.3);
     animation: initPulse 1.5s ease-in-out infinite;
 }
 
@@ -1484,11 +1484,11 @@ textarea {
 
     0%,
     100% {
-        box-shadow: 0 0 8px rgba(139, 0, 0, 0.4);
+        box-shadow: 0 0 8px rgba(26, 115, 232, 0.4);
     }
 
     50% {
-        box-shadow: 0 0 20px rgba(139, 0, 0, 0.8), 0 0 35px rgba(139, 0, 0, 0.3);
+        box-shadow: 0 0 20px rgba(26, 115, 232, 0.8), 0 0 35px rgba(26, 115, 232, 0.3);
     }
 }
 
@@ -1531,11 +1531,33 @@ textarea {
     filter: grayscale(100%);
 }
 
-/* Hidden monster (fog of war) */
-.init-token-hidden .init-token-portrait {
-    border-color: var(--leather-light);
-    background: var(--leather-light);
-    border-style: dashed;
+/* Dynamic HP halos */
+.init-token-hp-healthy .init-token-portrait {
+    border-color: #2e7d32;
+    box-shadow: 0 0 8px rgba(46, 125, 50, 0.4);
+}
+
+.init-token-hp-wounded .init-token-portrait {
+    border-color: #f9a825;
+    box-shadow: 0 0 8px rgba(249, 168, 37, 0.5);
+}
+
+.init-token-hp-critical .init-token-portrait {
+    border-color: #c62828;
+    box-shadow: 0 0 10px rgba(198, 40, 40, 0.6);
+    animation: criticalPulse 1s ease-in-out infinite;
+}
+
+@keyframes criticalPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 6px rgba(198, 40, 40, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 14px rgba(198, 40, 40, 0.8);
+    }
 }
 
 /* HP Quick Input */

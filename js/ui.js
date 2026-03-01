@@ -1963,10 +1963,19 @@ window.endCombat = function () {
 function renderInitiativeTracker(combatTracker, isDM, players) {
     if (!combatTracker || !combatTracker.active) return '';
 
+    // Helper: HP percentage class
+    const getHpHaloClass = (current, max) => {
+        if (max <= 0) return '';
+        const pct = (current / max) * 100;
+        if (pct > 50) return 'init-token-hp-healthy';
+        if (pct > 20) return 'init-token-hp-wounded';
+        return 'init-token-hp-critical';
+    };
+
     let html = `
         <div class="initiative-tracker-wrapper" style="margin-top: 1.5rem; border: 2px solid var(--red-ink); border-radius: var(--border-radius-md); padding: 1rem; background: rgba(139,0,0,0.03);">
             <div class="flex-between mb-1" style="border-bottom: 2px solid var(--red-ink); padding-bottom: 0.5rem;">
-                <h3 style="margin:0; color: var(--red-ink);"><i class="fa-solid fa-khanda"></i> ${combatTracker.encounterName || 'Combate'}</h3>
+                <h3 style="margin:0; color: var(--red-ink);"><i class="fa-solid fa-khanda"></i> Orden de Iniciativa</h3>
                 <div style="display:flex; gap:0.5rem;">
     `;
 
@@ -1983,7 +1992,6 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
     html += `</div></div>`;
 
     if (combatTracker.phase === 'preparation') {
-        // Show PJs with red halo for initiative input
         html += `<p style="font-size:0.85em; color:var(--text-muted); margin-bottom:0.8rem;"><i class="fa-solid fa-circle-info"></i> Haz clic en cada retrato para asignar su iniciativa. Después pulsa <strong>Comenzar Combate</strong>.</p>`;
         html += `<div class="initiative-track-row">`;
 
@@ -2004,7 +2012,7 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
                 }
                     </div>
                     <div class="init-token-name">${player.name}</div>
-                    <div class="init-token-init">${hasInit ? entry.initiative : '?'}</div>
+                    ${hasInit ? `<div class="init-token-init" style="color:#1a73e8;">✓</div>` : ''}
                 </div>
             `;
         });
@@ -2022,16 +2030,17 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
             `;
         }
     } else if (combatTracker.phase === 'combat') {
-        // Full combat tracker - ordered row
         html += `<div class="initiative-track-row">`;
 
         combatTracker.entries.forEach((entry, idx) => {
             const isActive = idx === combatTracker.turnIndex;
             const isDead = entry.type === 'monster' && entry.hpCurrent <= 0;
-            const isHidden = entry.type === 'monster' && !entry.revealed && !isDM;
+            const isHidden = entry.type === 'monster' && !entry.revealed;
+
+            // STRICT FOG OF WAR: unrevealed monsters are NOT rendered for players
+            if (isHidden && !isDM) return;
 
             if (isDead && !isDM) {
-                // Dead monsters are dimmed for players
                 html += `
                     <div class="init-token init-token-dead">
                         <div class="init-token-portrait"><i class="fa-solid fa-skull fa-2x" style="color:#666;"></i></div>
@@ -2041,21 +2050,9 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
                 return;
             }
 
-            if (isHidden) {
-                // Hidden monster for players
-                html += `
-                    <div class="init-token init-token-hidden">
-                        <div class="init-token-portrait"><i class="fa-solid fa-question fa-2x" style="color:var(--leather-light);"></i></div>
-                        <div class="init-token-name">???</div>
-                    </div>
-                `;
-                return;
-            }
-
-            // Visible entry
             let portraitHtml = '';
             let nameHtml = '';
-            let hpHtml = '';
+            let hpHaloClass = '';
             const entryId = entry.type === 'player' ? entry.id : entry.instanceId;
 
             if (entry.type === 'player') {
@@ -2064,24 +2061,22 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
                     ? `<img src="${player.avatarUrl}" alt="${player?.name}">`
                     : `<i class="fa-solid fa-user fa-2x"></i>`;
                 nameHtml = player?.name || 'PJ';
-                const hp = player?.hpCurrent ?? 0;
-                const hpMax = player?.hpMax ?? 0;
-                hpHtml = `<span class="init-token-hp">${hp}/${hpMax}</span>`;
+                hpHaloClass = getHpHaloClass(player?.hpCurrent ?? 0, player?.hpMax ?? 1);
             } else {
                 portraitHtml = entry.url
                     ? `<img src="${entry.url}" alt="${entry.name}">`
                     : `<i class="fa-solid fa-dragon fa-2x" style="color:var(--red-ink);"></i>`;
                 nameHtml = entry.name;
-                hpHtml = isDM ? `<span class="init-token-hp" style="color:${entry.hpCurrent <= 0 ? '#ff4444' : 'inherit'};">${entry.hpCurrent}/${entry.hpMax}</span>` : '';
+                hpHaloClass = getHpHaloClass(entry.hpCurrent, entry.hpMax);
             }
 
+            const hiddenDmStyle = (isHidden && isDM) ? 'opacity:0.5;' : '';
+
             html += `
-                <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''}">
+                <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''} ${!isActive && !isDead ? hpHaloClass : ''}" style="${hiddenDmStyle}">
                     <div class="init-token-portrait">${portraitHtml}</div>
                     <div class="init-token-name">${nameHtml}</div>
-                    <div class="init-token-init">${entry.initiative}</div>
-                    ${hpHtml}
-                    ${isDM ? `<input class="init-hp-input" placeholder="-5" onkeydown="if(event.key==='Enter'){window.applyTrackerHP('${entryId}', this);}">` : ''}
+                    ${isDM ? `<input class="init-hp-input" placeholder="" onkeydown="if(event.key==='Enter'){window.applyTrackerHP('${entryId}', this);}">` : ''}
                 </div>
             `;
         });
