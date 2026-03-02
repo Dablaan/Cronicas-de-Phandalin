@@ -380,9 +380,9 @@ function renderTabContent(tabId, currentState) {
 
     if (tabId === 'tab-sheet') {
         if (isDM) {
-            renderDMSheet();
+            window.renderDMSheet();
         } else {
-            renderPlayerSheet(session.playerId, players);
+            window.renderPlayerSheet(session.playerId, players);
         }
     } else if (tabId === 'tab-party') {
         renderPartyInfo(players, isDM);

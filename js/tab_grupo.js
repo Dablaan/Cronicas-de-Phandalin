@@ -24,7 +24,7 @@ function renderPartyInfo(players, isDM) {
         };
 
         html += `
-            <div class="card" ondblclick="window.openQuickLook('${p.id}', 'player')" style="cursor: pointer;" title="Doble toque para Visión Rápida">
+            <div class="card" style="cursor: pointer;" title="Ficha de Grupo">
                 <div class="flex-between" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
                     <h3 style="margin:0;">${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:var(--text-muted)">Lvl ${p.level} ${p.class}</span></h3>
                     ${isDM ? `

@@ -3,7 +3,7 @@
 // ----------------------------------------------------
 import { getStatModifier, getHealthBarData } from './utils.js';
 
-function renderPlayerSheet(playerId, players, targetId = 'tab-sheet') {
+window.renderPlayerSheet = function (playerId, players, targetId = 'tab-sheet') {
     const container = document.getElementById(targetId);
     if (!container) return;
     const player = players.find(p => p.id === playerId);
@@ -444,7 +444,7 @@ window.renderSpellsList = function (playerId, spells) {
     return html;
 };
 
-function renderDMSheet() {
+window.renderDMSheet = function () {
     const container = document.getElementById('tab-sheet');
     if (!container) return;
     const currentState = window.state.get();
