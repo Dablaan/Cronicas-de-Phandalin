@@ -1,6 +1,7 @@
 // ----------------------------------------------------
 // Player Features: Sheet (Extracted)
 // ----------------------------------------------------
+import { getStatModifier, getHealthBarData } from './utils.js';
 
 function renderPlayerSheet(playerId, players, targetId = 'tab-sheet') {
     const container = document.getElementById(targetId);
@@ -123,15 +124,11 @@ function renderStatsComp(player) {
         { key: 'con', label: 'Constitución' }, { key: 'int', label: 'Inteligencia' },
         { key: 'wis', label: 'Sabiduría' }, { key: 'cha', label: 'Carisma' }
     ];
-    const getMod = (val) => {
-        const m = Math.floor((val - 10) / 2);
-        return m >= 0 ? '+' + m : m;
-    };
 
     let html = '<div class="card" style="padding: 0.2rem; background: transparent; border:none; box-shadow:none;"><div style="display: flex; flex-direction: column; gap: 0.5rem;">';
     statsList.forEach(s => {
         const val = player.stats[s.key];
-        const mod = getMod(val);
+        const mod = getStatModifier(val);
         html += `
             <div class="stat-card">
                 <span class="stat-card-label">${s.label}</span>
@@ -147,8 +144,7 @@ function renderStatsComp(player) {
 }
 
 function renderHPDeathComp(playerId, player) {
-    let hpBarPercent = Math.max(0, Math.min(100, (player.hpCurrent / player.hpMax) * 100));
-    let hpColor = hpBarPercent > 50 ? '#556b2f' : (hpBarPercent > 20 ? '#b8860b' : '#8b0000');
+    const { percent, color } = getHealthBarData(player.hpCurrent, player.hpMax);
 
     return `
     <div class="card" style="padding: 0.5rem; display: flex; flex-direction: column; justify-content: center;">
@@ -168,7 +164,7 @@ function renderHPDeathComp(playerId, player) {
         </div>
         
         <div style="width:100%; height:14px; background:var(--parchment-dark); border-radius:4px; overflow:hidden; margin-bottom: 0.4rem; border: 1px solid var(--parchment-dark);">
-            <div id="hp-bar-fill-sheet" style="width:${hpBarPercent}%; height:100%; background:${hpColor}; transition: width 0.3s ease, background-color 0.3s ease;"></div>
+            <div id="hp-bar-fill-sheet" style="width:${percent}%; height:100%; background:${color}; transition: width 0.3s ease, background-color 0.3s ease;"></div>
         </div>
 
         <div style="text-align:center;">
@@ -506,13 +502,12 @@ window.modifyHP = function (playerId, amount) {
     const hpInput = document.querySelector('input[name="hpCurrent"]');
     if (hpInput) hpInput.value = updatedPlayer.hpCurrent;
 
-    const hpBarPercent = Math.max(0, Math.min(100, (updatedPlayer.hpCurrent / updatedPlayer.hpMax) * 100));
-    let hpColor = hpBarPercent > 50 ? '#556b2f' : (hpBarPercent > 20 ? '#b8860b' : '#8b0000');
+    const { percent, color } = getHealthBarData(updatedPlayer.hpCurrent, updatedPlayer.hpMax);
 
     const hpBarFill = document.getElementById('hp-bar-fill-sheet');
     if (hpBarFill) {
-        hpBarFill.style.width = hpBarPercent + '%';
-        hpBarFill.style.backgroundColor = hpColor;
+        hpBarFill.style.width = percent + '%';
+        hpBarFill.style.backgroundColor = color;
     }
 };
 

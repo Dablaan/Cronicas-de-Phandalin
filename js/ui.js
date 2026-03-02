@@ -1,5 +1,6 @@
 import { state } from './state.js';
 import { storageAdapter } from './storageAdapter.js';
+import { getHealthBarData } from './utils.js';
 
 export function initUI() {
     // Setup tabs
@@ -441,8 +442,7 @@ function renderPublicScreen(currentState) {
     html += '<div class="grid-2" style="max-width: 1200px; margin: 0 auto; gap: 1.5rem;">';
 
     players.forEach(p => {
-        let hpPercent = Math.max(0, Math.min(100, (p.hpCurrent / p.hpMax) * 100));
-        let hpColor = hpPercent > 50 ? 'darkolivegreen' : (hpPercent > 20 ? 'darkgoldenrod' : 'darkred');
+        const { percent, color } = getHealthBarData(p.hpCurrent, p.hpMax);
 
         html += `
             <div class="card" style="padding: 1.2rem; box-shadow: var(--box-shadow-main);">
@@ -450,7 +450,7 @@ function renderPublicScreen(currentState) {
                     <h3 style="margin:0; font-size: 1.5rem;">${p.name || 'Desconocido'} <span style="font-size:0.8rem; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">Lvl ${p.level} ${p.class}</span></h3>
                 </div>
                 <div class="party-hp-bar-container" style="height: 25px; border-radius: 4px; overflow: hidden; border: 1px solid var(--leather-dark);">
-                    <div class="party-hp-bar-fill" style="width: ${hpPercent}%; background-color: ${hpColor}; transition: width 0.4s ease;"></div>
+                    <div class="party-hp-bar-fill" style="width: ${percent}%; background-color: ${color}; transition: width 0.4s ease;"></div>
                     <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.9rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
                         ${p.hpCurrent} / ${p.hpMax} HP
                     </div>
