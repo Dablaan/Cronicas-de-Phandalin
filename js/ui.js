@@ -335,15 +335,20 @@ function renderPublicScreen(currentState) {
     // BASE CONTENT (Inherits parchment background from .app-container)
     let html = '<div class="public-screen">';
 
-    // REUSE LIGHTBOX SYSTEM FOR PROJECTION
+    // PROJECTION SYSTEM (Independent of tab structure to avoid layout constraints)
+    // 1. Clear any existing projection overlay
+    document.querySelectorAll('.lightbox-overlay-projection').forEach(el => el.remove());
+
     if (imageUrl) {
-        html += `
-            <div class="lightbox-overlay" onclick="window.stopProjection()">
-                <div class="lightbox-container">
-                    <img src="${imageUrl}" alt="Proyección">
-                </div>
+        const projectionOverlay = document.createElement('div');
+        projectionOverlay.className = 'lightbox-overlay lightbox-overlay-projection';
+        projectionOverlay.onclick = () => window.stopProjection();
+        projectionOverlay.innerHTML = `
+            <div class="lightbox-container">
+                <img src="${imageUrl}" alt="Proyección">
             </div>
         `;
+        document.body.appendChild(projectionOverlay);
     }
 
     html += '<h2 style="text-align:center; margin-bottom:1.5rem; color:var(--leather-dark); letter-spacing: 2px;"><i class="fa-solid fa-users"></i> El Grupo de Aventureros</h2>';
