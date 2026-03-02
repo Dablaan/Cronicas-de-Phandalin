@@ -128,16 +128,16 @@ function renderStatsComp(player) {
         return m >= 0 ? '+' + m : m;
     };
 
-    let html = '<div class="card" style="padding: 0.5rem;"><div style="display: flex; flex-direction: column; gap: 0.8rem;">';
+    let html = '<div class="card" style="padding: 0.5rem;"><div style="display: flex; flex-direction: column; gap: 0.6rem;">';
     statsList.forEach(s => {
         const val = player.stats[s.key];
         const mod = getMod(val);
         html += `
-            <div class="stat-box-row" style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.2); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 0.4rem 0.8rem;">
-                <label style="font-size: 0.8rem; font-weight: bold; margin: 0; flex: 1;">${s.label}</label>
-                <div style="display: flex; align-items: center; gap: 0.5rem; flex: 0 0 auto;">
-                    <input class="stat-val" type="number" name="stats.${s.key}" value="${val}" style="width: 45px; font-size: 1.1rem; font-weight: bold; text-align: center; border: none; background: transparent; padding: 0;">
-                    <div class="stat-mod" style="font-size: 1.1rem; color: var(--leather-dark); font-weight: bold; background: var(--parchment-dark); min-width: 40px; text-align: center; border-radius: 4px; padding: 2px 4px;">${mod}</div>
+            <div class="stat-box-column">
+                <label>${s.label}</label>
+                <div class="stat-box-val-row">
+                    <input class="stat-val" type="number" name="stats.${s.key}" value="${val}" style="background: transparent; border: none; font-weight: bold; text-align: center; color: var(--text-muted); padding: 0;">
+                    <div class="stat-mod" style="font-size: 1rem; color: var(--leather-dark); font-weight: 900; background: var(--parchment-dark); border-radius: 4px; padding: 2px 6px; box-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${mod}</div>
                 </div>
             </div>
         `;
@@ -582,8 +582,9 @@ window.updateAttack = function (playerId, atkId, field, value) {
     window.state.update({ players });
 };
 
-window.deleteAttack = function (playerId, atkId) {
-    if (!confirm('¿Eliminar este ataque?')) return;
+window.deleteAttack = async function (playerId, atkId) {
+    const confirmed = await window.customConfirm('¿Eliminar este ataque?', 'Confirmar');
+    if (!confirmed) return;
     window.syncAndModifySheet(playerId, (p) => {
         const attacks = p.attacks.filter(a => a.id !== atkId);
         return { ...p, attacks };
@@ -634,8 +635,9 @@ window.toggleSpellPrepared = function (playerId, spellId) {
     });
 };
 
-window.deleteSpell = function (playerId, spellId) {
-    if (!confirm('¿Eliminar este conjuro del grimorio?')) return;
+window.deleteSpell = async function (playerId, spellId) {
+    const confirmed = await window.customConfirm('¿Eliminar este conjuro del grimorio?', 'Confirmar');
+    if (!confirmed) return;
     window.syncAndModifySheet(playerId, (p) => {
         const spells = p.spells.filter(s => s.id !== spellId);
         return { ...p, spells };

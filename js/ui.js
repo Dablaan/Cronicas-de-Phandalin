@@ -191,6 +191,91 @@ window.closeLoginModal = function () {
     overlay.classList.add('hidden');
 };
 
+// --- CUSTOM MODALS SYSTEM (Themed Alert, Confirm, Prompt) ---
+
+window.customAlert = function (message, title = 'Atención') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-modal-overlay';
+        overlay.innerHTML = `
+            <div class="custom-modal">
+                <h3><i class="fa-solid fa-circle-exclamation"></i> ${title}</h3>
+                <p>${message}</p>
+                <div class="custom-modal-actions">
+                    <button class="btn btn-primary" id="custom-modal-ok">Aceptar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        const okBtn = overlay.querySelector('#custom-modal-ok');
+        okBtn.addEventListener('click', () => {
+            overlay.remove();
+            resolve(true);
+        });
+        okBtn.focus();
+    });
+};
+
+window.customConfirm = function (message, title = 'Confirmar Acción') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-modal-overlay';
+        overlay.innerHTML = `
+            <div class="custom-modal">
+                <h3><i class="fa-solid fa-circle-question"></i> ${title}</h3>
+                <p>${message}</p>
+                <div class="custom-modal-actions">
+                    <button class="btn btn-danger" id="custom-modal-cancel">Cancelar</button>
+                    <button class="btn btn-primary" id="custom-modal-ok">Aceptar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const okBtn = overlay.querySelector('#custom-modal-ok');
+        const cancelBtn = overlay.querySelector('#custom-modal-cancel');
+
+        okBtn.addEventListener('click', () => { overlay.remove(); resolve(true); });
+        cancelBtn.addEventListener('click', () => { overlay.remove(); resolve(false); });
+        okBtn.focus();
+    });
+};
+
+window.customPrompt = function (message, defaultValue = '', title = 'Entrada Requerida') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-modal-overlay';
+        overlay.innerHTML = `
+            <div class="custom-modal">
+                <h3><i class="fa-solid fa-pen-to-square"></i> ${title}</h3>
+                <p>${message}</p>
+                <input type="text" class="custom-modal-input" id="custom-modal-input" value="${defaultValue}">
+                <div class="custom-modal-actions">
+                    <button class="btn btn-danger" id="custom-modal-cancel">Cancelar</button>
+                    <button class="btn btn-primary" id="custom-modal-ok">Aceptar</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const input = overlay.querySelector('#custom-modal-input');
+        const okBtn = overlay.querySelector('#custom-modal-ok');
+        const cancelBtn = overlay.querySelector('#custom-modal-cancel');
+
+        const close = (val) => { overlay.remove(); resolve(val); };
+
+        okBtn.addEventListener('click', () => close(input.value));
+        cancelBtn.addEventListener('click', () => close(null));
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') close(input.value);
+            if (e.key === 'Escape') close(null);
+        });
+
+        input.focus();
+        input.select();
+    });
+};
+
 window.submitLoginModal = function () {
     const submitBtn = document.getElementById('login-modal-submit');
     const mode = submitBtn.getAttribute('data-mode');
@@ -235,8 +320,9 @@ window.submitLoginModal = function () {
     }
 };
 
-window.deletePlayer = function (playerId, playerName) {
-    if (confirm(`¿Estás seguro de que deseas borrar a ${playerName} para siempre?\n\nEsta acción no se puede deshacer.`)) {
+window.deletePlayer = async function (playerId, playerName) {
+    const confirmed = await window.customConfirm(`¿Estás seguro de que deseas borrar a "${playerName}" para siempre?\n\nEsta acción no se puede deshacer.`, 'Eliminar Personaje');
+    if (confirmed) {
         const currentPlayers = state.get().players.filter(p => p.id !== playerId);
         state.update({ players: currentPlayers });
     }

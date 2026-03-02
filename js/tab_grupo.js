@@ -147,11 +147,11 @@ window.startCombatFromEncounter = function (encounterId) {
     if (window.switchTab) window.switchTab('tab-party');
 };
 
-window.setPlayerInitiative = function (playerId) {
-    const val = prompt('Introduce la Iniciativa de este personaje:');
+window.setPlayerInitiative = async function (playerId) {
+    const val = await window.customPrompt('Introduce la Iniciativa de este personaje:', '', 'Iniciativa');
     if (val === null) return;
     const initiative = parseInt(val, 10);
-    if (isNaN(initiative)) { alert('Valor inválido.'); return; }
+    if (isNaN(initiative)) { await window.customAlert('Valor inválido.', 'Error'); return; }
 
     const tracker = JSON.parse(JSON.stringify(window.state.get().combatTracker));
     if (!tracker) return;

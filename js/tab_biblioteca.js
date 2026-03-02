@@ -93,7 +93,7 @@ window.submitRecurso = async function () {
     const enlaceUrl = document.getElementById('nuevo-recurso-enlace').value.trim();
 
     if (!nombre || !portadaUrl || !enlaceUrl) {
-        alert("Por favor, rellena todos los campos.");
+        await window.customAlert("Por favor, rellena todos los campos.", "Campos Incompletos");
         return;
     }
 
@@ -120,8 +120,9 @@ window.submitRecurso = async function () {
     window.hideAddRecursoForm();
 };
 
-window.deleteRecurso = function (id) {
-    if (confirm("¿Seguro que deseas borrar este tomo de la biblioteca?")) {
+window.deleteRecurso = async function (id) {
+    const confirmed = await window.customConfirm("¿Seguro que deseas borrar este tomo de la biblioteca?", "Borrar Tomo");
+    if (confirmed) {
         const currentRecursos = window.state.get().recursos || [];
         window.state.update({ recursos: currentRecursos.filter(r => r.id !== id) });
     }

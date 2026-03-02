@@ -127,12 +127,13 @@ window.renderDMMirrorNotes = function (currentState) {
     container.innerHTML = html;
 };
 
-window.resetPlayerPassword = function (playerId) {
-    if (confirm("¿Seguro que deseas romper el Cerrojo Mágico de este jugador? Tendrá que configurar uno nuevo al entrar.")) {
+window.resetPlayerPassword = async function (playerId) {
+    const confirmed = await window.customConfirm("¿Seguro que deseas romper el Cerrojo Mágico de este jugador? Tendrá que configurar uno nuevo al entrar.", "Resetear Contraseña");
+    if (confirmed) {
         const currentPlayers = window.state.get().players.map(p =>
             p.id === playerId ? { ...p, passcode: null } : p
         );
         window.state.update({ players: currentPlayers });
-        alert("Contraseña reseteada con éxito.");
+        await window.customAlert("Contraseña reseteada con éxito.", "Éxito");
     }
 };
