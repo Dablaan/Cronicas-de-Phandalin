@@ -1073,6 +1073,68 @@ textarea {
 }
 
 /* ------------------------------------- */
+/* SPECTACULAR STAT CARDS                */
+/* ------------------------------------- */
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--leather-dark);
+    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.1) 100%);
+    border: 2px solid var(--gold-dim);
+    border-radius: 8px;
+    padding: 0.5rem 0.2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.5);
+    min-width: 80px;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3);
+}
+
+.stat-card-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 0.2rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.stat-score-input {
+    width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--gold) !important;
+    font-size: 1.8rem !important;
+    font-weight: 900 !important;
+    text-align: center !important;
+    font-family: var(--font-heading);
+    padding: 0 !important;
+    margin: 0 !important;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+.stat-card-mod-badge {
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-heading);
+    font-weight: bold;
+    font-size: 0.9rem;
+    border: 1px solid var(--gold-dim);
+    margin-top: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    min-width: 35px;
+    text-align: center;
+}
+
+/* ------------------------------------- */
 /* CUSTOM MODALS (Alert, Confirm, Prompt)*/
 /* ------------------------------------- */
 .custom-modal-overlay {
@@ -1251,49 +1313,7 @@ textarea {
         margin-bottom: 5px;
     }
 
-    /* Redesigned Stat Column */
-    .stat-box-column {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: rgba(255, 255, 255, 0.15);
-        border: 1px solid var(--parchment-dark);
-        border-radius: 6px;
-        padding: 0.3rem !important;
-        gap: 2px;
-        min-width: 65px;
-    }
-
-    .stat-box-column label {
-        font-size: 0.65rem !important;
-        text-transform: uppercase;
-        color: var(--leather-light);
-        font-weight: bold;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        width: 100%;
-        text-align: center;
-        padding-bottom: 2px;
-        margin-bottom: 2px;
-    }
-
-    .stat-box-val-row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        width: 100%;
-    }
-
-    .stat-box-column input.stat-val {
-        width: 35px !important;
-        font-size: 1rem !important;
-    }
-
-    .stat-box-column .stat-mod {
-        min-width: 28px !important;
-        font-size: 0.85rem !important;
-        padding: 1px 2px !important;
-    }
+    /* Stat Cards - Removed legacy stat-box-column */
 
     /* Grimorio Slots */
     .sheet-grimorio-container .mb-1>div {
