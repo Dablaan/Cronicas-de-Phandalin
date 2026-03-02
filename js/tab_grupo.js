@@ -379,9 +379,9 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
             const hiddenDmStyle = (isHidden && isDM) ? 'opacity:0.5;' : '';
 
             html += `
-                <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''} ${hpHaloClass}" 
-                     style="${hiddenDmStyle}" 
-                     ondblclick="event.stopPropagation(); window.openQuickLook('${entry.type === 'player' ? entry.id : entry.monsterId}', '${entry.type}')">
+                 <div class="init-token ${isActive ? 'init-token-active' : ''} ${isDead ? 'init-token-dead' : ''} ${hpHaloClass}" 
+                      style="${hiddenDmStyle}" 
+                      ondblclick="event.stopPropagation(); if(${isDM}) window.openQuickLook('${entry.type === 'player' ? entry.id : entry.monsterId}', '${entry.type}')">
                     <div class="init-token-portrait">${portraitHtml}</div>
                     <div class="init-token-name">${nameHtml}</div>
                     ${isDM ? `<input class="init-hp-input" placeholder="" onkeydown="if(event.key==='Enter'){window.applyTrackerHP('${entryId}', this);}">` : ''}

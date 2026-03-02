@@ -37,12 +37,9 @@ window.renderBestiario = function (currentState) {
                     <div class="card-horizontal-content" style="color: var(--leather-dark);">
                         
                         <!-- Header -->
-                        <div class="flex-between mb-1" style="flex-wrap: nowrap;">
-                            <h4 style="margin: 0; font-size: 1.6em; font-family: 'Times New Roman', serif; font-weight: bold; color: var(--red-ink); text-transform: uppercase;">${m.name}</h4>
-                            <button class="btn ${m.isVisible ? '' : 'btn-danger'}" style="padding: 0.2rem 0.5rem; font-size: 0.8rem; margin-left: 10px;" onclick="event.stopPropagation(); window.toggleEntityVisibility('monster', '${m.id}')" title="${m.isVisible ? 'Visible por Jugadores' : 'Oculto a Jugadores'}">
-                                <i class="fa-solid ${m.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i>
-                            </button>
-                        </div>
+                         <div class="flex-between mb-1" style="flex-wrap: nowrap;">
+                             <h4 style="margin: 0; font-size: 1.6em; font-family: 'Times New Roman', serif; font-weight: bold; color: var(--red-ink); text-transform: uppercase;">${m.name}</h4>
+                         </div>
                         <div style="font-size: 0.85em; font-style: italic; color: #555; margin-top: -8px;">${m.subtitle || 'Tipo desconocido'}</div>
                         
                         <div style="border-bottom: 3px solid var(--red-ink); margin: 0.5rem 0;"></div>

@@ -11,7 +11,7 @@ window.renderEncuentros = function (currentState) {
 
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
-            <h3>Gestor de Escenas de Combate</h3>
+            <h3><i class="fa-solid fa-swords"></i> Gestor de Escenas de Combate</h3>
             <button class="btn" onclick="window.openEntityModal('encuentro')"><i class="fa-solid fa-swords"></i> Añadir Encuentro</button>
         </div>
         
