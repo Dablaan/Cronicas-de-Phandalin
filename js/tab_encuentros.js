@@ -11,8 +11,8 @@ window.renderEncuentros = function (currentState) {
 
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
-            <h3><i class="fa-solid fa-swords"></i> Gestor de Escenas de Combate</h3>
-            <button class="btn" onclick="window.openEntityModal('encuentro')"><i class="fa-solid fa-swords"></i> Añadir Encuentro</button>
+            <h3><i class="fa-solid fa-shield-halved"></i> Encuentros</h3>
+            <button class="btn" onclick="window.openEntityModal('encuentro')"><i class="fa-solid fa-plus"></i> Añadir Encuentro</button>
         </div>
         
         <!-- Lista de Encuentros Creados -->
@@ -29,7 +29,7 @@ window.renderEncuentros = function (currentState) {
             html += `
                 <div class="card" style="position: relative; display: flex; flex-direction: column;">
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.5rem 0; color:var(--red-ink);"><i class="fa-solid fa-swords"></i> ${enc.name}</h4>
+                        <h4 style="margin: 0 0 0.5rem 0; color:var(--red-ink);"><i class="fa-solid fa-shield-halved"></i> ${enc.name}</h4>
                         <p style="font-size: 0.85em; margin-bottom: 0.8rem;"><i class="fa-solid fa-location-dot"></i> ${enc.location || 'Desconocida'}</p>
                         <div style="background: rgba(0,0,0,0.03); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark); margin-bottom: 0.5rem;">
                             <h5 style="margin:0 0 0.3rem 0; font-size: 0.8em; text-transform:uppercase;">Hostiles:</h5>

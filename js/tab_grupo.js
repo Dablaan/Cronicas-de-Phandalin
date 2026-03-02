@@ -281,7 +281,7 @@ function renderInitiativeTracker(combatTracker, isDM, players) {
         <div class="initiative-tracker-container">
             <div class="initiative-tracker-wrapper" style="border: 3px solid var(--red-ink); border-radius: var(--border-radius-md); padding: 1.5rem; background: rgba(139,0,0,0.05); box-shadow: 0 0 30px rgba(0,0,0,0.3);">
                 <div class="flex-between mb-1" style="border-bottom: 3px solid var(--red-ink); padding-bottom: 1rem; margin-bottom: 1.5rem;">
-                    <h3 style="margin:0; color: var(--red-ink); font-size: 2rem; font-family: 'Times New Roman', serif; text-transform: uppercase; letter-spacing: 2px;"><i class="fa-solid fa-swords"></i> Orden de Iniciativa</h3>
+                    <h3 style="margin:0; color: var(--red-ink); font-size: 2rem; font-family: 'Times New Roman', serif; text-transform: uppercase; letter-spacing: 2px;"><i class="fa-solid fa-shield-halved"></i> Orden de Iniciativa</h3>
                 <div style="display:flex; gap:0.5rem;">
     `;
 
