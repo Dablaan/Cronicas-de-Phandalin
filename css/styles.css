@@ -1079,15 +1079,13 @@ textarea {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--leather-dark);
-    background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(0, 0, 0, 0.1) 100%);
-    border: 2px solid var(--gold-dim);
-    border-radius: 8px;
-    padding: 0.3rem 0.2rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.5);
-    min-width: 90px;
+    background: rgba(255, 255, 255, 0.4);
+    border: 2px solid var(--parchment-dark);
+    border-radius: var(--border-radius-sm);
+    padding: 0.4rem 0.2rem;
+    box-shadow: none;
+    min-width: 95px;
     position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stat-card-values {
@@ -1099,43 +1097,63 @@ textarea {
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(212, 175, 55, 0.3);
+    box-shadow: none;
 }
 
 .stat-card-label {
     font-size: 0.65rem;
     text-transform: uppercase;
-    color: var(--gold-dim);
-    font-weight: 900;
-    letter-spacing: 1px;
-    margin-bottom: 0.2rem;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    color: var(--text-muted);
+    font-weight: bold;
+    margin-bottom: 0.1rem;
+    text-align: center;
 }
 
 .stat-score-input {
-    width: 35px !important;
+    width: 45px !important;
     background: transparent !important;
     border: none !important;
-    color: var(--gold) !important;
-    font-size: 1.4rem !important;
-    font-weight: 900 !important;
+    color: var(--leather-dark) !important;
+    font-size: 1.6rem !important;
+    font-weight: bold !important;
     text-align: center !important;
     font-family: var(--font-heading);
     padding: 0 !important;
     margin: 0 !important;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    overflow: visible !important;
 }
 
 .stat-card-mod-badge {
+    background: var(--leather-dark);
     color: #fff;
-    padding: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: var(--font-heading);
     font-weight: bold;
-    font-size: 1.4rem;
-    text-align: center;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    font-size: 1.2rem;
     flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 1024px) {
+    .stat-card-label {
+        font-size: 0.8rem;
+    }
+
+    .stat-score-input {
+        width: 55px !important;
+        font-size: 2.22rem !important;
+    }
+
+    .stat-card-mod-badge {
+        width: 42px;
+        height: 42px;
+        font-size: 1.4rem;
+    }
 }
 
 /* ------------------------------------- */

@@ -128,7 +128,7 @@ function renderStatsComp(player) {
         return m >= 0 ? '+' + m : m;
     };
 
-    let html = '<div class="card" style="padding: 0.4rem; background: transparent; border:none; box-shadow:none;"><div style="display: flex; flex-direction: column; gap: 0.5rem;">';
+    let html = '<div class="card" style="padding: 0.2rem; background: transparent; border:none; box-shadow:none;"><div style="display: flex; flex-direction: column; gap: 0.5rem;">';
     statsList.forEach(s => {
         const val = player.stats[s.key];
         const mod = getMod(val);
