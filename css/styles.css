@@ -1220,18 +1220,49 @@ textarea {
 }
 
 /* ------------------------------------- */
-/* PARTY TAB: RESPONSIVE GRID            */
+/* PARTY TAB: SENIOR RESPONSIVE GRID     */
 /* ------------------------------------- */
-.party-grid {
+#tab-party .party-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
+    /* Mobile Vertical */
     gap: 20px;
 }
 
-.party-grid>.card {
-    max-width: 400px;
+/* iPhone/Smartphone en Apaisado (Landscape) */
+@media (max-width: 767px) and (orientation: landscape) {
+    #tab-party .party-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* iPads y Tablets (768px a 1023px) */
+@media (min-width: 768px) {
+    #tab-party .party-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Escritorio y Pantallas Grandes (>= 1024px) */
+@media (min-width: 1024px) {
+    #tab-party .party-grid {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+}
+
+/* Control de ancho para evitar estiramiento excesivo */
+#tab-party .party-grid>.card {
+    max-width: 450px;
     margin: 0 auto;
     width: 100%;
+}
+
+/* SEGURIDAD: Aislamos el Tracker de Iniciativa */
+.initiative-tracker-container,
+.initiative-track-row {
+    display: flex !important;
+    /* Mantenemos su estructura original */
+    grid-template-columns: none !important;
 }
 
 /* ------------------------------------- */
