@@ -87,6 +87,7 @@ window.renderBestiario = function (currentState) {
                             
                             ${m._uiSecretVisible ? `
                                 <div style="font-size: 0.85em; margin-top: 1rem;">
+                                    ${m.description ? `<div style="font-style: italic; margin-bottom: 1rem; color: #444; border-left: 2px solid var(--red-ink); padding-left: 0.5rem;">${m.description}</div>` : ''}
                                     ${m.features ? `<div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.features}</div>` : ''}
                                     
                                     ${m.actions ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Acciones</h5>

@@ -178,12 +178,102 @@ async function seed() {
         }
     ];
 
+    const newMonsters = [
+        {
+            id: 'm_owl_1',
+            name: 'Oso lechuza',
+            subtitle: 'Monstrosidad grande, sin alineamiento (5.5 Edition)',
+            url: 'img/placeholder.png',
+            isVisible: true,
+            ac: 13,
+            hp: 59,
+            hpCurrent: 59,
+            hpMax: 59,
+            speed: '40 pies',
+            str: 20,
+            dex: 12,
+            con: 17,
+            int: 3,
+            wis: 12,
+            cha: 7,
+            skills: 'Percepción +3',
+            senses: 'Visión en la oscuridad 60 pies, Percepción pasiva 13',
+            challenge: '3 (700 XP)',
+            description: 'Una criatura feroz que combina los rasgos de un oso gigante y un búho real. Conocido por su mal temperamento y su increíble fuerza física.',
+            features: 'Vista y Oído Agudos: El oso lechuza tiene ventaja en las pruebas de Sabiduría (Percepción) que dependan de la vista o del olfato.\n\nFuria (5.5): Simplificado para mayor letalidad en combate cercano.',
+            actions: 'Desgarrar: Ataque de arma cuerpo a cuerpo: +7 a impactar, alcance 5 pies, un objetivo. Impacto: 14 (2d8 + 5) daño cortante.\n\nMultiataque: El oso lechuza realiza dos ataques de Desgarrar.',
+            bonus: '',
+            reactions: '',
+            equip: '',
+            _uiSecretVisible: false
+        },
+        {
+            id: 'm_beh_1',
+            name: 'Contemplador',
+            subtitle: 'Aberración grande, legal malvada (5.5 Edition)',
+            url: 'img/placeholder.png',
+            isVisible: true,
+            ac: 18,
+            hp: 190,
+            hpCurrent: 190,
+            hpMax: 190,
+            speed: '40 pies (vuelo, levitar)',
+            str: 10,
+            dex: 14,
+            con: 19,
+            int: 17,
+            wis: 15,
+            cha: 18,
+            skills: 'Percepción +12',
+            senses: 'Visión en la oscuridad 120 pies, Percepción pasiva 22',
+            challenge: '13 (10,000 XP)',
+            description: 'Un orbe flotante de carne con un gran ojo central y diez tallos oculares. Son genios tiránicos y paranoicos que ven a todos como inferiores.',
+            features: 'Cono de Antimateria (5.5): El ojo central del contemplador crea un área de antimagia en un cono de 150 pies.\n\nFlotación: El contemplador levita y es inmune a la condición de derribado.',
+            actions: 'Multiataque (5.5): El contemplador usa sus Rayos Oculares tres veces.\n\nRayos Oculares: El contemplador dispara tres rayos al azar de entre 10 opciones.\n\nMordisco: +5 a impactar, alcance 5 pies. Daño: 14 (4d6) perforante.',
+            bonus: 'Mirada Paranoica (5.5): Puede reposicionar su cono de antimagia.',
+            reactions: '',
+            equip: '',
+            _uiSecretVisible: false
+        },
+        {
+            id: 'm_gold_y_1',
+            name: 'Dragón Dorado Joven',
+            subtitle: 'Dragón grande, legal bueno (5.5 Edition)',
+            url: 'img/placeholder.png',
+            isVisible: true,
+            ac: 18,
+            hp: 178,
+            hpCurrent: 178,
+            hpMax: 178,
+            speed: '40 pies, vuelo 80 pies, natación 40 pies',
+            str: 23,
+            dex: 14,
+            con: 21,
+            int: 16,
+            wis: 13,
+            cha: 20,
+            skills: 'Perspicacia +5, Percepción +9, Persuasión +9, Sigilo +6',
+            senses: 'Visión ciega 30 pies, Visión en la oscuridad 120 pies, Percepción pasiva 19',
+            challenge: '10 (5,900 XP)',
+            description: 'El más noble de los dragones metálicos. Los dragones dorados son enemigos jurados del mal y buscadores de sabiduría.',
+            features: 'Anfibio: Puede respirar aire y agua.\n\nInmunidad al Fuego: No recibe daño por fuego.',
+            actions: 'Multiataque (5.5): El dragón realiza tres ataques de Desgarrar. Puede sustituir uno por Aliento de Debilitamiento.\n\nDesgarrar: +10 a impactar, alcance 10 pies. Daño: 17 (2d10 + 6) cortante.\n\nAliento de Fuego (Recarga 5-6): Cono de 30 pies, DC 17 Dex. Daño: 55 (10d10) fuego.\n\nAliento de Debilitamiento: Cono de 30 pies, DC 17 Strength. Penalizadores a daño y pruebas de Fuerza.',
+            bonus: '',
+            reactions: '',
+            equip: '',
+            _uiSecretVisible: false
+        }
+    ];
+
     // Filter out if they already exist to avoid duplicates if run multiple times
     const playersToAdd = newPlayers.filter(np => !state.players.find(p => p.id === np.id));
     const npcsToAdd = newNpcs.filter(nn => !state.npcs.find(n => n.id === nn.id));
     const mapsToAdd = newMaps.filter(nm => !state.maps.find(m => m.id === nm.id));
+    const monstersToAdd = newMonsters;
 
-    if (playersToAdd.length === 0 && npcsToAdd.length === 0 && mapsToAdd.length === 0) {
+    state.bestiario = (state.bestiario || []).filter(m => !newMonsters.find(nm => nm.id === m.id));
+
+    if (playersToAdd.length === 0 && npcsToAdd.length === 0 && mapsToAdd.length === 0 && monstersToAdd.length === 0) {
         console.log("Data is already seeded!");
         return;
     }
@@ -191,8 +281,9 @@ async function seed() {
     state.players = [...state.players, ...playersToAdd];
     state.npcs = [...state.npcs, ...npcsToAdd];
     state.maps = [...state.maps, ...mapsToAdd];
+    state.bestiario = [...(state.bestiario || []), ...monstersToAdd];
 
-    console.log(`Injecting ${playersToAdd.length} players, ${npcsToAdd.length} npcs, ${mapsToAdd.length} maps...`);
+    console.log(`Injecting ${playersToAdd.length} players, ${npcsToAdd.length} npcs, ${mapsToAdd.length} maps, ${monstersToAdd.length} monsters...`);
 
     await saveState(state);
 
