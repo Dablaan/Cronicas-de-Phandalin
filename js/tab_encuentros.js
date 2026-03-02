@@ -25,7 +25,19 @@ window.renderEncuentros = function (currentState) {
     } else {
         encuentros.forEach(enc => {
             const listHtml = (enc.monsters || []).map(m => `<li><strong>${m.qty}x</strong> ${m.name} <span style="color:var(--gold-dim); font-size:0.85em;">(Init: ${m.initiative || '?'})</span></li>`).join('');
-            const combatActive = currentState.combatTracker && currentState.combatTracker.active;
+            const combatTracker = currentState.combatTracker;
+            const combatActive = combatTracker && combatTracker.active;
+            const isCombatPhase = combatActive && combatTracker.phase === 'combat';
+
+            let btnText = "Iniciar Combate";
+            let btnStyle = "background: var(--red-ink); color: #fff; border-color: var(--red-ink);";
+
+            if (isCombatPhase) {
+                btnText = "Añadir refuerzos";
+            } else if (combatActive) {
+                btnStyle += " opacity:0.4; pointer-events:none;";
+            }
+
             html += `
                 <div class="card" style="position: relative; display: flex; flex-direction: column;">
                     <div style="flex: 1;">
@@ -40,8 +52,8 @@ window.renderEncuentros = function (currentState) {
                         ${enc.loot ? `<p style="font-size: 0.85em; margin: 0; color: var(--gold-dim);"><i class="fa-solid fa-sack-dollar"></i> <strong>Botín:</strong> ${enc.loot}</p>` : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 1rem; margin-top: auto; flex-wrap: wrap;">
-                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size:0.85rem; background: var(--red-ink); color: #fff; border-color: var(--red-ink); ${combatActive ? 'opacity:0.4; pointer-events:none;' : ''}" onclick="window.startCombatFromEncounter('${enc.id}')" title="Iniciar combate con este encuentro">
-                            <i class="fa-solid fa-khanda"></i> Iniciar Combate
+                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size:0.85rem; ${btnStyle}" onclick="window.startCombatFromEncounter('${enc.id}')" title="${btnText}">
+                            <i class="fa-solid fa-khanda"></i> ${btnText}
                         </button>
                         <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.openEntityModal('encuentro', '${enc.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
                         <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.deleteEntity('encuentro', '${enc.id}')" title="Borrar"><i class="fa-solid fa-trash"></i></button>

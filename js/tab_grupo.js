@@ -74,14 +74,58 @@ function renderPartyInfo(players, isDM) {
 
 window.startCombatFromEncounter = function (encounterId) {
     const currentState = window.state.get();
+    const encounter = (currentState.encuentros || []).find(e => e.id === encounterId);
+    if (!encounter) { alert('Encuentro no encontrado.'); return; }
+
+    // REINFORCEMENTS LOGIC: If combat is already in 'combat' phase
+    if (currentState.combatTracker && currentState.combatTracker.active && currentState.combatTracker.phase === 'combat') {
+        const tracker = JSON.parse(JSON.stringify(currentState.combatTracker));
+        const currentCreature = tracker.entries[tracker.turnIndex];
+
+        const bestiario = currentState.bestiario || [];
+        const newEntries = [];
+        (encounter.monsters || []).forEach(template => {
+            const monsterData = bestiario.find(b => b.id === template.id);
+            for (let i = 0; i < template.qty; i++) {
+                const hpMax = parseInt(monsterData?.hp, 10) || 10;
+                newEntries.push({
+                    type: 'monster',
+                    monsterId: template.id,
+                    instanceId: 'minst_' + Date.now() + '_' + Math.random().toString(36).substring(7),
+                    name: template.qty > 1 ? `${template.name} (R) ${i + 1}` : `${template.name} (R)`,
+                    url: monsterData?.url || '',
+                    hpCurrent: hpMax,
+                    hpMax: hpMax,
+                    ac: monsterData?.ac || '?',
+                    initiative: template.initiative,
+                    revealed: false // Hidden by default as requested
+                });
+            }
+        });
+
+        tracker.entries = [...tracker.entries, ...newEntries];
+        tracker.entries.sort((a, b) => (b.initiative || 0) - (a.initiative || 0));
+
+        // Restore turnIndex to point to the same creature
+        if (currentCreature) {
+            const newIndex = tracker.entries.findIndex(e =>
+                (e.type === 'player' && e.id === currentCreature.id) ||
+                (e.type === 'monster' && e.instanceId === currentCreature.instanceId)
+            );
+            if (newIndex !== -1) tracker.turnIndex = newIndex;
+        }
+
+        window.state.update({ combatTracker: tracker });
+        if (window.switchTab) window.switchTab('tab-party');
+        return;
+    }
+
+    // NORMAL LOGIC: Start new combat (preparation phase)
     if (currentState.combatTracker && currentState.combatTracker.active) {
         if (!confirm('Ya hay un combate activo. ¿Deseas reemplazarlo con un nuevo encuentro?')) return;
     }
 
-    const encounter = (currentState.encuentros || []).find(e => e.id === encounterId);
-    if (!encounter) { alert('Encuentro no encontrado.'); return; }
-
-    // Create entries for PJs only (preparation phase)
+    // Create entries for PJs only
     const playerEntries = currentState.players.map(p => ({
         type: 'player',
         id: p.id,
@@ -96,12 +140,10 @@ window.startCombatFromEncounter = function (encounterId) {
         encounterId: encounterId,
         turnIndex: 0,
         entries: playerEntries,
-        // Store monster templates for later injection
         _monsterTemplates: JSON.parse(JSON.stringify(encounter.monsters || []))
     };
 
     window.state.update({ combatTracker: tracker });
-    // Switch to party tab to see the tracker
     if (window.switchTab) window.switchTab('tab-party');
 };
 
