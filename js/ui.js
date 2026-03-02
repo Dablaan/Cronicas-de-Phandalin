@@ -338,7 +338,7 @@ function renderPublicScreen(currentState) {
     // REUSE LIGHTBOX SYSTEM FOR PROJECTION
     if (imageUrl) {
         html += `
-            <div class="lightbox-overlay" style="position: absolute; z-index: 100;" onclick="window.stopProjection()">
+            <div class="lightbox-overlay" onclick="window.stopProjection()">
                 <div class="lightbox-container">
                     <img src="${imageUrl}" alt="Proyección">
                 </div>
