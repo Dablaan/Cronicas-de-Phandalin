@@ -128,15 +128,17 @@ function renderStatsComp(player) {
         return m >= 0 ? '+' + m : m;
     };
 
-    let html = '<div class="card" style="padding: 0.5rem; background: transparent; border:none; box-shadow:none;"><div style="display: flex; flex-direction: column; gap: 0.8rem;">';
+    let html = '<div class="card" style="padding: 0.4rem; background: transparent; border:none; box-shadow:none;"><div style="display: flex; flex-direction: column; gap: 0.5rem;">';
     statsList.forEach(s => {
         const val = player.stats[s.key];
         const mod = getMod(val);
         html += `
             <div class="stat-card">
                 <span class="stat-card-label">${s.label}</span>
-                <input class="stat-score-input" type="number" name="stats.${s.key}" value="${val}">
-                <div class="stat-card-mod-badge">${mod}</div>
+                <div class="stat-card-values">
+                    <input class="stat-score-input" type="number" name="stats.${s.key}" value="${val}">
+                    <div class="stat-card-mod-badge">${mod}</div>
+                </div>
             </div>
         `;
     });
