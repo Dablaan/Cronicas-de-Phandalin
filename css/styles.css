@@ -1220,6 +1220,21 @@ textarea {
 }
 
 /* ------------------------------------- */
+/* PARTY TAB: RESPONSIVE GRID            */
+/* ------------------------------------- */
+.party-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.party-grid>.card {
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ------------------------------------- */
 /* LOGIN: EPIC HERO CARDS                */
 /* ------------------------------------- */
 .epic-hero-card {

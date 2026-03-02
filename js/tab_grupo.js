@@ -10,7 +10,7 @@ function renderPartyInfo(players, isDM) {
         return;
     }
 
-    let html = '<div class="grid-2">';
+    let html = '<div class="party-grid">';
 
     players.forEach(p => {
         let hpPercent = Math.max(0, Math.min(100, (p.hpCurrent / p.hpMax) * 100));
