@@ -159,7 +159,6 @@ h6 {
     border-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="none" stroke="%23ccb997" stroke-width="2" stroke-dasharray="2 1"/></svg>') 2 stretch;
     box-sizing: border-box;
     max-width: 100%;
-    overflow: hidden;
 }
 
 /* Horizontal variant for NPCs, Maps and Monsters */
@@ -737,8 +736,8 @@ textarea {
 }
 
 .is-inspired {
-    box-shadow: 0 0 12px 4px rgba(0, 229, 255, 0.8), inset 0 0 10px rgba(0, 229, 255, 0.4);
-    border-color: #00e5ff;
+    box-shadow: 0 0 15px 4px rgba(212, 175, 55, 0.8), inset 0 0 10px rgba(212, 175, 55, 0.4);
+    border-color: #d4af37;
 }
 
 /* ------------------------------------- */
@@ -1237,6 +1236,7 @@ textarea {
     grid-template-columns: 1fr;
     /* Mobile Vertical */
     gap: 20px;
+    padding: 15px;
 }
 
 /* iPhone/Smartphone en Apaisado (Landscape) */
