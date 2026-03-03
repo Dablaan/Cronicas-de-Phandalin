@@ -44,9 +44,9 @@
 
             <!-- Landing View -->
             <div id="landing-screen" class="landing-container">
-                <div class="header" style="border-bottom: none; padding-bottom: 0;">
-                    <h1 style="font-size: 4rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">CRÓNICAS DE PHANDALIN</h1>
-                    <p style="font-size: 1.5rem; margin-bottom: 1rem;">Elige tu destino...</p>
+                <div class="header landing-header">
+                    <h1 class="landing-title">CRÓNICAS DE PHANDALIN</h1>
+                    <p class="landing-subtitle">Elige tu destino...</p>
                 </div>
                 <div class="landing-image-wrapper mb-1">
                     <img src="./img/party.png" alt="Grupo de Aventureros" class="landing-image"
@@ -69,8 +69,7 @@
                         <p class="mb-1">Accede al panel de control de la campaña.</p>
                         <input type="password" id="dm-password" placeholder="Contraseña secreta">
                         <button class="btn" id="btn-login-dm"><i class="fa-solid fa-key"></i> Entrar como DM</button>
-                        <p id="dm-error"
-                            style="color: var(--red-ink); display: none; margin-top: 0.5rem; font-weight: bold;">
+                        <p id="dm-error" class="text-error" style="display: none; margin-top: 0.5rem;">
                             Contraseña
                             incorrecta</p>
                     </div>
@@ -90,9 +89,7 @@
                         <h2>Pantalla del Master</h2>
                         <i class="fa-solid fa-display fa-3x mb-1" style="color: var(--leather-dark)"></i>
                         <p class="mb-1">Proyecta contenido para tus jugadores en una segunda pantalla.</p>
-                        <button class="btn" id="btn-login-screen"
-                            style="background: var(--leather-dark); color: var(--gold); border-color: var(--leather-dark);"><i
-                                class="fa-solid fa-tv"></i> Abrir Pantalla</button>
+                        <button class="btn" id="btn-login-screen"><i class="fa-solid fa-tv"></i> Abrir Pantalla</button>
                     </div>
                 </div>
             </div>
@@ -100,8 +97,7 @@
 
         <!-- Main App Screen -->
         <div id="main-screen" class="screen">
-            <div class="flex-between mb-1"
-                style="border-bottom: 2px solid var(--leather-dark); padding-bottom: 0.5rem;">
+            <div class="flex-between mb-1 border-bottom-leather">
                 <h2 id="main-header-title">Crónicas de Phandalin</h2>
                 <button class="btn btn-danger" id="btn-logout"><i class="fa-solid fa-door-open"></i> Salir</button>
             </div>
@@ -148,13 +144,11 @@
                 </p>
 
                 <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-                    <input type="password" id="login-modal-pass1" placeholder="Cerrojo Mágico"
-                        style="text-align: center; font-size: 1.2rem; letter-spacing: 2px; color: var(--leather-dark); border-radius: 4px; border: 1px solid var(--leather-dark); padding: 5px;">
+                    <input type="password" id="login-modal-pass1" placeholder="Cerrojo Mágico" class="magic-lock-input">
                     <input type="password" id="login-modal-pass2" placeholder="Repite para confirmar"
-                        style="text-align: center; font-size: 1.2rem; letter-spacing: 2px; color: var(--leather-dark); border-radius: 4px; border: 1px solid var(--leather-dark); padding: 5px;">
+                        class="magic-lock-input">
 
-                    <p id="login-modal-error"
-                        style="color: #ff6b6b; font-weight: bold; text-align: center; font-size: 0.85rem; margin: 0; display: none;">
+                    <p id="login-modal-error" class="text-error" style="display: none;">
                     </p>
 
                     <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
@@ -186,10 +180,9 @@
         </div>
 
         <!-- Entity Form Modal (NPC/Map Editor) -->
-        <div id="entity-form-modal" class="auth-modal-overlay hidden" style="z-index: 9000; align-items: center;">
-            <div class="auth-modal" style="width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto;">
-                <div class="flex-between mb-1"
-                    style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem;">
+        <div id="entity-form-modal" class="auth-modal-overlay hidden modal-center-z">
+            <div class="auth-modal modal-wide">
+                <div class="flex-between mb-1 border-bottom-parchment">
                     <h2 id="entity-form-title" style="margin-bottom: 0;"><i class="fa-solid fa-pen-to-square"></i>
                         Editor</h2>
                     <button class="btn btn-danger" onclick="window.closeEntityModal()"

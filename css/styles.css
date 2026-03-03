@@ -1,29 +1,63 @@
 /* CSS Variables for Theme */
 :root {
-    /* Color Palette */
-    --parchment-bg: #e2d1b3;
+    /* 1. PALETA DE COLORES INMERSIVA */
+    --bg-page-dark: #120d0b;
+    --parchment-light: #eaddc5;
+    --parchment-base: #e2d1b3;
     --parchment-dark: #ccb997;
+
+    --leather-darkest: #1a110c;
     --leather-dark: #2a1b12;
     --leather-light: #4a3424;
-    --gold: #d4af37;
-    --gold-dim: #a68b2a;
-    --red-ink: #8b0000;
-    --text-main: #302013;
-    --text-muted: #4a3424;
-    /* Darkened for better WCAG contrast */
 
-    /* Typography */
+    --gold-bright: #ebd575;
+    --gold-base: #d4af37;
+    --gold-dim: #a68b2a;
+
+    --crimson-blood: #8b0000;
+    --crimson-light: #b33939;
+    --healing-green: #2e602b;
+
+    /* 2. TIPOGRAFÍA Y LEGIBILIDAD */
     --font-heading: 'Cinzel', serif;
     --font-body: 'Lora', serif;
+    --text-shadow-light: 1px 1px 0 rgba(255, 255, 255, 0.4);
+    --text-shadow-dark: 1px 1px 2px rgba(10, 5, 0, 0.8);
 
-    /* Styling */
-    --border-radius-sm: 4px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 12px;
-    --box-shadow-main: 0 4px 6px rgba(0, 0, 0, 0.3);
-    --box-shadow-glow: 0 0 8px rgba(212, 175, 55, 0.4);
+    /* 3. MATERIALES "GLASSMORPHISM" FANTASÍA */
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-bg-focus: rgba(255, 255, 255, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-dark-bg: rgba(42, 27, 18, 0.08);
 
-    /* Layout */
+    /* 4. SOMBRAS Y ELEVACIÓN */
+    --shadow-flat: inset 0 2px 4px rgba(26, 17, 12, 0.15);
+    --shadow-sm: 0 2px 4px rgba(26, 17, 12, 0.2);
+    --shadow-md: 0 4px 10px rgba(26, 17, 12, 0.3);
+    --shadow-lg: 0 12px 24px rgba(26, 17, 12, 0.45);
+    --shadow-glow-magic: 0 0 12px rgba(212, 175, 55, 0.5);
+    --shadow-glow-danger: 0 0 12px rgba(139, 0, 0, 0.6);
+
+    /* 5. ESTRUCTURA Y ANIMACIONES */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --border-thin: 1px solid var(--parchment-dark);
+    --border-thick: 2px solid var(--leather-dark);
+    --transition-fast: 0.2s ease-in-out;
+    --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* 6. ALIAS LEGACY (Para compatibilidad con estilos no migrados) */
+    --parchment-bg: var(--parchment-base);
+    --gold: var(--gold-base);
+    --red-ink: var(--crimson-blood);
+    --text-main: #302013;
+    --text-muted: var(--leather-light);
+    --border-radius-sm: var(--radius-sm);
+    --border-radius-md: var(--radius-md);
+    --border-radius-lg: var(--radius-lg);
+    --box-shadow-main: var(--shadow-md);
+    --box-shadow-glow: var(--shadow-glow-magic);
     --max-width: 1200px;
 }
 
@@ -149,14 +183,13 @@ h6 {
 
 /* Components */
 .card {
-    background: var(--parchment-bg);
-    border: 2px solid var(--parchment-dark);
-    border-radius: var(--border-radius-md);
+    background: var(--parchment-light);
+    border: var(--border-thin);
+    border-radius: var(--radius-md);
     padding: 1rem;
     margin-bottom: 1rem;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-md);
     position: relative;
-    border-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="none" stroke="%23ccb997" stroke-width="2" stroke-dasharray="2 1"/></svg>') 2 stretch;
     box-sizing: border-box;
     max-width: 100%;
 }
@@ -204,37 +237,41 @@ h6 {
     justify-content: center;
     gap: 0.5rem;
     background: var(--leather-dark);
-    color: var(--gold);
+    color: var(--gold-base);
     font-family: var(--font-heading);
     font-weight: 700;
-    border: 1px solid #111;
+    border: 1px solid var(--leather-darkest);
     padding: 0.5rem 1rem;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), var(--box-shadow-main);
-    text-shadow: 1px 1px 2px #000;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+    text-shadow: var(--text-shadow-dark);
 }
 
 .btn:hover {
     background: var(--leather-light);
     color: #fff;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3), var(--box-shadow-glow);
+    box-shadow: var(--shadow-md), var(--shadow-glow-magic);
     transform: translateY(-1px);
+    border-color: var(--gold-dim);
 }
 
 .btn:active {
     transform: translateY(1px);
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-flat);
 }
 
 .btn-danger {
     color: #ffbaba;
+    background: linear-gradient(180deg, var(--leather-dark), var(--leather-darkest));
 }
 
 .btn-danger:hover {
     color: #fff;
-    background: var(--red-ink);
+    background: var(--crimson-blood);
+    border-color: var(--crimson-light);
+    box-shadow: var(--shadow-md), var(--shadow-glow-danger);
 }
 
 /* Forms and Inputs */
@@ -242,25 +279,28 @@ input,
 textarea,
 select {
     width: 100%;
-    background: rgba(255, 255, 255, 0.4);
-    border: 1px solid var(--parchment-dark);
+    background: var(--glass-bg);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    border: 1px solid var(--glass-border);
     border-bottom: 2px solid var(--leather-dark);
     padding: 0.5rem;
     font-family: var(--font-body);
     font-size: 1rem;
     color: var(--text-main);
     margin-bottom: 1rem;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-flat);
+    transition: all var(--transition-fast);
 }
 
 input:focus,
 textarea:focus,
 select:focus {
     outline: none;
-    border-color: var(--gold-dim);
-    background: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 0 5px var(--gold-dim);
-    transition: all 0.2s ease;
+    border-color: var(--gold-base);
+    background: var(--glass-bg-focus);
+    box-shadow: var(--shadow-glow-magic);
 }
 
 textarea {
@@ -310,13 +350,13 @@ textarea {
     padding: 0.75rem 1rem;
     font-family: var(--font-heading);
     font-size: 1.1rem;
-    color: var(--text-muted);
+    color: var(--leather-light);
     cursor: pointer;
     border-bottom: 3px solid transparent;
     white-space: nowrap;
-    transition: all 0.2s;
-    border-top-left-radius: var(--border-radius-sm);
-    border-top-right-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+    border-top-left-radius: var(--radius-sm);
+    border-top-right-radius: var(--radius-sm);
 }
 
 .tab-btn:hover {
@@ -377,6 +417,60 @@ textarea {
     text-align: center;
 }
 
+/* Nuevas clases utilitarias para limpieza de index.html */
+.landing-header {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.landing-title {
+    font-size: 4rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.landing-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.text-error {
+    color: var(--crimson-light) !important;
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.magic-lock-input {
+    text-align: center !important;
+    font-size: 1.2rem !important;
+    letter-spacing: 2px;
+    color: var(--leather-dark);
+    padding: 10px !important;
+}
+
+.border-bottom-leather {
+    border-bottom: 2px solid var(--leather-dark) !important;
+    padding-bottom: 0.5rem;
+}
+
+.border-bottom-parchment {
+    border-bottom: 1px solid var(--parchment-dark) !important;
+    padding-bottom: 0.5rem;
+}
+
+.modal-wide {
+    width: 95% !important;
+    max-width: 600px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+}
+
+.modal-center-z {
+    z-index: 9000 !important;
+    align-items: center;
+}
+
 .grid-3 {
     display: grid;
     grid-template-columns: 1fr;
@@ -386,12 +480,14 @@ textarea {
 /* D&D specific UI Widgets */
 .stat-box {
     text-align: center;
-    border: 2px solid var(--parchment-dark);
-    border-radius: var(--border-radius-lg);
+    border: var(--border-thin);
+    border-radius: var(--radius-lg);
     padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--glass-bg);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     position: relative;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 15px;
     /* space for the mod bubble */
 }
@@ -607,9 +703,9 @@ textarea {
 .landing-image {
     width: 100%;
     height: auto;
-    border-radius: var(--border-radius-md);
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8), 0 4px 15px rgba(0, 0, 0, 0.5);
-    border: 3px solid var(--leather-dark);
+    border-radius: var(--radius-lg);
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8), var(--shadow-lg);
+    border: 3px solid var(--leather-darkest);
     /* Try to simulate a vignette/fade specifically on the image if possible without extra wrapper */
     display: block;
 }
@@ -723,11 +819,12 @@ textarea {
     position: relative;
     width: 100%;
     height: 20px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
+    background: var(--leather-darkest);
+    border-radius: var(--radius-sm);
     border: 1px solid var(--leather-dark);
     margin-bottom: 0.5rem;
     overflow: hidden;
+    box-shadow: var(--shadow-flat);
 }
 
 .party-hp-bar-fill {
@@ -1044,13 +1141,14 @@ textarea {
 .auth-modal {
     width: 90%;
     max-width: 400px;
-    background: var(--leather-dark);
-    color: var(--parchment-bg);
-    border: 3px solid var(--gold-dim);
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.5);
+    background: var(--leather-darkest);
+    color: var(--parchment-light);
+    border: 2px solid var(--gold-dim);
+    box-shadow: var(--shadow-lg), inset 0 0 30px rgba(0, 0, 0, 0.5);
+    border-radius: var(--radius-lg);
     padding: 2rem !important;
     position: relative;
-    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: modalPop var(--transition-smooth);
 }
 
 .auth-modal h2 {
@@ -1183,16 +1281,16 @@ textarea {
 }
 
 .custom-modal {
-    background: var(--leather-dark);
-    color: var(--parchment-bg);
+    background: var(--leather-darkest);
+    color: var(--parchment-light);
     border: 2px solid var(--gold-dim);
-    border-radius: var(--border-radius-md);
+    border-radius: var(--radius-lg);
     width: 95%;
     max-width: 450px;
     padding: 1.5rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), inset 0 0 30px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-lg), inset 0 0 30px rgba(0, 0, 0, 0.3);
     position: relative;
-    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: modalPop var(--transition-smooth);
 }
 
 .custom-modal h3 {
@@ -1444,15 +1542,16 @@ textarea {
 }
 
 .quick-look-container {
-    background: var(--parchment-bg);
+    background: var(--parchment-light);
     width: 100%;
     max-width: 1200px;
     min-height: 50vh;
-    border: 3px solid var(--leather-dark);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+    border: 3px solid var(--leather-darkest);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
     position: relative;
     padding: 1rem;
-    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: modalPop var(--transition-smooth);
 }
 
 /* En PC el modal es más angosto (85%), en móviles es 100% de ancho */
