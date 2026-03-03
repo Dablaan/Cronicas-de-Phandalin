@@ -23,8 +23,9 @@ function renderPartyInfo(players, isDM) {
             return '0';
         };
 
+        const inspiredClass = p.inspiration ? ' is-inspired' : '';
         html += `
-            <div class="card" style="cursor: pointer;" title="Ficha de Grupo">
+            <div class="card${inspiredClass}" style="cursor: pointer;" title="Ficha de Grupo">
                 <div class="flex-between" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
                     <h3 style="margin:0;">${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:var(--text-muted)">Lvl ${p.level} ${p.class}</span></h3>
                     ${isDM ? `
