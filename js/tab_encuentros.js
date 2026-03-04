@@ -24,7 +24,15 @@ window.renderEncuentros = function (currentState) {
         html += '<p class="text-muted" style="grid-column: 1/-1;">No hay encuentros preparados. Adelante, planea su perdición.</p>';
     } else {
         encuentros.forEach(enc => {
-            const listHtml = (enc.monsters || []).map(m => `<li><strong>${m.qty}x</strong> ${m.name} <span style="color:var(--gold-dim); font-size:0.85em;">(Init: ${m.initiative || '?'})</span></li>`).join('');
+            const allBestiario = currentState.bestiario || [];
+            const listHtml = (enc.monsters || []).map(m => {
+                const monsterData = allBestiario.find(b => b.id === m.id);
+                const imgUrl = monsterData && monsterData.url ? monsterData.url : null;
+                const projectBtn = imgUrl
+                    ? `<button class="btn btn-project" style="padding: 0.1rem 0.3rem; font-size:0.7rem; margin-left: 0.3rem; vertical-align: middle;" onclick="event.stopPropagation(); window.projectToScreen('${imgUrl}')" title="Proyectar imagen"><i class="fa-solid fa-display"></i></button>`
+                    : '';
+                return `<li style="display: flex; align-items: center; gap: 0.3rem;"><span><strong>${m.qty}x</strong> ${m.name} <span style="color:var(--gold-dim); font-size:0.85em;">(Init: ${m.initiative || '?'})</span></span>${projectBtn}</li>`;
+            }).join('');
             const combatTracker = currentState.combatTracker;
             const combatActive = combatTracker && combatTracker.active;
             const isCombatPhase = combatActive && combatTracker.phase === 'combat';
