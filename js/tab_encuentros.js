@@ -15,56 +15,86 @@ window.renderEncuentros = function (currentState) {
             <button class="btn" onclick="window.openEntityModal('encuentro')"><i class="fa-solid fa-plus"></i> Añadir Encuentro</button>
         </div>
         
-        <!-- Lista de Encuentros Creados -->
+        <!-- Lista de Encuentros agrupados por Localización -->
         <div id="encounter-list-container">
-            <div class="grid-2">
     `;
 
     if (!encuentros || encuentros.length === 0) {
-        html += '<p class="text-muted" style="grid-column: 1/-1;">No hay encuentros preparados. Adelante, planea su perdición.</p>';
+        html += '<p class="text-muted">No hay encuentros preparados. Adelante, planea su perdición.</p>';
     } else {
+        const allBestiario = currentState.bestiario || [];
+
+        // Agrupar por localización
+        const grouped = {};
         encuentros.forEach(enc => {
-            const allBestiario = currentState.bestiario || [];
-            const listHtml = (enc.monsters || []).map(m => {
-                const monsterData = allBestiario.find(b => b.id === m.id);
-                const imgUrl = monsterData && monsterData.url ? monsterData.url : null;
-                const projectBtn = imgUrl
-                    ? `<button class="btn btn-project" style="padding: 0.1rem 0.3rem; font-size:0.7rem; margin-left: 0.3rem; vertical-align: middle;" onclick="event.stopPropagation(); window.projectToScreen('${imgUrl}')" title="Proyectar imagen"><i class="fa-solid fa-display"></i></button>`
-                    : '';
-                return `<li style="display: flex; align-items: center; gap: 0.3rem;"><span><strong>${m.qty}x</strong> ${m.name} <span style="color:var(--gold-dim); font-size:0.85em;">(Init: ${m.initiative || '?'})</span></span>${projectBtn}</li>`;
-            }).join('');
-            const combatTracker = currentState.combatTracker;
-            const combatActive = combatTracker && combatTracker.active;
-            const isCombatPhase = combatActive && combatTracker.phase === 'combat';
+            const loc = enc.location || 'Sin localización';
+            if (!grouped[loc]) grouped[loc] = [];
+            grouped[loc].push(enc);
+        });
 
-            let btnText = "Iniciar Combate";
-            let btnStyle = "background: var(--red-ink); color: #fff; border-color: var(--red-ink);";
+        // Ordenar localizaciones alfabéticamente
+        const sortedLocations = Object.keys(grouped).sort((a, b) => a.localeCompare(b, 'es'));
 
-            if (isCombatPhase) {
-                btnText = "Añadir refuerzos";
-            } else if (combatActive) {
-                btnStyle += " opacity:0.4; pointer-events:none;";
-            }
+        sortedLocations.forEach(loc => {
+            const locId = 'enc-loc-' + loc.replace(/[^a-zA-Z0-9]/g, '_');
+            html += `
+                <div style="margin-bottom: 1rem; border: 1px solid var(--parchment-dark); border-radius: var(--radius-md); overflow: hidden;">
+                    <div class="flex-between" style="cursor: pointer; padding: 0.8rem 1rem; background: var(--glass-dark-bg); border-bottom: 1px solid var(--parchment-dark);" onclick="document.getElementById('${locId}').classList.toggle('hidden')">
+                        <h4 style="margin: 0; font-size: 1.1rem; color: var(--leather-dark);"><i class="fa-solid fa-location-dot" style="color: var(--red-ink);"></i> ${loc} <span style="font-size: 0.85em; color: var(--text-muted); font-weight: normal;">(${grouped[loc].length} encuentro${grouped[loc].length > 1 ? 's' : ''})</span></h4>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 0.8em; color: var(--text-muted);"></i>
+                    </div>
+                    <div id="${locId}" style="padding: 0.8rem;">
+                        <div class="grid-2">
+            `;
+
+            grouped[loc].forEach(enc => {
+                const listHtml = (enc.monsters || []).map(m => {
+                    const monsterData = allBestiario.find(b => b.id === m.id);
+                    const imgUrl = monsterData && monsterData.url ? monsterData.url : null;
+                    const projectBtn = imgUrl
+                        ? `<button class="btn btn-project" style="padding: 0.1rem 0.3rem; font-size:0.7rem; margin-left: 0.3rem; vertical-align: middle;" onclick="event.stopPropagation(); window.projectToScreen('${imgUrl}')" title="Proyectar imagen"><i class="fa-solid fa-display"></i></button>`
+                        : '';
+                    return `<li style="display: flex; align-items: center; gap: 0.3rem;"><span><strong>${m.qty}x</strong> ${m.name} <span style="color:var(--gold-dim); font-size:0.85em;">(Init: ${m.initiative || '?'})</span></span>${projectBtn}</li>`;
+                }).join('');
+
+                const combatTracker = currentState.combatTracker;
+                const combatActive = combatTracker && combatTracker.active;
+                const isCombatPhase = combatActive && combatTracker.phase === 'combat';
+
+                let btnText = "Iniciar Combate";
+                let btnStyle = "background: var(--red-ink); color: #fff; border-color: var(--red-ink);";
+
+                if (isCombatPhase) {
+                    btnText = "Añadir refuerzos";
+                } else if (combatActive) {
+                    btnStyle += " opacity:0.4; pointer-events:none;";
+                }
+
+                html += `
+                    <div class="card" style="position: relative; display: flex; flex-direction: column;">
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0 0 0.5rem 0; color:var(--red-ink);"><i class="fa-solid fa-shield-halved"></i> ${enc.name}</h4>
+                            <div style="background: rgba(0,0,0,0.03); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark); margin-bottom: 0.5rem;">
+                                <h5 style="margin:0 0 0.3rem 0; font-size: 0.8em; text-transform:uppercase;">Hostiles:</h5>
+                                <ul style="margin:0; padding-left: 1rem; font-size: 0.85em;">
+                                    ${listHtml || '<li>Ninguno (Escena social o trampa)</li>'}
+                                </ul>
+                            </div>
+                            ${enc.loot ? `<p style="font-size: 0.85em; margin: 0; color: var(--gold-dim);"><i class="fa-solid fa-sack-dollar"></i> <strong>Botín:</strong> ${enc.loot}</p>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 1rem; margin-top: auto; flex-wrap: wrap;">
+                            <button class="btn" style="padding: 0.4rem 0.8rem; font-size:0.85rem; ${btnStyle}" onclick="window.startCombatFromEncounter('${enc.id}')" title="${btnText}">
+                                <i class="fa-solid fa-khanda"></i> ${btnText}
+                            </button>
+                            <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.openEntityModal('encuentro', '${enc.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.deleteEntity('encuentro', '${enc.id}')" title="Borrar"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
 
             html += `
-                <div class="card" style="position: relative; display: flex; flex-direction: column;">
-                    <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.5rem 0; color:var(--red-ink);"><i class="fa-solid fa-shield-halved"></i> ${enc.name}</h4>
-                        <p style="font-size: 0.85em; margin-bottom: 0.8rem;"><i class="fa-solid fa-location-dot"></i> ${enc.location || 'Desconocida'}</p>
-                        <div style="background: rgba(0,0,0,0.03); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark); margin-bottom: 0.5rem;">
-                            <h5 style="margin:0 0 0.3rem 0; font-size: 0.8em; text-transform:uppercase;">Hostiles:</h5>
-                            <ul style="margin:0; padding-left: 1rem; font-size: 0.85em;">
-                                ${listHtml || '<li>Ninguno (Escena social o trampa)</li>'}
-                            </ul>
                         </div>
-                        ${enc.loot ? `<p style="font-size: 0.85em; margin: 0; color: var(--gold-dim);"><i class="fa-solid fa-sack-dollar"></i> <strong>Botín:</strong> ${enc.loot}</p>` : ''}
-                    </div>
-                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 1rem; margin-top: auto; flex-wrap: wrap;">
-                        <button class="btn" style="padding: 0.4rem 0.8rem; font-size:0.85rem; ${btnStyle}" onclick="window.startCombatFromEncounter('${enc.id}')" title="${btnText}">
-                            <i class="fa-solid fa-khanda"></i> ${btnText}
-                        </button>
-                        <button class="btn" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.openEntityModal('encuentro', '${enc.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.9rem;" onclick="window.deleteEntity('encuentro', '${enc.id}')" title="Borrar"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `;
@@ -72,7 +102,6 @@ window.renderEncuentros = function (currentState) {
     }
 
     html += `
-            </div>
         </div>
     `;
 
