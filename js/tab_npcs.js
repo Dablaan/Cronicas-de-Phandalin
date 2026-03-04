@@ -20,7 +20,7 @@ function renderNpcs(currentState) {
     // Ordenar alfabéticamente
     const sorted = [...visibleNpcs].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es'));
 
-    let html = '<h3><i class="fa-solid fa-users"></i> Personajes Conocidos</h3><div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">';
+    let html = '<h3><i class="fa-solid fa-users"></i> Personajes Conocidos</h3><div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">';
     sorted.forEach(n => {
         const playerNotesOnNpc = n.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
@@ -71,7 +71,7 @@ window.renderDMNpcs = function (currentState) {
             <h3>Gestión de NPCs</h3>
             <button class="btn" onclick="window.openEntityModal('npc')"><i class="fa-solid fa-user-plus"></i> Nuevo NPC</button>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
     `;
 
     if (!npcs || npcs.length === 0) html += '<p class="text-muted">No hay NPCs.</p>';

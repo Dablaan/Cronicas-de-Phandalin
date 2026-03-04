@@ -20,7 +20,7 @@ function renderMaps(currentState) {
     // Ordenar alfabéticamente
     const sorted = [...visibleMaps].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es'));
 
-    let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">';
+    let html = '<h3><i class="fa-solid fa-map"></i> Mapas y Lugares</h3><div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">';
     sorted.forEach(m => {
         const playerNotesOnMap = m.notes?.find(note => note.playerId === session.playerId)?.text || '';
         html += `
@@ -63,7 +63,7 @@ window.renderDMMaps = function (currentState) {
             <h3>Gestión de Localizaciones</h3>
             <button class="btn" onclick="window.openEntityModal('map')"><i class="fa-solid fa-map-location-dot"></i> Nuevo Mapa</button>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
     `;
 
     if (!maps || maps.length === 0) html += '<p class="text-muted">No hay Mapas.</p>';
