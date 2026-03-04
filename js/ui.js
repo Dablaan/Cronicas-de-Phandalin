@@ -1048,25 +1048,58 @@ window.openQuickLook = function (id, type) {
             const getMod = (val) => { const v = parseInt(val, 10) || 10; const mod = Math.floor((v - 10) / 2); return mod >= 0 ? '+' + mod : mod; };
             let html = `
                 <div class="card view-mode" style="padding: 2rem; border: none; box-shadow: none;">
-                    <h2 style="font-size: 2rem; text-align: center; margin-bottom: 0; color: var(--red-ink); text-transform: uppercase;">${monster.name}</h2>
-                    <p style="font-style: italic; color: #555; text-align: center; margin-bottom: 1rem;">${monster.subtitle || ''}</p>
-                    <div style="border-top: 3px solid var(--red-ink); border-bottom: 3px solid var(--red-ink); padding: 0.5rem 0; margin-bottom: 1rem; font-size: 0.95rem; line-height: 1.6;">
-                        <div><strong style="color:var(--red-ink)">CA</strong> ${monster.ac || '-'}</div>
-                        <div><strong style="color:var(--red-ink)">HP</strong> ${monster.hp || '-'}</div>
-                        <div><strong style="color:var(--red-ink)">Velocidad</strong> ${monster.speed || '30 pies'}</div>
+                    
+                    <h2 style="font-size: 2.2rem; text-align: center; margin-bottom: 0; font-family: 'Times New Roman', serif; font-weight: bold; color: var(--red-ink); text-transform: uppercase;">${monster.name}</h2>
+                    <div style="font-size: 1rem; font-style: italic; color: #555; text-align: center; margin-bottom: 0.5rem;">${monster.subtitle || 'Tipo desconocido'}</div>
+                    <div style="font-size: 1.1rem; text-align: center; margin-bottom: 1rem;">
+                        <strong style="color: var(--red-ink);">Desafío (CR):</strong> ${monster.challenge || '-'}
                     </div>
-                    <div style="display:flex; justify-content:space-around; text-align:center; margin-bottom:1rem; font-size:0.85rem;">
-                        <div><strong>FUE</strong><br>${monster.str || 10} (${getMod(monster.str)})</div>
-                        <div><strong>DES</strong><br>${monster.dex || 10} (${getMod(monster.dex)})</div>
-                        <div><strong>CON</strong><br>${monster.con || 10} (${getMod(monster.con)})</div>
-                        <div><strong>INT</strong><br>${monster.int || 10} (${getMod(monster.int)})</div>
-                        <div><strong>SAB</strong><br>${monster.wis || 10} (${getMod(monster.wis)})</div>
-                        <div><strong>CAR</strong><br>${monster.cha || 10} (${getMod(monster.cha)})</div>
+
+                    <!-- Combat Stats -->
+                    <div style="font-size: 1em; line-height: 1.4; border-top: 2px solid var(--red-ink); border-bottom: 2px solid var(--red-ink); padding: 0.8rem 0; margin-bottom: 1rem;">
+                        <div><strong style="color: var(--red-ink);">Clase de Armadura:</strong> ${monster.ac || '-'}</div>
+                        <div><strong style="color: var(--red-ink);">Puntos de Golpe:</strong> ${monster.hp || '-'}</div>
+                        <div><strong style="color: var(--red-ink);">Velocidad:</strong> ${monster.speed || '30 pies'}</div>
+                        ${monster.init ? `<div><strong style="color: var(--red-ink);">Iniciativa:</strong> ${monster.init}</div>` : ''}
                     </div>
-                    ${monster.features ? `<div style="margin-bottom:0.8rem;"><strong style="color:var(--red-ink)">Rasgos.</strong><div style="white-space:pre-wrap;">${monster.features}</div></div>` : ''}
-                    ${monster.actions ? `<div style="margin-bottom:0.8rem;"><strong style="color:var(--red-ink)">Acciones.</strong><div style="white-space:pre-wrap;">${monster.actions}</div></div>` : ''}
-                    ${monster.bonus ? `<div style="margin-bottom:0.8rem;"><strong style="color:var(--red-ink)">Acc. Adicionales.</strong><div style="white-space:pre-wrap;">${monster.bonus}</div></div>` : ''}
-                    ${monster.reactions ? `<div style="margin-bottom:0.8rem;"><strong style="color:var(--red-ink)">Reacciones.</strong><div style="white-space:pre-wrap;">${monster.reactions}</div></div>` : ''}
+
+                    <!-- Attributes Grid -->
+                    <div style="display:flex; justify-content:space-between; text-align:center; margin-bottom:1rem; font-size:0.9rem; color: var(--red-ink);">
+                        <div><strong>FUE</strong><br><span style="color:black;">${monster.str || 10} (${getMod(monster.str)})</span></div>
+                        <div><strong>DES</strong><br><span style="color:black;">${monster.dex || 10} (${getMod(monster.dex)})</span></div>
+                        <div><strong>CON</strong><br><span style="color:black;">${monster.con || 10} (${getMod(monster.con)})</span></div>
+                        <div><strong>INT</strong><br><span style="color:black;">${monster.int || 10} (${getMod(monster.int)})</span></div>
+                        <div><strong>SAB</strong><br><span style="color:black;">${monster.wis || 10} (${getMod(monster.wis)})</span></div>
+                        <div><strong>CAR</strong><br><span style="color:black;">${monster.cha || 10} (${getMod(monster.cha)})</span></div>
+                    </div>
+
+                    <!-- Additional Details -->
+                    <div style="font-size: 0.95em; line-height: 1.4; border-top: 1px solid var(--parchment-dark); border-bottom: 1px solid var(--parchment-dark); padding: 0.8rem 0; margin-bottom: 1.5rem;">
+                        ${monster.saves ? `<div><strong style="color: var(--red-ink);">Tiradas de Salvación:</strong> ${monster.saves}</div>` : ''}
+                        ${monster.skills ? `<div><strong style="color: var(--red-ink);">Habilidades:</strong> ${monster.skills}</div>` : ''}
+                        ${monster.immunities ? `<div><strong style="color: var(--red-ink);">Vulnerabilidades e Inmunidades:</strong> ${monster.immunities}</div>` : ''}
+                        ${monster.senses ? `<div><strong style="color: var(--red-ink);">Sentidos:</strong> ${monster.senses}</div>` : ''}
+                        ${monster.langs ? `<div><strong style="color: var(--red-ink);">Idiomas:</strong> ${monster.langs}</div>` : ''}
+                    </div>
+
+                    <!-- Text Blocks -->
+                    <div style="font-size: 0.95em;">
+                        ${monster.description ? `<div style="font-style: italic; margin-bottom: 1.5rem; color: #444; border-left: 3px solid var(--red-ink); padding-left: 1rem;">${monster.description}</div>` : ''}
+                        ${monster.features ? `<div style="white-space: pre-wrap; margin-bottom: 1.5rem; line-height: 1.5;">${monster.features}</div>` : ''}
+                        
+                        ${monster.actions ? `<h4 style="color: var(--red-ink); border-bottom: 1px dotted var(--red-ink); margin-bottom: 0.5rem; font-size: 1.2rem;">Acciones</h4>
+                        <div style="white-space: pre-wrap; margin-bottom: 1.5rem; line-height: 1.5;">${monster.actions}</div>` : ''}
+                        
+                        ${monster.bonus ? `<h4 style="color: var(--red-ink); border-bottom: 1px dotted var(--red-ink); margin-bottom: 0.5rem; font-size: 1.2rem;">Acciones Adicionales</h4>
+                        <div style="white-space: pre-wrap; margin-bottom: 1.5rem; line-height: 1.5;">${monster.bonus}</div>` : ''}
+                        
+                        ${monster.reactions ? `<h4 style="color: var(--red-ink); border-bottom: 1px dotted var(--red-ink); margin-bottom: 0.5rem; font-size: 1.2rem;">Reacciones</h4>
+                        <div style="white-space: pre-wrap; margin-bottom: 1.5rem; line-height: 1.5;">${monster.reactions}</div>` : ''}
+                        
+                        ${monster.equip ? `<h4 style="color: var(--red-ink); border-bottom: 1px dotted var(--red-ink); margin-bottom: 0.5rem; font-size: 1.2rem;">Equipo</h4>
+                        <div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.5;">${monster.equip}</div>` : ''}
+                    </div>
+
                 </div>
             `;
             container.innerHTML = html;
