@@ -786,7 +786,7 @@ window.openEntityModal = function (type, id = null) {
                     <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom: 0.5rem; flex-wrap: wrap;">
                         <select id="ef-monster-select" style="flex:3; padding: 0.5rem; min-width: 120px;">
                             <option value="">-- Selecciona Monstruo --</option>
-                            ${bestiario.map(b => `<option value="${b.id}">${b.name} (CA ${b.ac}, HP ${b.hp})</option>`).join('')}
+                            ${[...bestiario].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es')).map(b => `<option value="${b.id}">${b.name} (CA ${b.ac}, HP ${b.hp})</option>`).join('')}
                         </select>
                         <input type="number" id="ef-monster-qty" value="1" min="1" style="flex:1; padding: 0.5rem; text-align:center; min-width: 50px;" placeholder="Cant.">
                         <input type="number" id="ef-monster-init" value="" min="1" max="30" style="flex:1; padding: 0.5rem; text-align:center; min-width: 50px;" placeholder="Inic.">

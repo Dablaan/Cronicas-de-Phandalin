@@ -410,14 +410,17 @@ window.renderBestiario = function (currentState) {
             return mod >= 0 ? '+' + mod : mod;
         };
 
-        bestiario.forEach(m => {
+        // Ordenar alfabéticamente por nombre
+        const sorted = [...bestiario].sort((a, b) => (a.name || '').localeCompare(b.name || '', 'es'));
+
+        sorted.forEach(m => {
             html += `
                 <div class="card card-horizontal" ondblclick="window.openQuickLook('${m.id}', 'monster')" style="cursor: pointer; position: relative; ${m.isVisible ? '' : 'opacity: 0.8; border-style: dashed;'}">
                     
                     <!-- Image -->
                     ${m.url
-                    ? `<img src="${m.url}" class="card-horizontal-img" style="width: 120px; height: 120px;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
-                    : `<div class="card-horizontal-img" style="width: 120px; height: 120px; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark); box-shadow: 0 4px 6px rgba(0,0,0,0.3);"><i class="fa-solid fa-dragon fa-3x text-muted"></i></div>`
+                    ? `<img src="${m.url}" class="card-horizontal-img" style="width: 80px; height: 80px;" onclick="event.stopPropagation(); window.openLightbox('${m.url}')" title="Clic para ampliar">`
+                    : `<div class="card-horizontal-img" style="width: 80px; height: 80px; background-color: var(--leather-light); display: flex; justify-content: center; align-items: center; border: 1px solid var(--leather-dark); box-shadow: 0 4px 6px rgba(0,0,0,0.3);"><i class="fa-solid fa-dragon fa-2x text-muted"></i></div>`
                 }
                     
                     <!-- Content -->
@@ -425,11 +428,11 @@ window.renderBestiario = function (currentState) {
                         
                         <!-- Header -->
                         <div>
-                             <h4 style="margin: 0; font-size: 1.6em; font-family: 'Times New Roman', serif; font-weight: bold; color: var(--red-ink); text-transform: uppercase;">${m.name}</h4>
-                             <div style="font-size: 0.85em; font-style: italic; color: #555;">${m.subtitle || 'Tipo desconocido'}</div>
+                             <h4 style="margin: 0; font-size: 1.2em; font-family: 'Times New Roman', serif; font-weight: bold; color: var(--red-ink); text-transform: uppercase;">${m.name}</h4>
+                             <div style="font-size: 0.8em; font-style: italic; color: #555;">${m.subtitle || 'Tipo desconocido'}</div>
                              
-                             <div style="margin-top: 1rem; font-size: 1.1em;">
-                                <strong style="color: var(--red-ink);">Desafío (CR):</strong> ${m.challenge || '-'}
+                             <div style="margin-top: 0.5rem; font-size: 0.95em;">
+                                <strong style="color: var(--red-ink);">CR:</strong> ${m.challenge || '-'}
                              </div>
                         </div>
 
