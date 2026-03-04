@@ -439,7 +439,7 @@ function renderPublicScreen(currentState) {
     }
 
     if (window.renderPartyInfo) {
-        window.renderPartyInfo(players, false, 'tab-sheet');
+        window.renderPartyInfo(players, false, 'tab-sheet', true);
     }
 }
 

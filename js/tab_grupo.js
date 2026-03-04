@@ -2,7 +2,7 @@
 // Player Features: Party & Initiative Tracker (Extracted)
 // ----------------------------------------------------
 
-window.renderPartyInfo = function (players, isDM, containerId = 'tab-party') {
+window.renderPartyInfo = function (players, isDM, containerId = 'tab-party', isPublicScreen = false) {
     const container = document.getElementById(containerId);
 
     if (players.length === 0) {
@@ -10,7 +10,14 @@ window.renderPartyInfo = function (players, isDM, containerId = 'tab-party') {
         return;
     }
 
-    let html = '<div class="party-grid">';
+    let html = '';
+    if (isPublicScreen) {
+        // En la pantalla del master, los jugadores se ven en una sola fila y se despliegan en horizontal
+        html += '<div class="party-row" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1.5rem; width: 100%;">';
+    } else {
+        // Cuadrícula dinámica para los jugadores/DM
+        html += '<div class="party-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">';
+    }
 
     players.forEach(p => {
         let hpPercent = Math.max(0, Math.min(100, (p.hpCurrent / p.hpMax) * 100));
@@ -24,8 +31,9 @@ window.renderPartyInfo = function (players, isDM, containerId = 'tab-party') {
         };
 
         const inspiredClass = p.inspiration ? ' is-inspired' : '';
+        const publicStyles = isPublicScreen ? 'min-width: 380px; flex-shrink: 0;' : '';
         html += `
-            <div class="card${inspiredClass}" style="cursor: pointer;" title="Ficha de Grupo">
+            <div class="card${inspiredClass}" style="cursor: pointer; ${publicStyles}" title="Ficha de Grupo">
                 <div class="flex-between" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.8rem;">
                         <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: var(--leather-light); display: flex; align-items: center; justify-content: center; border: 2px solid var(--leather-dark); flex-shrink: 0;">
