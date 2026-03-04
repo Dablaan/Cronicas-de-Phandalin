@@ -38,12 +38,12 @@ window.renderEncuentros = function (currentState) {
         sortedLocations.forEach(loc => {
             const locId = 'enc-loc-' + loc.replace(/[^a-zA-Z0-9]/g, '_');
             html += `
-                <div style="margin-bottom: 1rem; border: 1px solid var(--parchment-dark); border-radius: var(--radius-md); overflow: hidden;">
-                    <div class="flex-between" style="cursor: pointer; padding: 0.8rem 1rem; background: var(--glass-dark-bg); border-bottom: 1px solid var(--parchment-dark);" onclick="document.getElementById('${locId}').classList.toggle('hidden')">
+                <div style="margin-bottom: 1rem; border: 1px solid var(--parchment-dark); border-radius: var(--radius-md);">
+                    <div class="flex-between" style="cursor: pointer; padding: 0.8rem 1rem; background: var(--glass-dark-bg); border-bottom: 1px solid var(--parchment-dark);" onclick="var el=document.getElementById('${locId}'); el.classList.toggle('hidden'); this.querySelector('.enc-chevron').classList.toggle('fa-chevron-down'); this.querySelector('.enc-chevron').classList.toggle('fa-chevron-right');">
                         <h4 style="margin: 0; font-size: 1.1rem; color: var(--leather-dark);"><i class="fa-solid fa-location-dot" style="color: var(--red-ink);"></i> ${loc} <span style="font-size: 0.85em; color: var(--text-muted); font-weight: normal;">(${grouped[loc].length} encuentro${grouped[loc].length > 1 ? 's' : ''})</span></h4>
-                        <i class="fa-solid fa-chevron-down" style="font-size: 0.8em; color: var(--text-muted);"></i>
+                        <i class="fa-solid fa-chevron-right enc-chevron" style="font-size: 0.8em; color: var(--text-muted);"></i>
                     </div>
-                    <div id="${locId}" style="padding: 0.8rem;">
+                    <div id="${locId}" class="hidden" style="padding: 0.8rem;">
                         <div class="grid-2">
             `;
 
