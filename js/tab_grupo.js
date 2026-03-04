@@ -14,7 +14,7 @@ window.renderPartyInfo = function (players, isDM, containerId = 'tab-party', isP
     if (isPublicScreen) {
         // En la pantalla del master, los jugadores se ven en una sola fila y se despliegan en horizontal
         html += '<div class="estado-grupo-header"><h1 class="estado-grupo-titulo">Estado del grupo</h1><hr class="estado-grupo-linea"></div>';
-        html += '<div class="party-row dm-espaciado-seguro" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1.5rem; width: 100%;">';
+        html += '<div class="party-row dm-espaciado-seguro" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; padding-bottom: 1.5rem; width: 100%;">';
     } else {
         // Cuadrícula dinámica para los jugadores/DM
         html += '<div class="party-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">';
@@ -32,7 +32,7 @@ window.renderPartyInfo = function (players, isDM, containerId = 'tab-party', isP
         };
 
         const inspiredClass = p.inspiration ? ' is-inspired' : '';
-        const publicStyles = isPublicScreen ? 'min-width: 380px; flex-shrink: 0;' : '';
+        const publicStyles = isPublicScreen ? 'min-width: 320px; max-width: 400px; flex: 1 1 320px;' : '';
         html += `
             <div class="card${inspiredClass}" style="cursor: pointer; ${publicStyles}" title="Ficha de Grupo">
                 <div class="flex-between" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
