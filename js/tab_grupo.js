@@ -13,7 +13,8 @@ window.renderPartyInfo = function (players, isDM, containerId = 'tab-party', isP
     let html = '';
     if (isPublicScreen) {
         // En la pantalla del master, los jugadores se ven en una sola fila y se despliegan en horizontal
-        html += '<div class="party-row" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1.5rem; width: 100%;">';
+        html += '<div class="estado-grupo-header"><h1 class="estado-grupo-titulo">Estado del grupo</h1><hr class="estado-grupo-linea"></div>';
+        html += '<div class="party-row dm-espaciado-seguro" style="display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1.5rem; width: 100%;">';
     } else {
         // Cuadrícula dinámica para los jugadores/DM
         html += '<div class="party-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">';
