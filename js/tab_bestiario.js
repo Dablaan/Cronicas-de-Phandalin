@@ -2,15 +2,167 @@
 // Player Features: Bestiario (Extracted)
 // ----------------------------------------------------
 
+// --- TEMPORAL: Función para poblar bestiario desde el cliente ---
+window.poblarBestiario = async function () {
+    const srdMonsters = [
+        {
+            id: 'm_srd_goblin',
+            name: 'Goblin',
+            subtitle: 'Humanoide pequeño (goblinoide), neutral malvado',
+            url: 'img/placeholder.png',
+            isVisible: true,
+            ac: 15,
+            hp: 7,
+            hpCurrent: 7,
+            hpMax: 7,
+            speed: '30 pies',
+            str: 8, dex: 14, con: 10, int: 10, wis: 8, cha: 8,
+            skills: 'Sigilo +6',
+            senses: 'Visión en la oscuridad 60 pies, Percepción pasiva 9',
+            challenge: '1/4 (50 XP)',
+            description: 'Pequeños humanoides de piel verdosa que habitan en cuevas y ruinas. Son cobardes individualmente pero peligrosos en grupo.',
+            features: '',
+            actions: 'Cimitarra: Ataque cuerpo a cuerpo: +4 a impactar, alcance 5 pies. Impacto: 5 (1d6 + 2) daño cortante.\n\nArco Corto: Ataque a distancia: +4 a impactar, alcance 80/320 pies. Impacto: 5 (1d6 + 2) daño perforante.',
+            bonus: 'Escapar Ágil: El goblin realiza la acción de Esconderse o Retirarse como acción adicional.',
+            reactions: '',
+            equip: 'Armadura de cuero, escudo, cimitarra, arco corto',
+            _uiSecretVisible: false
+        },
+        {
+            id: 'm_srd_skeleton',
+            name: 'Esqueleto',
+            subtitle: 'No-muerto mediano, legal malvado',
+            url: 'img/placeholder.png',
+            isVisible: true,
+            ac: 13,
+            hp: 13,
+            hpCurrent: 13,
+            hpMax: 13,
+            speed: '30 pies',
+            str: 10, dex: 14, con: 15, int: 6, wis: 8, cha: 5,
+            skills: '',
+            senses: 'Visión en la oscuridad 60 pies, Percepción pasiva 9',
+            challenge: '1/4 (50 XP)',
+            description: 'Restos animados de un humanoide, impulsados por magia oscura. Obedecen ciegamente a su creador.',
+            features: 'Vulnerabilidad al daño contundente.\n\nInmunidad al veneno y a la condición envenenado.',
+            actions: 'Espada Corta: Ataque cuerpo a cuerpo: +4 a impactar, alcance 5 pies. Impacto: 5 (1d6 + 2) daño perforante.\n\nArco Corto: Ataque a distancia: +4 a impactar, alcance 80/320 pies. Impacto: 5 (1d6 + 2) daño perforante.',
+            bonus: '',
+            reactions: '',
+            equip: 'Armadura de fragmentos, espada corta, arco corto',
+            _uiSecretVisible: false
+        },
+        {
+            id: 'm_srd_wolf',
+            name: 'Lobo',
+            subtitle: 'Bestia mediana, sin alineamiento',
+            url: 'img/placeholder.png',
+            isVisible: true,
+            ac: 13,
+            hp: 11,
+            hpCurrent: 11,
+            hpMax: 11,
+            speed: '40 pies',
+            str: 12, dex: 15, con: 12, int: 3, wis: 12, cha: 6,
+            skills: 'Percepción +3, Sigilo +4',
+            senses: 'Percepción pasiva 13',
+            challenge: '1/4 (50 XP)',
+            description: 'Depredador ágil que caza en manada. Su fuerza reside en la coordinación con otros lobos.',
+            features: 'Oído y Olfato Agudos: Ventaja en pruebas de Sabiduría (Percepción) basadas en oído u olfato.\n\nTácticas de Manada: Ventaja en tiradas de ataque contra una criatura si un aliado del lobo está a 5 pies y no está incapacitado.',
+            actions: 'Mordisco: Ataque cuerpo a cuerpo: +4 a impactar, alcance 5 pies. Impacto: 7 (2d4 + 2) daño perforante. El objetivo debe superar una salvación de Fuerza DC 11 o caer derribado.',
+            bonus: '',
+            reactions: '',
+            equip: '',
+            _uiSecretVisible: false
+        },
+        {
+            id: 'm_srd_zombie',
+            name: 'Zombie',
+            subtitle: 'No-muerto mediano, neutral malvado',
+            url: 'img/placeholder.png',
+            isVisible: true,
+            ac: 8,
+            hp: 22,
+            hpCurrent: 22,
+            hpMax: 22,
+            speed: '20 pies',
+            str: 13, dex: 6, con: 16, int: 3, wis: 6, cha: 5,
+            skills: '',
+            senses: 'Visión en la oscuridad 60 pies, Percepción pasiva 8',
+            challenge: '1/4 (50 XP)',
+            description: 'Cadáver reanimado por nigromancia. Lento pero resistente, avanza sin cesar hacia sus víctimas.',
+            features: 'Fortaleza de No-Muerto: Si el daño reduce al zombie a 0 HP, realiza una tirada de salvación de Constitución (DC 5 + daño recibido). Si tiene éxito, queda a 1 HP en su lugar. No funciona con daño radiante ni golpes críticos.\n\nInmunidad al veneno y a la condición envenenado.',
+            actions: 'Golpe: Ataque cuerpo a cuerpo: +3 a impactar, alcance 5 pies. Impacto: 4 (1d6 + 1) daño contundente.',
+            bonus: '',
+            reactions: '',
+            equip: '',
+            _uiSecretVisible: false
+        },
+        {
+            id: 'm_srd_orc',
+            name: 'Orco',
+            subtitle: 'Humanoide mediano (orco), caótico malvado',
+            url: 'img/placeholder.png',
+            isVisible: true,
+            ac: 13,
+            hp: 15,
+            hpCurrent: 15,
+            hpMax: 15,
+            speed: '30 pies',
+            str: 16, dex: 12, con: 16, int: 7, wis: 11, cha: 10,
+            skills: 'Intimidación +2',
+            senses: 'Visión en la oscuridad 60 pies, Percepción pasiva 10',
+            challenge: '1/2 (100 XP)',
+            description: 'Guerreros brutales y agresivos que viven para la batalla. Sirven a jefes tribales o señores de la guerra.',
+            features: 'Agresivo: Como acción adicional, el orco puede moverse hasta su velocidad hacia una criatura hostil visible.',
+            actions: 'Gran Hacha: Ataque cuerpo a cuerpo: +5 a impactar, alcance 5 pies. Impacto: 9 (1d12 + 3) daño cortante.\n\nJabalina: Ataque cuerpo a cuerpo o a distancia: +5 a impactar, alcance 5 pies o 30/120 pies. Impacto: 6 (1d6 + 3) daño perforante.',
+            bonus: 'Agresivo: El orco se mueve hasta su velocidad hacia una criatura hostil que pueda ver.',
+            reactions: '',
+            equip: 'Pieles, gran hacha, jabalina',
+            _uiSecretVisible: false
+        }
+    ];
+
+    try {
+        const currentState = window.state.get();
+        const existingBestiario = currentState.bestiario || [];
+
+        // Filtrar duplicados por ID
+        const newMonsters = srdMonsters.filter(
+            nm => !existingBestiario.find(em => em.id === nm.id)
+        );
+
+        if (newMonsters.length === 0) {
+            console.log('⚠️ Poblar Bestiario: Todos los monstruos SRD ya existen. No se añadió nada.');
+            alert('Todos los monstruos SRD ya están en el bestiario.');
+            return;
+        }
+
+        const updatedBestiario = [...existingBestiario, ...newMonsters];
+        await window.state.update({ bestiario: updatedBestiario });
+
+        console.log(`✅ Poblar Bestiario: ${newMonsters.length} monstruos añadidos correctamente a Supabase.`);
+        console.log('Monstruos añadidos:', newMonsters.map(m => m.name).join(', '));
+        alert(`¡Éxito! ${newMonsters.length} monstruos añadidos: ${newMonsters.map(m => m.name).join(', ')}`);
+    } catch (err) {
+        console.error('❌ Error al poblar bestiario:', err);
+        alert('Error al poblar bestiario. Revisa la consola.');
+    }
+};
+// --- FIN TEMPORAL ---
+
 window.renderBestiario = function (currentState) {
     const { bestiario } = currentState;
+    const isDM = currentState.session && currentState.session.role === 'DM';
     const container = document.getElementById('tab-bestiario');
     if (!container) return;
 
     let html = `
         <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem;">
             <h3>Bestiario Monstruoso</h3>
-            <button class="btn" onclick="window.openEntityModal('monster')"><i class="fa-solid fa-dragon"></i> Nuevo Monstruo</button>
+            <div style="display: flex; gap: 0.5rem;">
+                ${isDM ? `<button class="btn" style="background: var(--gold-dim); color: #fff;" onclick="window.poblarBestiario()"><i class="fa-solid fa-wand-magic-sparkles"></i> Poblar Bestiario</button>` : ''}
+                <button class="btn" onclick="window.openEntityModal('monster')"><i class="fa-solid fa-dragon"></i> Nuevo Monstruo</button>
+            </div>
         </div>
         <div class="grid-2">
     `;
