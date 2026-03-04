@@ -90,7 +90,7 @@ window.renderDMNpcs = function (currentState) {
                 }
                     </div>
                     
-                    <!-- Name + Stats -->
+                    <!-- Name + Visibility -->
                     <div class="flex-between" style="flex-wrap: nowrap; margin-bottom: 0.2rem;">
                         <h4 style="margin: 0; font-size: 1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${n.name}">${n.name}</h4>
                         <button class="btn ${n.isVisible ? '' : 'btn-danger'}" style="padding: 0.1rem 0.3rem; font-size: 0.7rem; margin-left: 5px; flex-shrink: 0;" onclick="event.stopPropagation(); window.toggleEntityVisibility('npc', '${n.id}')" title="${n.isVisible ? 'Visible' : 'Oculto'}"><i class="fa-solid ${n.isVisible ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
@@ -98,6 +98,30 @@ window.renderDMNpcs = function (currentState) {
                     <div style="font-size: 0.75em; font-style: italic; color: #555; margin-bottom: 0.3rem;">${n.raceAlignment || 'Desconocido'}</div>
                     <div style="font-size: 0.8em; color: var(--leather-dark); font-weight: bold;">
                         <span>CA: ${n.ac || '-'}</span> · <span style="color: var(--red-ink);">HP: ${n.hp || '-'}</span>
+                    </div>
+
+                    <!-- Collapsible Details -->
+                    <div style="background: rgba(0,0,0,0.02); padding: 0.4rem; margin-top: 0.5rem; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05);">
+                        <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('npc', '${n.id}')">
+                            <strong style="color: var(--leather-dark); font-size: 0.8em;"><i class="fa-solid fa-list-ul"></i> Detalles</strong>
+                            <i class="fa-solid ${n._uiSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.7em; color: var(--text-muted);"></i>
+                        </div>
+                        ${n._uiSecretVisible ? `
+                            <div style="margin-top: 0.5rem; font-size: 0.85em; animation: fadeInSlideUp 0.3s ease-out forwards;">
+                                <p style="white-space: pre-wrap; margin-bottom: 0.5rem;"><i class="fa-solid fa-theater-masks"></i> <strong>Actitud/Voz:</strong> ${n.behavior || '...'}</p>
+                                
+                                <!-- Secreto DM con toggle -->
+                                <div style="background: rgba(0,0,0,0.03); border-left: 3px solid var(--red-ink); padding: 0.4rem; border-radius: 0 4px 4px 0;">
+                                    <div class="flex-between">
+                                        <strong style="color: var(--red-ink); font-size: 0.85em;"><i class="fa-solid fa-user-secret"></i> Secreto</strong>
+                                        <button class="btn" style="padding: 0.1rem 0.3rem; font-size: 0.65rem; background: ${n.secretVisible ? 'var(--gold-dim)' : 'transparent'}; border: 1px solid var(--parchment-dark);" onclick="event.stopPropagation(); window.toggleSecretVisibility('npc', '${n.id}')" title="${n.secretVisible ? 'Visible para Jugadores' : 'Oculto para Jugadores'}">
+                                            <i class="fa-solid ${n.secretVisible ? 'fa-unlock' : 'fa-lock'}"></i>
+                                        </button>
+                                    </div>
+                                    <p style="white-space: pre-wrap; margin: 0.3em 0 0 0; font-size: 0.95em;">${n.motivation || 'Sin notas secretas.'}</p>
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
 
                     <!-- CRUD -->

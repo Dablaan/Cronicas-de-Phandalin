@@ -89,6 +89,28 @@ window.renderDMMaps = function (currentState) {
                     </div>
                     <div style="font-size: 0.75em; color: var(--gold-dim); font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">${m.environmentType || 'Ubicación Desconocida'}</div>
 
+                    <!-- Collapsible Details -->
+                    <div style="background: rgba(0,0,0,0.02); padding: 0.4rem; margin-top: 0.5rem; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05);">
+                        <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('map', '${m.id}')">
+                            <strong style="color: var(--leather-dark); font-size: 0.8em;"><i class="fa-solid fa-list-ul"></i> Detalles</strong>
+                            <i class="fa-solid ${m._uiSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.7em; color: var(--text-muted);"></i>
+                        </div>
+                        ${m._uiSecretVisible ? `
+                            <div style="margin-top: 0.5rem; font-size: 0.85em; animation: fadeInSlideUp 0.3s ease-out forwards;">
+                                <!-- Notas DM con toggle -->
+                                <div style="background: rgba(0,0,0,0.03); border-left: 3px solid var(--red-ink); padding: 0.4rem; border-radius: 0 4px 4px 0;">
+                                    <div class="flex-between">
+                                        <strong style="color: var(--red-ink); font-size: 0.85em;"><i class="fa-solid fa-mask"></i> Notas DM</strong>
+                                        <button class="btn" style="padding: 0.1rem 0.3rem; font-size: 0.65rem; background: ${m.secretVisible ? 'var(--gold-dim)' : 'transparent'}; border: 1px solid var(--parchment-dark);" onclick="event.stopPropagation(); window.toggleSecretVisibility('map', '${m.id}')" title="${m.secretVisible ? 'Visible para Jugadores' : 'Oculto para Jugadores'}">
+                                            <i class="fa-solid ${m.secretVisible ? 'fa-unlock' : 'fa-lock'}"></i>
+                                        </button>
+                                    </div>
+                                    <div style="white-space: pre-wrap; margin: 0.3em 0 0 0; font-size: 0.95em;">${m.dmNotes || 'Sin notas del master.'}</div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+
                     <!-- CRUD -->
                     <div style="display: flex; gap: 0.3rem; margin-top: auto; justify-content: flex-end; padding-top: 0.4rem; border-top: 1px solid var(--parchment-dark);">
                         ${m.url ? `<button class="btn btn-project" style="padding: 0.2rem 0.4rem; font-size:0.75rem; ${(window.state.get().publicDisplay || {}).imageUrl === m.url ? 'background: var(--gold-dim); color: #fff;' : ''}" onclick="event.stopPropagation(); window.projectToScreen('${m.url}')" title="Proyectar"><i class="fa-solid fa-display"></i></button>` : ''}
