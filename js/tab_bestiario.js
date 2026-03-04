@@ -34,77 +34,16 @@ window.renderBestiario = function (currentState) {
                 }
                     
                     <!-- Content -->
-                    <div class="card-horizontal-content" style="color: var(--leather-dark);">
+                    <div class="card-horizontal-content" style="color: var(--leather-dark); display: flex; flex-direction: column; justify-content: space-between; padding: 1rem;">
                         
                         <!-- Header -->
-                         <div class="flex-between mb-1" style="flex-wrap: nowrap;">
+                        <div>
                              <h4 style="margin: 0; font-size: 1.6em; font-family: 'Times New Roman', serif; font-weight: bold; color: var(--red-ink); text-transform: uppercase;">${m.name}</h4>
-                         </div>
-                        <div style="font-size: 0.85em; font-style: italic; color: #555; margin-top: -8px;">${m.subtitle || 'Tipo desconocido'}</div>
-                        
-                        <div style="border-bottom: 3px solid var(--red-ink); margin: 0.5rem 0;"></div>
-
-                        <!-- Combat Stats -->
-                        <div style="font-size: 0.9em; line-height: 1.4;">
-                            <div><strong style="color: var(--red-ink);">Clase de Armadura</strong> ${m.ac || '-'}</div>
-                            <div><strong style="color: var(--red-ink);">Puntos de Golpe</strong> ${m.hp || '-'}</div>
-                            <div><strong style="color: var(--red-ink);">Velocidad</strong> ${m.speed || '30 pies'}</div>
-                            ${m.init ? `<div><strong style="color: var(--red-ink);">Iniciativa</strong> ${m.init}</div>` : ''}
-                        </div>
-
-                        <div style="border-bottom: 2px solid var(--red-ink); margin: 0.5rem 0;"></div>
-
-                        <!-- Attributes Grid -->
-                         <div style="display:flex; gap:10px; font-size: 0.8em; justify-content: space-between; text-align: center; color: var(--red-ink);">
-                             <div><strong>FUE</strong><br><span style="color:black;">${m.str || 10} (${getMod(m.str)})</span></div>
-                             <div><strong>DES</strong><br><span style="color:black;">${m.dex || 10} (${getMod(m.dex)})</span></div>
-                             <div><strong>CON</strong><br><span style="color:black;">${m.con || 10} (${getMod(m.con)})</span></div>
-                             <div><strong>INT</strong><br><span style="color:black;">${m.int || 10} (${getMod(m.int)})</span></div>
-                             <div><strong>SAB</strong><br><span style="color:black;">${m.wis || 10} (${getMod(m.wis)})</span></div>
-                             <div><strong>CAR</strong><br><span style="color:black;">${m.cha || 10} (${getMod(m.cha)})</span></div>
-                         </div>
-
-                        <div style="border-bottom: 2px solid var(--red-ink); margin: 0.5rem 0;"></div>
-
-                        <!-- Additional Details -->
-                        <div style="font-size: 0.85em; line-height: 1.4;">
-                            ${m.saves ? `<div><strong style="color: var(--red-ink);">Tiradas de Salvación</strong> ${m.saves}</div>` : ''}
-                            ${m.skills ? `<div><strong style="color: var(--red-ink);">Habilidades</strong> ${m.skills}</div>` : ''}
-                            ${m.immunities ? `<div><strong style="color: var(--red-ink);">Vulnerabilidades / Inmunidades</strong> ${m.immunities}</div>` : ''}
-                            ${m.senses ? `<div><strong style="color: var(--red-ink);">Sentidos</strong> ${m.senses}</div>` : ''}
-                            ${m.langs ? `<div><strong style="color: var(--red-ink);">Idiomas</strong> ${m.langs}</div>` : ''}
-                            ${m.challenge ? `<div><strong style="color: var(--red-ink);">Desafío</strong> ${m.challenge}</div>` : ''}
-                        </div>
-
-                        <div style="border-bottom: 2px solid var(--red-ink); margin: 0.5rem 0;"></div>
-
-                        <!-- Text Blocks (Collapsible) -->
-                        <div style="background: rgba(0,0,0,0.02); padding: 0.5rem; margin-bottom: 1rem; border-radius: 4px;">
-                            <div class="flex-between" style="cursor: pointer;" onclick="event.stopPropagation(); window.toggleDmSecretVisibility('monster', '${m.id}')">
-                                <strong style="color: var(--red-ink); font-size: 0.9em;"><i class="fa-solid fa-book-skull"></i> Bloque de Combate y Rasgos</strong>
-                                <i class="fa-solid ${m._uiSecretVisible ? 'fa-chevron-up' : 'fa-chevron-down'}" style="font-size: 0.8em; color: var(--text-muted);"></i>
-                            </div>
-                            
-                            ${m._uiSecretVisible ? `
-                                <div style="font-size: 0.85em; margin-top: 1rem;">
-                                    ${m.description ? `<div style="font-style: italic; margin-bottom: 1rem; color: #444; border-left: 2px solid var(--red-ink); padding-left: 0.5rem;">${m.description}</div>` : ''}
-                                    ${m.features ? `<div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.features}</div>` : ''}
-                                    
-                                    ${m.actions ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Acciones</h5>
-                                    <div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.actions}</div>` : ''}
-                                    
-                                    ${m.bonus ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Acciones Adicionales</h5>
-                                    <div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.bonus}</div>` : ''}
-                                    
-                                    ${m.reactions ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Reacciones</h5>
-                                    <div style="white-space: pre-wrap; margin-bottom: 1rem; line-height: 1.4;">${m.reactions}</div>` : ''}
-                                    
-                                    ${m.equip ? `<h5 style="color: var(--red-ink); border-bottom: 1px solid var(--red-ink); margin-bottom: 0.3rem;">Equipo</h5>
-                                    <div style="white-space: pre-wrap; margin-bottom: 0.5rem; line-height: 1.4;">${m.equip}</div>` : ''}
-                                    
-                                    ${(!m.features && !m.actions && !m.bonus && !m.reactions && !m.equip) ? '<p class="text-muted">El bloque de combate está vacío.</p>' : ''}
-                                </div>
-                            ` : ''}
+                             <div style="font-size: 0.85em; font-style: italic; color: #555;">${m.subtitle || 'Tipo desconocido'}</div>
+                             
+                             <div style="margin-top: 1rem; font-size: 1.1em;">
+                                <strong style="color: var(--red-ink);">Desafío (CR):</strong> ${m.challenge || '-'}
+                             </div>
                         </div>
 
                         <!-- Acciones CRUD -->

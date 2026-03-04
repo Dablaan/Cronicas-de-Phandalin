@@ -385,7 +385,7 @@ function renderTabContent(tabId, currentState) {
             window.renderPlayerSheet(session.playerId, players);
         }
     } else if (tabId === 'tab-party') {
-        renderPartyInfo(players, isDM);
+        window.renderPartyInfo(players, isDM);
     } else if (tabId === 'tab-npcs') {
         renderNpcs(currentState);
     } else if (tabId === 'tab-maps') {
@@ -438,40 +438,9 @@ function renderPublicScreen(currentState) {
         document.body.appendChild(projectionOverlay);
     }
 
-    html += '<h2 style="text-align:center; margin-bottom:1.5rem; color:var(--leather-dark); letter-spacing: 2px;"><i class="fa-solid fa-users"></i> El Grupo de Aventureros</h2>';
-    html += '<div class="grid-2" style="max-width: 1200px; margin: 0 auto; gap: 1.5rem;">';
-
-    players.forEach(p => {
-        const { percent, color } = getHealthBarData(p.hpCurrent, p.hpMax);
-
-        html += `
-            <div class="card" style="padding: 1.2rem; box-shadow: var(--box-shadow-main);">
-                <div class="flex-between mb-1" style="border-bottom: 2px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.8rem;">
-                    <h3 style="margin:0; font-size: 1.5rem;">${p.name || 'Desconocido'} <span style="font-size:0.8rem; color:var(--text-muted); font-family: var(--font-body); text-transform: uppercase;">Lvl ${p.level} ${p.class}</span></h3>
-                </div>
-                <div class="party-hp-bar-container" style="height: 25px; border-radius: 4px; overflow: hidden; border: 1px solid var(--leather-dark);">
-                    <div class="party-hp-bar-fill" style="width: ${percent}%; background-color: ${color}; transition: width 0.4s ease;"></div>
-                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.9rem; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
-                        ${p.hpCurrent} / ${p.hpMax} HP
-                    </div>
-                </div>
-                <div class="flex-between" style="font-size: 1rem; padding-top: 0.8rem; color: var(--leather-dark); font-weight: bold;">
-                    <span><i class="fa-solid fa-shield" style="color:var(--gold-dim)"></i> CA: ${p.ac || 10}</span>
-                    <span><i class="fa-solid fa-bolt" style="color:var(--gold-dim)"></i> INIC: ${p.initiative || 0}</span>
-                    <span><i class="fa-solid fa-eye" style="color:var(--gold-dim)"></i> PAS: ${p.passivePerception || 10}</span>
-                </div>
-            </div>
-        `;
-    });
-
-    html += '</div>';
-
-    if (combatTracker && combatTracker.active) {
-        html += renderInitiativeTracker(combatTracker, false, players);
+    if (window.renderPartyInfo) {
+        window.renderPartyInfo(players, false, 'tab-sheet');
     }
-
-    html += '</div>';
-    container.innerHTML = html;
 }
 
 window.projectToScreen = function (imageUrl) {

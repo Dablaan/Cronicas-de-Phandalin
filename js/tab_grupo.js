@@ -2,8 +2,8 @@
 // Player Features: Party & Initiative Tracker (Extracted)
 // ----------------------------------------------------
 
-function renderPartyInfo(players, isDM) {
-    const container = document.getElementById('tab-party');
+window.renderPartyInfo = function (players, isDM, containerId = 'tab-party') {
+    const container = document.getElementById(containerId);
 
     if (players.length === 0) {
         container.innerHTML = '<p>El grupo aún no se ha formado.</p>';
@@ -27,7 +27,18 @@ function renderPartyInfo(players, isDM) {
         html += `
             <div class="card${inspiredClass}" style="cursor: pointer;" title="Ficha de Grupo">
                 <div class="flex-between" style="border-bottom: 1px solid var(--parchment-dark); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                    <h3 style="margin:0;">${p.name || 'Desconocido'} <span style="font-size:0.9rem; color:var(--text-muted)">Lvl ${p.level} ${p.class}</span></h3>
+                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <div style="width: 48px; height: 48px; border-radius: 50%; overflow: hidden; background: var(--leather-light); display: flex; align-items: center; justify-content: center; border: 2px solid var(--leather-dark); flex-shrink: 0;">
+                            ${p.avatarUrl
+                ? `<img src="${p.avatarUrl}" alt="${p.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+                : `<i class="fa-solid fa-user fa-lg" style="color: var(--parchment-light);"></i>`
+            }
+                        </div>
+                        <div>
+                            <h3 style="margin:0;">${p.name || 'Desconocido'}</h3>
+                            <span style="font-size:0.85rem; color:var(--text-muted)">Lvl ${p.level || 1} ${p.class || ''}</span>
+                        </div>
+                    </div>
                     ${isDM ? `
                         <div style="display:flex; gap:0.3rem;" ondblclick="event.stopPropagation()">
                             <button class="btn" style="padding: 0.3rem 0.7rem; font-size: 1rem; font-weight:bold;" onclick="event.stopPropagation(); window.updateSheet('${p.id}', 'hpCurrent', ${p.hpCurrent - 1})">−</button>
