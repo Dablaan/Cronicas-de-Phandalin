@@ -774,11 +774,18 @@ window.openEntityModal = function (type, id = null) {
             <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
                 <input type="text" id="ef-name" value="${entity.name || ''}" placeholder="Nombre de la Escena (Ej: Emboscada en el camino)">
                 
-                <div style="display: flex; gap: 1rem;">
-                    <select id="ef-location" style="flex: 1; padding: 0.5rem;">
-                        <option value="">-- Sin localización específica --</option>
-                        ${maps.map(m => `<option value="${m.name}" ${entity.location === m.name ? 'selected' : ''}>${m.name}</option>`).join('')}
-                    </select>
+                <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-location-dot"></i> Localización</label>
+                        <select id="ef-location" style="padding: 0.5rem; width: 100%;">
+                            <option value="">-- Sin localización específica --</option>
+                            ${maps.map(m => `<option value="${m.name}" ${entity.location === m.name ? 'selected' : ''}>${m.name}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div style="width: 80px;">
+                        <label style="font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-hashtag"></i> Nº Sala</label>
+                        <input type="number" id="ef-room" value="${entity.room || ''}" min="0" placeholder="Nº" style="padding: 0.5rem; text-align: center; width: 100%;">
+                    </div>
                 </div>
 
                 <div style="background: rgba(0,0,0,0.05); padding: 1rem; border-radius: 8px; border: 1px solid var(--parchment-dark);">
@@ -899,6 +906,7 @@ window.saveEntityForm = async function (event, type, id) {
             entityData.equip = document.getElementById('ef-equip').value.trim();
         } else if (type === 'encuentro') {
             entityData.location = document.getElementById('ef-location').value;
+            entityData.room = parseInt(document.getElementById('ef-room').value, 10) || null;
             entityData.loot = document.getElementById('ef-loot').value.trim();
             entityData.monsters = window.currentEncounterBuilder || [];
             // Validar que todos los monstruos tengan iniciativa

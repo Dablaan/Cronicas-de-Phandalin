@@ -47,7 +47,11 @@ window.renderEncuentros = function (currentState) {
                         <div class="grid-2">
             `;
 
+            // Ordenar por nº de sala dentro de cada localización
+            grouped[loc].sort((a, b) => (a.room || 999) - (b.room || 999));
+
             grouped[loc].forEach(enc => {
+                const roomBadge = enc.room ? `<span style="background: var(--red-ink); color: #fff; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.75em; margin-left: 0.3rem; vertical-align: middle;">#${enc.room}</span>` : '';
                 const listHtml = (enc.monsters || []).map(m => {
                     const monsterData = allBestiario.find(b => b.id === m.id);
                     const imgUrl = monsterData && monsterData.url ? monsterData.url : null;
@@ -73,7 +77,7 @@ window.renderEncuentros = function (currentState) {
                 html += `
                     <div class="card" style="position: relative; display: flex; flex-direction: column;">
                         <div style="flex: 1;">
-                            <h4 style="margin: 0 0 0.5rem 0; color:var(--red-ink);"><i class="fa-solid fa-shield-halved"></i> ${enc.name}</h4>
+                            <h4 style="margin: 0 0 0.5rem 0; color:var(--red-ink);"><i class="fa-solid fa-shield-halved"></i> ${enc.name} ${roomBadge}</h4>
                             <div style="background: rgba(0,0,0,0.03); padding: 0.5rem; border-radius: 4px; border: 1px solid var(--parchment-dark); margin-bottom: 0.5rem;">
                                 <h5 style="margin:0 0 0.3rem 0; font-size: 0.8em; text-transform:uppercase;">Hostiles:</h5>
                                 <ul style="margin:0; padding-left: 1rem; font-size: 0.85em;">
