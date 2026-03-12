@@ -17,6 +17,7 @@ const defaultState = {
 };
 
 let currentState = { ...defaultState };
+let isStateLoaded = false;
 const listeners = [];
 
 export const state = {
@@ -44,6 +45,7 @@ export const state = {
             delete dataToSave.session;
             await storageAdapter.save(dataToSave);
         }
+        isStateLoaded = true;
 
         // Listen to remote changes and update local state
         storageAdapter.subscribe((newData) => {
@@ -69,6 +71,10 @@ export const state = {
      * @param {boolean} skipNotify - If true, skips notifying local listeners to prevent re-renders
      */
     async update(partial, skipNotify = false) {
+        if (!isStateLoaded) {
+            console.warn("state.update() aborted: initial state has not been loaded yet.");
+            return;
+        }
         currentState = { ...currentState, ...partial };
 
         // CRITICAL DECOUPLING: Never save the UI session state to the cloud
