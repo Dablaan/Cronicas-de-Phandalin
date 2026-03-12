@@ -75,17 +75,18 @@ export const storageAdapter = {
     /**
      * Uploads an avatar image to Supabase Storage
      * @param {File} file - The image file to upload
+     * @param {string} playerName - The sanitized name of the player
      * @returns {Promise<string>} The public URL of the uploaded image
      */
-    async uploadAvatar(file) {
+    async uploadAvatar(file, playerName) {
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            const fileName = playerName ? `${playerName}.${fileExt}` : `${Math.random().toString(36).substring(7)}.${fileExt}`;
             const filePath = `${fileName}`; // root of 'avatars' bucket
 
             const { error: uploadError } = await supabase.storage
                 .from('avatars')
-                .upload(filePath, file);
+                .upload(filePath, file, { upsert: true });
 
             if (uploadError) {
                 console.error("Upload error details:", uploadError);
@@ -104,19 +105,23 @@ export const storageAdapter = {
     },
 
     /**
-     * Uploads campaign media (NPC portraits, Maps) to Supabase Storage
+     * Uploads campaign media (NPC portraits, Maps, Monsters) to Supabase Storage
      * @param {File} file - The image file to upload
+     * @param {string} folderName - The folder inside campaign_media (e.g., 'npcs', 'maps', 'bestiario')
+     * @param {string} entityName - The sanitized name of the entity
      * @returns {Promise<string>} The public URL of the uploaded image
      */
-    async uploadCampaignMedia(file) {
+    async uploadCampaignMedia(file, folderName, entityName) {
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-            const filePath = `${fileName}`; // root of 'campaign_media' bucket
+            const fileExt = file.name.split('.').pop().toLowerCase();
+            const fileName = (folderName && entityName) 
+                ? `${folderName}/${entityName}.${fileExt}` 
+                : `media_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+            const filePath = `${fileName}`; // relative to 'campaign_media' bucket root
 
             const { error: uploadError } = await supabase.storage
                 .from('campaign_media')
-                .upload(filePath, file);
+                .upload(filePath, file, { upsert: true });
 
             if (uploadError) {
                 console.error("Campaign Media Upload error details:", uploadError);

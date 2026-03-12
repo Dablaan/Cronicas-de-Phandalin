@@ -11,6 +11,22 @@ export function getStatModifier(val) {
 }
 
 /**
+ * Sanitiza un nombre para usarlo como nombre de archivo o carpeta determinista.
+ * Convierte a minúsculas, elimina acentos/diacríticos y reemplaza espacios
+ * y caracteres no alfanuméricos por cadenas vacías.
+ * @param {string} name - Nombre original (ej: "Ladrón de Guante Blanco")
+ * @returns {string} El nombre sanitizado (ej: "ladrondeguanteblanco")
+ */
+export function sanitizeFileName(name) {
+    if (!name) return `unnamed_${Date.now()}`;
+    return name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+}
+
+/**
  * Calcula los datos numéricos y heurísticos visuales para las barras de salud.
  * @param {number} current - HP actual del personaje
  * @param {number} max - HP máximo del personaje

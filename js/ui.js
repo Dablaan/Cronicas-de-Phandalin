@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { storageAdapter } from './storageAdapter.js';
-import { getHealthBarData } from './utils.js';
+import { getHealthBarData, sanitizeFileName } from './utils.js';
 
 export function initUI() {
     // Setup tabs
@@ -857,7 +857,8 @@ window.saveEntityForm = async function (event, type, id) {
         const fileInput = document.getElementById('ef-image');
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
-            imageUrl = await storageAdapter.uploadCampaignMedia(file);
+            const entityName = sanitizeFileName(nameInput);
+            imageUrl = await storageAdapter.uploadCampaignMedia(file, listKey, entityName);
         }
 
         // Recuperar y Empaquetar Datos
@@ -992,7 +993,9 @@ window.uploadPlayerAvatar = async function (input, playerId) {
     label.innerHTML = 'Subiendo... <i class="fa-solid fa-spinner fa-spin"></i>';
 
     try {
-        const publicUrl = await storageAdapter.uploadAvatar(file);
+        const player = state.get().players.find(p => p.id === playerId);
+        const playerNameSanitized = player ? sanitizeFileName(player.name) : null;
+        const publicUrl = await storageAdapter.uploadAvatar(file, playerNameSanitized);
 
         // Update preview in UI immediately
         const avatarContainer = document.querySelector('.header-avatar');
