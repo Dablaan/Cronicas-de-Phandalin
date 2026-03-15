@@ -5,6 +5,9 @@ const supabaseUrl = 'https://gwryzkejvymurjnyfwpu.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3cnl6a2VqdnltdXJqbnlmd3B1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMjg1NDgsImV4cCI6MjA4NzcwNDU0OH0.x1PU7qnWJTLA5P6DO0Og6SlnSi0vIyTh98iu3GCk3fw';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+// Auto-Backup webhook URL (Control Bot - Google Apps Script)
+const BACKUP_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycby3CfSWui1vRjPs6fSd6opRplfvSFypD7di5LSgDzF3mxr8Izm6rAJ7zVf_yrgEjbWbFA/exec';
+
 export const storageAdapter = {
     /**
      * Saves data to Supabase kv_store
@@ -17,6 +20,18 @@ export const storageAdapter = {
                 .upsert({ key: STORAGE_KEY, value: data });
 
             if (error) throw error;
+
+            // Silent auto-backup: fire-and-forget POST to Control Bot webhook
+            try {
+                fetch(BACKUP_WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+            } catch (_backupErr) {
+                console.warn('Auto-backup to webhook failed silently:', _backupErr);
+            }
         } catch (e) {
             console.error("Error saving to Supabase", e);
         }
@@ -27,6 +42,10 @@ export const storageAdapter = {
      * @returns {Promise<Object|null>} The parsed state data, or null if nothing is saved
      */
     async load() {
+        if (!supabase) {
+            console.warn("Supabase not configured, skipping load");
+            return null;
+        }
         try {
             const { data, error } = await supabase
                 .from('kv_store')
@@ -49,6 +68,10 @@ export const storageAdapter = {
      * @param {Function} callback - Function to call when storage changes remotely
      */
     subscribe(callback) {
+        if (!supabase) {
+            console.warn("Supabase not configured, skipping subscribe");
+            return;
+        }
         supabase
             .channel('public:kv_store')
             .on(
@@ -79,6 +102,10 @@ export const storageAdapter = {
      * @returns {Promise<string>} The public URL of the uploaded image
      */
     async uploadAvatar(file, playerName) {
+        if (!supabase) {
+            console.warn("Supabase not configured, skipping avatar upload");
+            throw new Error("Supabase not configured");
+        }
         try {
             const fileExt = file.name.split('.').pop().toLowerCase();
             const fileName = playerName ? `${playerName}.${fileExt}` : `${Math.random().toString(36).substring(7)}.${fileExt}`;
